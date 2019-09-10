@@ -1,0 +1,120 @@
+# -*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgbase=gmp
+pkgname=($pkgbase lib32-$pkgbase libx32-$pkgbase)
+pkgver=6.1.2
+pkgrel=1
+arch=('x86_64')
+url="http://gmplib.org/"
+license=('LGPL3' 'GPL')
+source=(https://gmplib.org/download/gmp/gmp-${pkgver}.tar.xz{,.sig})
+validpgpkeys=('343C2FF0FBEE5EC2EDBEF399F3599FF828C67298')   # Niels Möller
+md5sums=('f58fa8001d60c4c77595fbbb62b63c1d'
+         'SKIP')
+
+
+if [[ "$(pacman -Ss ^gcc-libs$ 2>/dev/null)" ]];then
+    gmp_depends+=(gcc-libs)
+else
+    gmp_optdepends+=(gcc-libs)
+fi
+if [[ "$(pacman -Ss ^lib32-gcc-libs$ 2>/dev/null)" ]];then
+    lib32_gmp_depends+=(lib32-gcc-libs)
+else
+    lib32_gmp_optdepends+=(lib32-gcc-libs)
+fi
+if [[ "$(pacman -Ss ^libx32-gcc-libs$ 2>/dev/null)" ]];then
+    libx32_gmp_depends+=(libx32-gcc-libs)
+else
+    libx32_gmp_optdepends+=(libx32-gcc-libs)
+fi
+
+prepare(){
+    mkdir -pv build-$pkgbase build-lib{,x}32-$pkgbase
+
+    cd $srcdir/build-$pkgbase
+    "${srcdir}/${pkgname}-${pkgver}"/configure \
+                                    --prefix=/usr \
+                                    --enable-cxx \
+                                    --disable-static \
+                                    --docdir=/usr/share/doc/${pkgname}-${pkgver}
+
+    cd $srcdir/build-lib32-$pkgbase
+    ABI="32" \
+       CC="gcc -m32" \
+       CXX="g++ -m32" \
+       PKG_CONFIG_PATH="/usr/lib32/pkgconfig" \
+       "${srcdir}/${pkgname}-${pkgver}"/configure \
+       --prefix=/usr --disable-static --enable-cxx \
+       --libdir=/usr/lib32 --host=i686-pc-linux-gnu
+
+    cd $srcdir/build-libx32-$pkgbase
+    ABI="x32" \
+       CC="gcc -mx32" \
+       CXX="g++ -mx32" \
+       PKG_CONFIG_PATH="/usr/libx32/pkgconfig" \
+       "${srcdir}/${pkgname}-${pkgver}"/configure \
+       --prefix=/usr --disable-static --enable-cxx \
+       --libdir=/usr/libx32 --host=x86_64-pc-linux-gnux32
+}
+
+build() {
+    cd $srcdir/build-$pkgbase
+    make
+    make html
+
+    cd $srcdir/build-lib32-$pkgbase
+    make
+
+    cd $srcdir/build-libx32-$pkgbase
+    make
+}
+
+check() {
+    cd $srcdir/build-$pkgbase
+    make check 2>&1 | tee gmp-check-log
+    awk '/# PASS:/{total+=$3} ; END{print total}' gmp-check-log
+
+    cd $srcdir/build-lib32-$pkgbase
+    make check 2>&1 | tee gmp-check-log
+    awk '/# PASS:/{total+=$3} ; END{print total}' gmp-check-log
+
+    cd $srcdir/build-libx32-$pkgbase
+    make check 2>&1 | tee gmp-check-log
+    awk '/# PASS:/{total+=$3} ; END{print total}' gmp-check-log
+}
+
+package_gmp() {
+    pkgdesc="A free library for arbitrary precision arithmetic"
+    depends=( "${gmp_depends[@]}")
+    optdepends=( "${gmp_optdepends[@]}")
+    groups=('lfs-base')
+
+    cd $srcdir/build-$pkgbase
+    make DESTDIR="${pkgdir}" install
+    make DESTDIR="${pkgdir}" install-html
+}
+
+package_lib32-gmp(){
+    pkgdesc="A free library for arbitrary precision arithmetic (32-bit)"
+    depends=("$pkgbase" "${lib32_gmp_depends[@]}")
+    optdepends=( "${lib32_gmp_optdepends[@]}")
+    groups=('lfs-base' 'lfs-multilib')
+
+    cd $srcdir/build-lib32-$pkgbase
+
+    make DESTDIR="${pkgdir}" install
+    rm -rf "${pkgdir}"/usr/{include,share,bin}
+}
+
+package_libx32-gmp(){
+    pkgdesc="A free library for arbitrary precision arithmetic (x32-bit)"
+    depends=("$pkgbase" "${libx32_gmp_depends[@]}")
+    optdepends=( "${libx32_gmp_optdepends[@]}")
+    groups=('lfs-base' 'lfs-multilib')
+
+    cd $srcdir/build-libx32-$pkgbase
+
+    make DESTDIR="${pkgdir}" install
+    rm -rf "${pkgdir}"/usr/{include,share,bin}
+}
