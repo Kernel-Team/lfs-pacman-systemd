@@ -1,0 +1,148 @@
+#-*-mode:sh-*-
+# Maintainer: %s <%s>
+pkgbase=readline
+pkgname=($pkgbase lib32-$pkgbase libx32-$pkgbase)
+_basever=8.0
+_patchlevel=0
+pkgver=${_basever}.${_patchlevel}
+pkgrel=1
+arch=('x86_64')
+url='http://tiswww.case.edu/php/chet/readline/rltop.html'
+license=('GPL')
+options=('!emptydirs')
+source=(https://ftp.gnu.org/gnu/readline/readline-$_basever.tar.gz{,.sig}
+        inputrc
+        readline.sh)
+validpgpkeys=('7C0135FB088AAF6C66C650B9BB5869F064EA74AB') # Chet Ramey
+
+if [[ -n "$(pacman -Ss ncurses$ 2>/dev/null)" ]];then
+    readline_depends+=( 'ncurses' 'libncursesw.so')
+else
+    readline_optdepends+=( 'ncurses')
+fi
+if [[ -n "$(pacman -Ss lib32-ncurses$ 2>/dev/null)" ]];then
+    lib32_readline_depends+=( 'lib32-ncurses')
+else
+    lib32_readline_optdepends+=( 'lib32-ncurses')
+fi
+if [[ -n "$(pacman -Ss lib32-ncurses$ 2>/dev/null)" ]];then
+    libx32_readline_depends+=( 'libx32-ncurses')
+else
+    libx32_readline_optdepends+=( 'libx32-ncurses')
+fi
+
+if [ $_patchlevel -gt 0 ]; then
+    for (( _p=1; _p <= $((10#${_patchlevel})); _p++ )); do
+        source=(${source[@]} https://ftp.gnu.org/gnu/readline/readline-$_basever-patches/readline${_basever//.}-$(printf "%03d" $_p){,.sig})
+    done
+fi
+
+prepare() {
+    mkdir -pv build-${pkgbase} build-lib{,x}32-${pkgbase}
+
+    cd ${pkgbase}-${_basever}
+    for (( _p=1; _p <= $((10#${_patchlevel})); _p++ )); do
+        msg "applying patch readline${_basever//.}-$(printf "%03d" $_p)"
+        patch -p0 -i ../readline${_basever//.}-$(printf "%03d" $_p)
+    done
+
+    # remove RPATH from shared objects (FS#14366)
+    sed -i 's|-Wl,-rpath,$(libdir) ||g' support/shobj-conf
+
+    # Reinstalling Readline will cause the old libraries to be moved to <libraryname>.old.
+    # While this is normally not a problem, in some cases it can trigger a linking bug in ldconfig.
+    sed -i '/MV.*old/d' Makefile.in
+    sed -i '/{OLDSUFF}/c:' support/shlib-install
+
+    cd $srcdir/build-${pkgbase}
+    # build with -fPIC for x86_64 (FS#15634)
+    [[ $CARCH == "x86_64" ]] && CFLAGS="$CFLAGS -fPIC" \
+                                      $srcdir/${pkgbase}-${_basever}/configure --prefix=/usr \
+                                      --disable-static \
+                                      --docdir=/usr/share/doc/${pkgname}-${_basever}
+
+    cd $srcdir/build-lib32-$pkgbase
+    CC="gcc -m32 -march=i686" \
+      CXX="g++ -m32 -march=i686" \
+      PKG_CONFIG_PATH="/usr/lib32/pkgconfig" \
+      $srcdir/${pkgbase}-${_basever}/configure \
+      --prefix=/usr \
+      --libdir=/usr/lib32 \
+      --disable-static \
+      --host=i686-pc-linux-gnu
+
+    cd $srcdir/build-libx32-$pkgbase
+    CC="gcc -mx32" \
+      CXX="g++ -mx32" \
+      PKG_CONFIG_PATH="/usr/libx32/pkgconfig" \
+      $srcdir/${pkgbase}-${_basever}/configure \
+      --prefix=/usr          \
+      --libdir=/usr/libx32   \
+      --disable-static       \
+      --host=x86_64-pc-linux-gnux32
+}
+
+build(){
+    cd ${srcdir}/build-${pkgbase}
+
+    if [[ "$(pacman -Qq ncurses 2>/dev/null)" ]];then
+        _libs="-lncurses"
+    elif [[ -f /tools/bin/ncursesw6-config ]];then
+        _libs="-L/tools/lib -lncursesw"
+    fi
+    make SHLIB_LIBS=${_libs}
+
+    cd ${srcdir}/build-lib32-${pkgbase}
+    make SHLIB_LIBS=${_libs}
+
+    cd ${srcdir}/build-libx32-${pkgbase}
+    make SHLIB_LIBS=${_libs}
+}
+
+package_readline() {
+    pkgdesc='a set of libraries that offers command-line editing and history capabilities'
+    depends=('glibc' "${readline_depends[@]}")
+    optdepends=("${readline_optdepends[@]}")
+    provides=('libhistory.so'
+              'libreadline.so')
+    backup=('etc/inputrc')
+    groups=('lfs-base')
+
+    cd ${srcdir}/build-${pkgbase}
+    make DESTDIR="${pkgdir}" install
+    install -Dm644 ${srcdir}/inputrc "${pkgdir}"/etc/inputrc
+    install -Dm644 ${srcdir}/readline.sh "${pkgdir}"/etc/profile.d/readline.sh
+
+    install -v -d -m755 ${pkgdir}/lib
+    mv -v ${pkgdir}/usr/lib/lib{readline,history}.so.* ${pkgdir}/lib
+    ln -sfv ../../lib/$(readlink ${pkgdir}/usr/lib/libreadline.so) ${pkgdir}/usr/lib/libreadline.so
+    ln -sfv ../../lib/$(readlink ${pkgdir}/usr/lib/libhistory.so ) ${pkgdir}/usr/lib/libhistory.so
+}
+
+package_lib32-readline(){
+    pkgdesc="GNU readline library (32-bit)"
+    depends=('lib32-glibc' "$pkgbase" "${lib32_readline_depends[@]}")
+    optdepends=("${lib32_readline_optdepends[@]}")
+    groups=('lfs-base' 'lfs-multilib')
+
+    cd $srcdir/build-lib32-$pkgbase
+
+    make DESTDIR=${pkgdir} install
+    rm -rf "${pkgdir}"/usr/{include,share,bin}
+}
+
+package_libx32-readline(){
+    pkgdesc="GNU readline library (x32 ABI)"
+    depends=('libx32-glibc' "$pkgbase" "${libx32_readline_depends[@]}")
+    optdepends=("${libx32_readline_optdepends[@]}")
+    groups=('lfs-base' 'lfs-multilib')
+
+    cd $srcdir/build-libx32-$pkgbase
+    make DESTDIR=${pkgdir} install
+    rm -rf "${pkgdir}"/usr/{include,share,bin}
+}
+
+md5sums=('7e6c1f16aee3244a69aba6e438295ca3'
+         'SKIP'
+         '3cea0a1d246504dacd93402ccb99cd76'
+         'b2ecbed00bbdf66d4a85383396805dbd')
