@@ -115,7 +115,7 @@ package_minizip() {
 package_lib32-zlib(){
   pkgdesc='Compression library implementing the deflate compression method found in gzip and PKZIP (32-bit)'
   depends=('lib32-glibc' "$pkgbase")
-  groups=('lfs-multilib')
+  groups=('lfs-base' 'lfs-multilib')
 
   cd $srcdir/build-lib32-zlib
   make install DESTDIR=${pkgdir}
@@ -127,7 +127,7 @@ package_lib32-zlib(){
 package_libx32-zlib(){
   pkgdesc='Compression library implementing the deflate compression method found in gzip and PKZIP (x32 ABI)'
   depends=('libx32-glibc' "$pkgbase")
-  groups=('lfs-multilib')
+  groups=('lfs-base' 'lfs-multilib')
 
   cd $srcdir/build-libx32-zlib
   make install DESTDIR=${pkgdir}
