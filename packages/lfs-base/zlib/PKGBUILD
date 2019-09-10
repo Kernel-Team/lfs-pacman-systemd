@@ -93,6 +93,7 @@ package_zlib() {
   install -v -d -m755 ${pkgdir}/lib
   mv -v ${pkgdir}/usr/lib/libz.so.* ${pkgdir}/lib
   ln -sfv ../../lib/$(readlink ${pkgdir}/usr/lib/libz.so) ${pkgdir}/usr/lib/libz.so
+  ln -sv ../../lib/$(readlink ${pkgdir}/lib/libz.so.1) ${pkgdir}/usr/lib/libz.so.1
 
   install -D -m644 $srcdir/$pkgname-$pkgver/LICENSE ${pkgdir}/usr/share/licenses/zlib/LICENSE
 }
