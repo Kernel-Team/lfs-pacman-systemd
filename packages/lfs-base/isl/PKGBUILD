@@ -1,0 +1,92 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgbase=isl
+pkgname=($pkgbase lib32-$pkgbase libx32-$pkgbase)
+pkgver=0.21
+pkgrel=1
+arch=('x86_64')
+url="http://isl.gforge.inria.fr/"
+license=('MIT')
+source=("http://isl.gforge.inria.fr/isl-${pkgver}.tar.bz2")
+
+prepare(){
+    mkdir -pv build-$pkgbase build-lib{,x}32-$pkgbase
+
+    cd ${srcdir}/build-$pkgbase
+    ${srcdir}/${pkgname}-${pkgver}/configure \
+             --prefix=/usr
+    
+    cd ${srcdir}/build-lib32-$pkgbase
+    CC='gcc -m32' \
+      CXX='g++ -m32' \
+      PKG_CONFIG_PATH='/usr/lib32/pkgconfig' \
+      LDFLAGS+=' -m32' \
+      ${srcdir}/${pkgname}-${pkgver}/configure \
+      --prefix=/usr --libdir=/usr/lib32 \
+      --host=i686-pc-linux-gnu
+
+    cd ${srcdir}/build-libx32-$pkgbase
+    CC='gcc -mx32' \
+      CXX='g++ -mx32' \
+      PKG_CONFIG_PATH='/usr/libx32/pkgconfig' \
+      LDFLAGS+=' -mx32' \
+      ${srcdir}/${pkgname}-${pkgver}/configure \
+      --prefix=/usr --libdir=/usr/libx32 \
+      --host=x86_64-pc-linux-gnux32
+}
+
+build() {
+    cd ${srcdir}/build-$pkgbase
+    make
+
+    cd ${srcdir}/build-lib32-$pkgbase
+    make
+
+    cd ${srcdir}/build-libx32-$pkgbase
+    make
+}
+
+package_isl() {
+    pkgdesc="Library for manipulating sets and relations of integer points bounded by linear constraints"
+    depends=('gmp')
+    groups=('lfs-base')
+
+    cd ${srcdir}/build-$pkgbase
+
+    make DESTDIR="$pkgdir" install
+
+    install -dm755 "$pkgdir"/usr/share/gdb/auto-load/usr/lib/
+    mv "$pkgdir"/usr/lib/libisl.so.*-gdb.py "$pkgdir"/usr/share/gdb/auto-load/usr/lib/
+    
+    install -Dm644 ${srcdir}/$pkgbase-$pkgver/LICENSE "$pkgdir"/usr/share/licenses/isl/LICENSE
+}
+
+package_lib32-isl(){
+    pkgdesc="Library for manipulating sets and relations of integer points bounded by linear constraints (32-bit)"
+    depends=('lib32-gmp' 'lib32-glibc' 'isl')
+    groups=('lfs-base' 'lfs-multilib')
+
+    cd ${srcdir}/build-lib32-$pkgbase
+    make DESTDIR="${pkgdir}" install
+    rm -rf "${pkgdir}"/usr/{bin,include,share}
+    rm -f "${pkgdir}/usr/lib32/"*.py
+
+    mkdir -p "${pkgdir}/usr/share/licenses"
+    ln -s ${pkgbase} "${pkgdir}/usr/share/licenses/${pkgname}"
+}
+
+package_libx32-isl(){
+    pkgdesc="Library for manipulating sets and relations of integer points bounded by linear constraints (x32)"
+    depends=('libx32-gmp' 'libx32-glibc' 'isl')
+    groups=('lfs-base' 'lfs-multilib')
+
+    cd ${srcdir}/build-libx32-$pkgbase
+    make DESTDIR="${pkgdir}" install
+    rm -rf "${pkgdir}"/usr/{bin,include,share}
+    rm -f "${pkgdir}/usr/libx32/"*.py
+
+    mkdir -p "${pkgdir}/usr/share/licenses"
+    ln -s ${pkgbase} "${pkgdir}/usr/share/licenses/${pkgname}"
+}
+
+md5sums=('e2be862b79d74234e468981bcae2a964')
