@@ -1,0 +1,43 @@
+# -*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=m4
+pkgver=1.4.18
+pkgrel=1
+pkgdesc="The GNU macro processor"
+arch=('x86_64')
+url="http://www.gnu.org/software/m4"
+license=('GPL3')
+depends=('glibc')
+source=(ftp://ftp.gnu.org/gnu/m4/$pkgname-$pkgver.tar.xz{,.sig}
+        m4-1.4.18-glibc-change-work-around.patch)
+validpgpkeys=('71C2CC22B1C4602927D2F3AAA7A16B4A2527436A')   # Eric Blake
+
+if [[ "$(pacman -Ss ^bash$ 2>/dev/null)" ]];then
+    depends+=( 'bash')
+else
+    optdepends+=( 'bash')
+fi
+
+prepare(){
+    cd ${pkgname}-${pkgver}
+    patch -p1 -i $srcdir/m4-1.4.18-glibc-change-work-around.patch
+    ./configure --prefix=/usr
+}
+
+build(){
+    cd ${pkgname}-${pkgver}
+    make
+}
+
+check() {
+    cd ${pkgname}-${pkgver}
+    make check
+}
+
+package() {
+    cd ${pkgname}-${pkgver}
+    make prefix=${pkgdir}/usr install
+}
+md5sums=('730bb15d96fffe47e148d1e09235af82'
+         'SKIP'
+         '01968e8f3a5be62de1c849668db8042b')
