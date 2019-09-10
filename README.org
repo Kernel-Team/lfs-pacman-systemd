@@ -512,3 +512,16 @@ add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
      makepkg -fcC
      add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
      #+END_SRC
+**** /Optional/ ~ed~
+     This package is in extra repository. Since /curl/ hasn't been setup properly, to download the source files run ~/tools/bin/makepkg -g~ from /lfs/ user terminal.
+     #+BEGIN_SRC sh :name ed
+     . PKGBUILD
+     makepkg -fcC
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~bc~
+     #+BEGIN_SRC sh :name bc
+     . PKGBUILD
+     makepkg -fcC
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
