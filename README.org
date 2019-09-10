@@ -1,8 +1,18 @@
-#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline
-#+OPTIONS: author:t broken-links:nil c:nil creator:nil
-#+OPTIONS: d:(not "LOGBOOK") date:t e:t email:nil f:t inline:t num:t
-#+OPTIONS: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
-#+OPTIONS: timestamp:t title:t toc:t todo:t |:t
+#+OPTIONS: html-link-use-abs-url:nil html-postamble:auto
+#+OPTIONS: html-preamble:t html-scripts:t html-style:t
+#+OPTIONS: html5-fancy:nil tex:t toc:nil num:nil
+#+HTML_DOCTYPE: xhtml-strict
+#+HTML_CONTAINER: div
+#+DESCRIPTION:
+#+KEYWORDS:
+#+HTML_LINK_HOME:
+#+HTML_LINK_UP:
+#+HTML_MATHJAX:
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://gongzhitaao.org/orgcss/org.css"/>
+#+HTML_HEAD_EXTRA: 
+#+SUBTITLE:
+#+INFOJS_OPT:
+#+LATEX_HEADER:
 #+TITLE: README
 #+DATE: <2019-09-04 Wed>
 #+AUTHOR: Christian Alexander
@@ -11,3 +21,471 @@
 #+SELECT_TAGS: export
 #+EXCLUDE_TAGS: noexport
 #+CREATOR: Emacs 26.2 (Org mode 9.1.9)
+* Compile linuxfromscratch using /pacman/
+  This is my take of /linuxfromscratch systemd/ installation with multilib, using /pacman/ as package manager. The goal is to install everything using /pacman/ as soon as possible, which means at the very start of the /chroot/-ing phase.
+  The current /[[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/index.html][systemd lfs-book]]/ are modified with the unofficial(as far as I know) /[[http://www.linuxfromscratch.org/~dj/lfs-systemd-multilib/index.html][lfs-systemd-multilib]]/ courtesy of /[[https://github.com/djlucas][DJ Lucas]]/. I will try to note every changes that I made. No promises though.
+  And since we'll be using /pacman/ for installation, we'll need a directory for the repositories, in this installation I'm using //srv/pacman/. And //usr/local/src/pacman/ for the tarballs, and since I'm using /btrfs partitions/, I just simply create a /subvolume/ for this. But any other partitions will do. But this means that I'm not using /$LFS/sources/. Not that it matter much.
+** Chapter 5. [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter05/introduction.html][Constructing a Temporary System]]
+   Just follow the stable systemd book, preferably using the latest packages with these modification:
+- 4.4. [[http://www.linuxfromscratch.org/~dj/lfs-systemd-multilib/chapter04/settingenvironment.html][Setting Up the Environment]]
+  Make sure to add /LFS_TGT32/, and /LFS_TGTX32/.
+- 5.4. [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter05/binutils-pass1.html][Binutils-2.31.1 - Pass 1]]
+  ~--with-lib-path=/tools/lib:/tools/lib32:/tools/libx32~ and ~--enable-multilib~ from the [[http://www.linuxfromscratch.org/~dj/lfs-systemd-multilib/chapter05/binutils-pass1.html][multilib version]].
+- 5.5. [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter05/gcc-pass1.html][GCC-9.2.0 - Pass 1]]
+  Make sure to patch everything according to the [[http://www.linuxfromscratch.org/~dj/lfs-systemd-multilib/chapter05/gcc-pass1.html][multilib version]], skip the /isl/ patch if using /isl/ greater than .20.
+- 5.7. [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter05/glibc.html][Glibc-2.30]]
+  Additional steps for [[http://www.linuxfromscratch.org/~dj/lfs-systemd-multilib/chapter05/glibc.html][lib32 and libx32]].
+- 5.9. [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter05/binutils-pass2.html][Binutils-2.32 - Pass 2]]
+  Additional [[http://www.linuxfromscratch.org/~dj/lfs-systemd-multilib/chapter05/binutils-pass2.html][configure flags and LIB_PATH]].
+- 5.10. [[http://www.linuxfromscratch.org/~dj/lfs-systemd-multilib/chapter05/zlib.html][Zlib-1.2.11]]
+  Before GCC pass 2.
+- 5.10. [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter05/gcc-pass2.html][GCC-9.2.0 - Pass 2]]
+  The same as GCC pass 1 with [[http://www.linuxfromscratch.org/~dj/lfs-systemd-multilib/chapter05/gcc-pass2.html][additional changes]].
+- 5.15. [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter05/ncurses.html][Ncurses-6.1]]
+  Additional steps for [[http://www.linuxfromscratch.org/~dj/lfs-systemd-multilib/chapter05/ncurses.html][lib32 and libx32]].
+- 5.30. [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter05/Python.html][Python-3.7.4]]
+  This package is skipped on /multilib book/, install it now.
+- 5.34. [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter05/util-linux.html][Util-linux-2.34]]
+  Additional steps for [[http://www.linuxfromscratch.org/~dj/lfs-systemd-multilib/chapter05/util-linux.html][lib32 and libx32]].
+- 5.35. [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter05/xz.html][Xz-5.2.4]]
+  Additional steps for [[http://www.linuxfromscratch.org/~dj/lfs-systemd-multilib/chapter05/xz.html][lib32 and libx32]].
+*** Additional Packages for /pacman/
+ If you don't want to use /pacman/ then this is the final steps before [[http://www.linuxfromscratch.org/~dj/lfs-systemd-multilib/chapter05/stripping.html][stripping]], otherwise, continue installing these packages:
+ - [[https://kernel.org/pub/linux/libs/security/linux-privs/libcap2/][libcap]]
+   #+BEGIN_SRC sh :name libcap
+   sed -i '/install.*STALIBNAME/d' libcap/Makefile
+     make RAISE_SETFCAP=no \
+          BUILD_GPERF=no \
+          KERNEL_HEADERS=/tools/include \
+          PAM_CAP=no
+     make RAISE_SETFCAP=no lib=lib \
+          BUILD_GPERF=no \
+          KERNEL_HEADERS=/tools/include \
+          PAM_CAP=no \
+          prefix=/tools install
+   #+END_SRC
+ - [[https://libarchive.org/][libarchive]]
+   #+BEGIN_SRC sh :name libarchive
+   ./configure --prefix=/tools --without-xml2 --disable-shared
+   make
+   make install
+   #+END_SRC
+ - [[https://packages.debian.org/fakeroot][fakeroot]]
+   #+BEGIN_SRC sh :name fakeroot
+   ./configure --prefix=/tools
+   make
+   make install
+   #+END_SRC
+ - [[https://curl.haxx.se/][curl]]
+   #+BEGIN_SRC sh :name curl
+   ./configure --prefix=/tools --without-ssl
+   make
+   make install
+   #+END_SRC
+ - [[https://www.lysator.liu.se/~nisse/nettle][nettle]]
+   #+BEGIN_SRC sh :name nettle
+   ./configure --prefix=/tools
+   make
+   make install
+   #+END_SRC
+ - [[https://www.archlinux.org/pacman/][pacman]]
+   I intended to install /pacman/ in //usr/local/ for the final installation, and using //etc/local/ as ~--sysconfdir~ to follow /[[https://refspecs.linuxfoundation.org/FHS_3.0/fhs/ch04s09.html][FHS]]/. If you want to use different location, set it here.
+   #+BEGIN_SRC sh :name pacman
+   LIBARCHIVE_CFLAGS="-I/tools/include" \
+                      LIBARCHIVE_LIBS="-L/tools/lib -larchive" \
+                      NETTLE_CFLAGS="-I/tools/include" \
+                      NETTLE_LIBS="-L/tools/lib -lnettle" \
+                      ./configure --prefix=/tools/ --sysconfdir=/etc/local/ \
+                      --localstatedir=/var --disable-doc --with-crypto=nettle --disable-static
+   make
+   make DESTDIR=${PWD}/DESTDIR install
+   cp -rv DESTDIR/tools/* /tools/
+   #+END_SRC
+*** Stripping
+    Use the /strip/ instruction from the /lfs multilib/ [[http://www.linuxfromscratch.org/~dj/lfs-systemd-multilib/chapter05/stripping.html][book]]
+*** 5.37. [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter05/changingowner.html][Changing Ownership]]
+    After changing ownership of //tools/ to /root/ user, optionally tar the whole //tools/ directory.
+    #+BEGIN_SRC sh :name tar-toolchain
+    # still as lfs user
+    tar cvJf /tmp/lfs-tools-pacman.tar.xz tools/*
+    #+END_SRC
+    This will create a tarball at //tmp/ named /lfs-tools-pacman.tar.xz/. Put this file somewhere else so when you want to build another /LFS/ you don't have to start from the beginning.
+** Chapter 6. [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter06/introduction.html][Installing Basic System Software]]
+*** 6.4. [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter06/chroot.html][Entering the Chroot Environment]]
+    We need to enter /chroot/ to $LFS from 2 separate terminals, the first is the usual root user, the second one is the standard user since /makepkg/ won't work as root(it could but will need extra steps).
+    First, from the host root terminal:
+    #+BEGIN_SRC sh :name as-host-root
+    # copy /etc/resolv.conf to $LFS
+    sudo cp -v --dereference /etc/resolv.conf $LFS/etc
+
+    sudo chroot "$LFS" /tools/bin/env -i \
+    HOME=/root TERM="$TERM" PS1='(lfs chroot) \u:\w\$ ' \
+    PATH=/bin:/usr/bin:/sbin:/usr/sbin:/tools/bin \
+    /tools/bin/bash +h
+    #+END_SRC
+    This far, it's the same as the instruction in the book, continue until [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter06/createfiles.html][6.6. Creating Essential Files and Symlinks]].
+*** 6.6. [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter06/createfiles.html][Creating Essential Files and Symlinks]]
+    After creating the files for //var/log/, these additional files and symlinks are necessary for /pacman/
+    #+BEGIN_SRC sh :name files-and-symlinks
+    install -vdm755 /var/{lib,cache}/pacman
+    ln -sv ../../etc/local /usr/local/etc # this is for etc symbolic link to /etc/local
+    ln -sv /tools/bin/du /usr/bin
+    #+END_SRC
+**** Creating //etc/local/pacman.conf/ and //etc/local/makepkg.conf/
+     This is my preferred location for pacman, if you want to put it on different location (e.g. //etc/), you should change it when installing /pacman/ [[*Additional Packages for /pacman/][before]].
+     #+BEGIN_SRC sh :name pacman.conf
+     install -vdm755 /etc/local
+     cat << "EOF" >> /etc/local/pacman.conf
+##########################################
+# SigLevel should be uncommented after full installation of pacman
+[lfs-base]
+#SigLevel = Optional TrustAll
+Server = file:///srv/pacman/lfs-base
+
+[lfs-multilib]
+#SigLevel = Optional TrustAll
+Server = file:///srv/pacman/lfs-multilib
+
+[blfs]
+#SigLevel = Optional TrustAll
+Server = file:///srv/pacman/blfs
+
+[extra]
+#SigLevel = Optional TrustAll
+Server = file:///srv/pacman/extra
+#########################################
+EOF
+     #+END_SRC
+
+     #+BEGIN_SRC sh :name makepkg.conf
+     cat << "EOF" >> /etc/local/makepkg.conf
+#!/hint/bash
+#
+# /etc/makepkg.conf
+#
+
+#########################################################################
+# SOURCE ACQUISITION
+#########################################################################
+#
+#-- The download utilities that makepkg should use to acquire sources
+#  Format: 'protocol::agent'
+DLAGENTS=('file::/usr/bin/curl -gqC - -o %o %u'
+          'ftp::/usr/bin/curl -gqfC - --ftp-pasv --retry 3 --retry-delay 3 -o %o %u'
+          'http::/usr/bin/curl -gqb "" -fLC - --retry 3 --retry-delay 3 -o %o %u'
+          'https::/usr/bin/curl -gqb "" -fLC - --retry 3 --retry-delay 3 -o %o %u'
+          'rsync::/usr/bin/rsync --no-motd -z %u %o'
+          'scp::/usr/bin/scp -C %u %o')
+
+# Other common tools:
+# /usr/bin/snarf
+# /usr/bin/lftpget -c
+# /usr/bin/wget
+
+#-- The package required by makepkg to download VCS sources
+#  Format: 'protocol::package'
+VCSCLIENTS=('bzr::bzr'
+            'git::git'
+            'hg::mercurial'
+            'svn::subversion')
+
+#########################################################################
+# ARCHITECTURE, COMPILE FLAGS
+#########################################################################
+#
+CARCH="x86_64"
+CHOST="x86_64-pc-linux-gnu"
+CHOST32="i686-lfs-linux-gnu"
+CHOSTX32="x86_64-lfs-linux-gnux32"
+
+#-- Compiler and Linker Flags
+CFLAGS="-march=native -mtune=generic -O2 -pipe -fno-plt"
+CXXFLAGS="-march=native -mtune=generic -O2 -pipe -fno-plt"
+CPPFLAGS="-D_FORTIFY_SOURCE=2"
+LDFLAGS="-Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now"
+#-- Make Flags: change this for DistCC/SMP systems
+MAKEFLAGS="-j2"
+#-- Debugging flags
+DEBUG_CFLAGS="-g -fvar-tracking-assignments"
+DEBUG_CXXFLAGS="-g -fvar-tracking-assignments"
+
+#########################################################################
+# BUILD ENVIRONMENT
+#########################################################################
+#
+# Defaults: BUILDENV=(!distcc !color !ccache check !sign)
+#  A negated environment option will do the opposite of the comments below.
+#
+#-- distcc:   Use the Distributed C/C++/ObjC compiler
+#-- color:    Colorize output messages
+#-- ccache:   Use ccache to cache compilation
+#-- check:    Run the check() function if present in the PKGBUILD
+#-- sign:     Generate PGP signature file
+#
+BUILDENV=(!distcc color !ccache !check !sign)
+#
+#-- If using DistCC, your MAKEFLAGS will also need modification. In addition,
+#-- specify a space-delimited list of hosts running in the DistCC cluster.
+#DISTCC_HOSTS=""
+#
+#-- Specify a directory for package building.
+BUILDDIR=${HOME}/build
+
+#########################################################################
+# GLOBAL PACKAGE OPTIONS
+#   These are default values for the options=() settings
+#########################################################################
+#
+# Default: OPTIONS=(!strip docs libtool staticlibs emptydirs !zipman !purge !debug)
+#  A negated option will do the opposite of the comments below.
+#
+#-- strip:      Strip symbols from binaries/libraries
+#-- docs:       Save doc directories specified by DOC_DIRS
+#-- libtool:    Leave libtool (.la) files in packages
+#-- staticlibs: Leave static library (.a) files in packages
+#-- emptydirs:  Leave empty directories in packages
+#-- zipman:     Compress manual (man and info) pages in MAN_DIRS with gzip
+#-- purge:      Remove files specified by PURGE_TARGETS
+#-- debug:      Add debugging flags as specified in DEBUG_* variables
+#
+OPTIONS=(strip docs !libtool !staticlibs emptydirs zipman purge !debug)
+
+#-- File integrity checks to use. Valid: md5, sha1, sha256, sha384, sha512
+INTEGRITY_CHECK=(md5)
+#-- Options to be used when stripping binaries. See `man strip' for details.
+STRIP_BINARIES="--strip-all"
+#-- Options to be used when stripping shared libraries. See `man strip' for details.
+STRIP_SHARED="--strip-unneeded"
+#-- Options to be used when stripping static libraries. See `man strip' for details.
+STRIP_STATIC="--strip-debug"
+#-- Manual (man and info) directories to compress (if zipman is specified)
+MAN_DIRS=({usr{,/local}{,/share},opt/*}/{man,info})
+#-- Doc directories to remove (if !docs is specified)
+DOC_DIRS=(usr/{,local/}{,share/}{doc,gtk-doc} opt/*/{doc,gtk-doc})
+#-- Files to be removed from all packages (if purge is specified)
+PURGE_TARGETS=(usr/{,share}/info/dir .packlist *.pod)
+#-- Directory to store source code in for debug packages
+#DBGSRCDIR="/usr/src/debug"
+
+#########################################################################
+# PACKAGE OUTPUT
+#########################################################################
+#
+# Default: put built package and cached source in build directory
+#
+#-- Destination: specify a fixed directory where all packages will be placed
+PKGDEST=/usr/local/src/pacman/packages
+#-- Source cache: specify a fixed directory where source files will be cached
+SRCDEST=/usr/local/src/pacman/sources
+#-- Source packages: specify a fixed directory where all src packages will be placed
+SRCPKGDEST=/usr/local/src/pacman/srcpackages
+#-- Log files: specify a fixed directory where all log files will be placed
+LOGDEST=/usr/local/src/pacman/makepkglogs
+# uncomment if you want to automatically use username and email from ~/.gitconfig
+#PACKAGER="$(git config --global user.name) <$(git config --global user.email)>"
+#-- Specify a key to use for package signing
+#GPGKEY=""
+
+#########################################################################
+# COMPRESSION DEFAULTS
+#########################################################################
+#
+COMPRESSGZ=(gzip -c -f -n)
+COMPRESSBZ2=(bzip2 -c -f)
+COMPRESSXZ=(xz -c -z -)
+COMPRESSLRZ=(lrzip -q)
+COMPRESSLZO=(lzop -q)
+COMPRESSZ=(compress -c -f)
+
+#########################################################################
+# EXTENSION DEFAULTS
+#########################################################################
+#
+# WARNING: Do NOT modify these variables unless you know what you are
+#          doing.
+#
+PKGEXT='.pkg.tar.xz'
+SRCEXT='.src.tar.gz'
+#########################################################################
+EOF
+     #+END_SRC
+**** Creating Standard user and chrooting with it
+     As mentioned before, this is for compiling packages with /pacman's/ ~makepkg~, we'll be using the same standard user as host. This should be done in another terminal as standard user.
+     #+BEGIN_SRC sh :name secondary-user
+     export LFS=/mnt/lfs
+
+     [ ! $(grep $(id -u) $LFS/etc/passwd) ] &&
+     sudo sh -c "echo $USER:$(id -u):$(id -g)::/home/$USER:/bin/bash >> $LFS/etc/passwd"
+
+     [ ! $(grep $(id -g) $LFS/etc/group) ] &&
+     sudo sh -c "echo $USER:x:$(id -g) >> $LFS/etc/group"
+
+     # create user homedir
+     sudo mkdir -pv $LFS/home/$USER
+
+     # set permission
+     sudo chown -v $USER:$USER $LFS/home/$USER
+
+     # copy user .gitconfig to $LFS home
+     cp -v ~/.gitconfig $LFS/home/$USER
+     #+END_SRC
+
+     #+BEGIN_SRC sh :name pacman repositories and sources dir
+     # use repositories from $LFS/etc/local/pacman.conf
+     for r in $(cat $LFS/etc/local/pacman.conf |grep 'Server' | sed 's/Server = file:\/\///g');do
+       sudo install -vdm755 $LFS/$r
+       sudo chown -v $USER $LFS/$r
+     done
+
+     source $LFS/etc/local/makepkg.conf
+     sudo install -vdm755 $LFS/$PKGDEST $LFS/$SRCDEST $LFS/$SRCPKGDEST $LFS/$LOGDEST
+     sudo chown -v $USER $LFS/$PKGDEST $LFS/$SRCDEST $LFS/$SRCPKGDEST $LFS/$LOGDEST
+     #+END_SRC
+
+     #+BEGIN_SRC sh :name chroot
+     sudo chroot --userspec=$(id -u):$(id -g) "$LFS" /tools/bin/env -i \
+       HOME=/home/$USER TERM="$TERM" PS1='(lfs chroot) \u:\w\$ ' \
+       PATH=/bin:/usr/bin:/sbin:/usr/sbin:/tools/bin \
+       /tools/bin/bash --login +h
+     #+END_SRC
+**** Inside chroot as user
+     First we need to create the repositories db files.
+     #+BEGIN_SRC sh :name pacman-db-file
+     for r in $(cat /etc/local/pacman.conf |grep 'Server' | sed 's/Server = file:\/\///g');do
+       pushd $r
+       repo-add "$(basename $r)".db.tar.gz
+       popd
+     done
+     #+END_SRC
+     Also create $BUILDDIR
+     #+BEGIN_SRC sh :name builddir
+     . /etc/local/makepkg.conf
+     mkdir -pv $BUILDDIR
+     #+END_SRC
+     And of course, copy this repository to $LFS $HOME dir.
+*** Installing packages
+    From now on, package installation should be handled by pacman. For compiling and packaging will be done by /makepkg/ from the user chroot terminal. The compiled package should be in $PKGDEST directory (defined in /makepkg.conf/). If you previously store all the tarball in /$LFS/sources/, move them to $SRCDEST since that's where ~makepkg~ will look for sources. 
+    Since this installation of /pacman/ is very minimal, ~makepkg~ must be invoked with ~--skippgpcheck~, and optionally ~--nocheck~ if needed. Installing packages is done in root chroot terminal, with ~pacman -Syy <package-name>~. You can inspect all the files installed by a specific package with ~pacman -Ql <packagename>~, and if you want to check which package owns a certain file or directory, use ~pacman -Qo </path/to/file>~.
+    Also add this function in the user chroot terminal for easy moving packages to it's designated repository:
+#+BEGIN_SRC sh
+function add_to_repo(){
+    if [ ! $(command -v pacman) ];then
+        echo "pacman not installed!"
+        return 1
+    fi
+
+    # determine pacman location
+    case $(dirname $(command -v pacman)| sed 's/bin//g') in
+        "/usr/local/")
+            pacpath="/usr/local"
+            ;;
+        "/usr/")
+            pacpath="/"
+            ;;
+        "/tools/")
+            # this is my default
+            pacpath="/usr/local"
+            ;;
+    esac
+
+    [ -f $pacpath/etc/makepkg.conf ] &&
+        . $pacpath/etc/makepkg.conf
+    [ -f ~/.config/pacman/makepkg.conf ] && . ~/.config/pacman/makepkg.conf
+
+    function err(){
+        echo "$FUNCNAME tarball repo -- simple program add compiled program from makepkg to pacman repository
+
+where:
+    tarball : path and filename or compiled packaged
+    repo    : name of pacman repo(refer to pacman.conf for the names)"
+
+        return 1
+    }
+
+    if [ -z $2 ];then
+        err;
+    else
+        tarball="$(basename $1)"
+        repo=`cat $pacpath/etc/pacman.conf | awk "/\/${2}/" | sed 's/Server = file:\/\///g'`
+
+        if [ -n $repo ] && [ -d $repo ];then
+            if [ -f $1 ];then
+                echo "moving $1 to $repo dir"
+                mv -v $1 $repo
+                pushd $repo
+                repo-add ${2}.db.tar.?z $tarball
+                popd
+            else
+                err;
+            fi
+        else
+            err;
+        fi
+    fi
+}
+#+END_SRC
+
+**** ~iana-etc~
+    #+BEGIN_SRC sh :name iana-etc
+    . PKGBUILD
+    makepkg -fCc --skippgpcheck
+    add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+    #+END_SRC
+**** ~filesystem~
+   #+BEGIN_SRC sh :name filesystem
+   . PKGBUILD
+   makepkg -fCc --skippgpcheck
+   add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+   #+END_SRC
+***** Installing as root
+      Since most of the directories already created in $LFS, you should install it with ~pacman -Syy filesystem --force~. Also remove the //var/mail/ directory since the package expects it to be symlink.
+**** ~linux-api-headers~
+#+BEGIN_SRC sh :name linux-api-headers
+. PKGBUILD
+makepkg -fcC --skippgpcheck
+add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+#+END_SRC
+**** ~man-pages~
+   #+BEGIN_SRC sh :name man-pages
+   . PKGBUILD
+   makepkg -fCc --skippgpcheck
+   add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+   #+END_SRC
+**** ~tzdata~
+   #+BEGIN_SRC sh :name tzdata
+   . PKGBUILD
+   makepkg -fCc --skippgpcheck
+   add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+   #+END_SRC
+**** ~glibc~
+***** *BEFORE COMPILING*:
+    #+NAME: as root
+    #+BEGIN_SRC sh
+  ln -sfv /tools/lib/gcc /usr/lib
+  rm -f /usr/include/limits.h
+  #+END_SRC
+    #+BEGIN_SRC sh
+  . PKGBUILD
+  makepkg -fcC --skippgpcheck # on slow pc add --nocheck also
+  for p in ${pkgname[@]};do
+    add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+  done
+  #+END_SRC
+    Split packages: glibc, lib32-glibc and libx32-glibc
+***** *After Compiling*
+      Set time zone data
+      #+BEGIN_SRC sh :name timezone-config
+      tzselect
+      ln -sfv /usr/share/zoneinfo/<xxx> /etc/localtime
+      locale-gen # with all the minimum set of locales needed by lfs book
+      #+END_SRC
+***** 6.10. [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter06/adjusting.html][Adjusting the Toolchain]]
+      Continue with the instruction from the book.
+**** zlib
+     #+BEGIN_SRC sh
+     . PKGBUILD
+     makepkg -fcC
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC

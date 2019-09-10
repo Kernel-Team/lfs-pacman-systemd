@@ -1,0 +1,100 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=filesystem
+pkgver=9.0.rc1.systemd
+pkgrel=1
+pkgdesc="LFS base filesystem"
+url="http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1"
+arch=('any')
+license=('MIT' 'CCPL:by-nc-sa')
+depends=('iana-etc')
+backup=('etc/nsswitch.conf' 'etc/profile.d/dircolors.sh' 'etc/skel/.profile'
+        'etc/profile.d/extrapaths.sh' 'etc/profile.d/umask.sh'
+        'etc/profile.d/i18n.sh' 'etc/profile' 'etc/fstab' 'etc/passwd'
+        'etc/group' 'etc/shells' 'etc/hosts')
+source=('nsswitch.conf' 'dircolors.sh' 'dotprofile' 'extrapaths.sh' 'umask.sh'
+        'i18n.sh' 'profile' 'fstab' 'passwd' 'group' 'shells' 'ld.so.conf'
+        'hosts')
+groups=('lfs-base')
+
+package() {
+    cd "$pkgdir"
+
+    # setup root filesystem
+    for d in bin boot dev etc/{local,opt,sysconfig,ld.so.conf.d} home lib/firmware \
+                 mnt opt media/{floppy,cdrom} sbin srv var lib64; do
+        install -d -m755 $d
+    done
+
+    install -d -m555 proc
+    install -d -m555 sys
+    install -d -m0750 root
+    install -d -m1777 tmp
+
+    # setup /usr hierarchy
+    for d in bin include lib sbin src share/{color,dict,doc,info,locale,man} \
+                 share/{misc,terminfo,zoneinfo} libexec lib32 libx32 games; do
+        install -d -m755 usr/$d
+    done
+    for d in {1..8}; do
+        install -d -m755 usr/share/man/man$d
+    done
+
+    ln -s usr/lib32 lib32
+    ln -s usr/libx32 libx32
+
+    # setup /usr/local hierarchy
+    for d in bin include lib sbin src share/{color,dict,doc,info,locale,man} \
+                 share/{misc,terminfo,zoneinfo} libexec lib32 libx32; do
+        install -d -m755 usr/local/$d
+    done
+    for d in {1..8}; do
+        install -d -m755 usr/local/share/man/man$d
+    done
+
+    # https://refspecs.linuxfoundation.org/FHS_3.0/fhs/ch04s09.html
+    ln -sv  ../../etc/local usr/local/etc
+    
+    # setup /var
+    for d in cache local opt log/old lib/{color,misc,locate}; do
+        install -d -m755 var/$d
+    done
+    install -d -m1777 var/{tmp,spool/mail}
+
+    touch var/log/{btmp,lastlog,faillog,wtmp}
+    chgrp -v 13 var/log/lastlog
+    chmod -v 664 var/log/lastlog
+    chmod -v 600 var/log/btmp
+
+    ln -s spool/mail var/mail
+    ln -s ../run var/run
+    ln -s ../run/lock var/lock
+
+    # setup /etc and /usr/share/factory/etc
+    install -d etc/{ld.so.conf.d,skel,profile.d}
+    for f in fstab group hosts ld.so.conf nsswitch.conf \
+                   passwd shells profile; do
+        install -m644 "$srcdir"/$f etc/
+    done
+    ln -s ../proc/self/mounts etc/mtab
+
+    install -m644 $srcdir/dotprofile etc/skel/.profile
+
+    for f in dircolors.sh extrapaths.sh umask.sh i18n.sh;do
+        install -m644 "${srcdir}"/${f} etc/profile.d/${f}
+    done
+}
+
+md5sums=('fb3976f942e00d20efb9b6f00f893a29'
+         'c374459fd914c975b41e68902a40c9e1'
+         '325ff68a73f2bbda1fbf8d5d735030b2'
+         'ea3eb0aa7b11cd459bdc725092c1331f'
+         'f1dd87922e8fddfe73ef20ae76c2f777'
+         '9ac887b370aa53cbcd0a7b8e0ec7a828'
+         '2a9c0f61b70f19b17cb4a5af9b9a23a4'
+         '6b4a8d275c3e50bd08cb7af74bc25f6f'
+         'ca2b6f93f0f43a1c42cf6c7fd2c50f76'
+         '53b4e6d69c451b7fca26f272513a76c9'
+         'a78cd8d7f8240a8448edee82f503c34e'
+         '36c6a53a2986f29059d568b6d30855d2'
+         'a1315ea3e2b64d197b6efaf9c14ff778')
