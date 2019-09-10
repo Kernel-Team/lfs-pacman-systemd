@@ -125,6 +125,7 @@
     #+END_SRC
     This far, it's the same as the instruction in the book, continue until [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter06/createfiles.html][6.6. Creating Essential Files and Symlinks]].
 *** 6.6. [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter06/createfiles.html][Creating Essential Files and Symlinks]]
+    Remember to use the instruction from the /[[http://www.linuxfromscratch.org/~dj/lfs-systemd-multilib/chapter06/createfiles.html][multilib book]]/.
     After creating the files for //var/log/, these additional files and symlinks are necessary for /pacman/
     #+BEGIN_SRC sh :name files-and-symlinks
     install -vdm755 /var/{lib,cache}/pacman
@@ -482,6 +483,14 @@ add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
 ***** 6.10. [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter06/adjusting.html][Adjusting the Toolchain]]
       Continue with the instruction from the book.
 **** zlib
+     #+BEGIN_SRC sh
+     . PKGBUILD
+     makepkg -fcC
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC
+**** file
      #+BEGIN_SRC sh
      . PKGBUILD
      makepkg -fcC
