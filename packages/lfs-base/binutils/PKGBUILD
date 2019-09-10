@@ -1,0 +1,109 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=binutils
+pkgver=2.32
+pkgrel=1
+pkgdesc='contains a linker, an assembler, and other tools for handling object files'
+arch=(x86_64)
+url='http://www.gnu.org/software/binutils/'
+license=(GPL)
+depends=('glibc' 'zlib')
+checkdepends=('bc')
+groups=('lfs-base')
+validpgpkeys=(3A24BC1E8FB409FA9F14371813FCEF89DD9E3C4F
+              343C2FF0FBEE5EC2EDBEF399F3599FF828C67298
+              07F3DBBECC1A39605078094D980C197698C3739D
+              AD17A21EF8AED8F1CC02DBD9F7D5C9BF765C61E3
+             )
+_islver=0.21
+_gmpver=6.1.2
+_mpfrver=4.0.2
+_mpcver=1.1.0
+source=(https://ftp.gnu.org/gnu/binutils/binutils-$pkgver.tar.bz2{,.sig}
+        http://isl.gforge.inria.fr/isl-${_islver}.tar.bz2
+        https://gmplib.org/download/gmp/gmp-${_gmpver}.tar.xz{,.sig}
+        http://www.mpfr.org/mpfr-${_mpfrver}/mpfr-${_mpfrver}.tar.xz{,.asc}
+        https://ftp.gnu.org/gnu/mpc/mpc-${_mpcver}.tar.gz{,.sig})
+
+if [[ "$(pacman -Ss ^dejagnu$ 2>/dev/null)" ]];then
+    checkdepends+=( 'dejagnu')
+else
+    optdepends+=( 'dejagnu: checkdepend')
+fi
+
+prepare(){
+    mkdir -p binutils-build
+
+    cd binutils-${pkgver}
+
+    # hack! - libiberty configure tests for header files using "$CPP $CPPFLAGS"
+    sed -i "/ac_cpp=/s/\$CPPFLAGS/\$CPPFLAGS -O2/" libiberty/configure
+
+    # remove one test that prevents the tests from running to completion
+    sed -i '/@\tincremental_copy/d' gold/testsuite/Makefile.in
+
+    if [[ -n "$(pacman -Qq isl 2>&1 >/dev/null)" ]];then
+        # link isl,gmp,mpc, and mpfr for in-tree build
+        ln -s ../isl-${_islver} isl
+        ln -s ../gmp-${_gmpver} gmp
+        ln -s ../mpc-${_mpcver} mpc
+        ln -s ../mpfr-${_mpfrver} mpfr
+    fi
+
+    cd ${srcdir}/binutils-build
+    "$srcdir/binutils-${pkgver}/configure" \
+        --prefix=/usr \
+        --enable-deterministic-archives \
+        --enable-gold \
+        --enable-ld=default \
+        --enable-lto \
+        --enable-plugins \
+        --enable-relro \
+        --enable-shared \
+        --enable-targets=x86_64-pep \
+        --enable-threads \
+        --disable-werror \
+        --enable-64-bit-bfd \
+        --with-pic \
+        --with-system-zlib
+}
+
+build() {
+    cd binutils-build
+    make configure-host
+    make tooldir=/usr
+}
+
+check() {
+    cd binutils-build
+    
+    # unset LDFLAGS as testsuite makes assumptions about which ones are active
+    # ignore failures in gold testsuite...
+    if [[ -n "$(pacman -Qq dejagnu 2>/dev/null)" ]];then
+        make -k LDFLAGS="" check || true
+    fi
+
+}
+
+package() {
+    cd binutils-build
+    make prefix="$pkgdir/usr" tooldir="$pkgdir/usr" install
+
+    # Remove unwanted files
+    rm -f "$pkgdir"/usr/share/man/man1/{dlltool,nlmconv,windres,windmc}*
+
+    # No shared linking to these files outside binutils
+    rm -f "$pkgdir"/usr/lib/lib{bfd,opcodes}.so
+    echo 'INPUT( /usr/lib/libbfd.a -liberty -lz -ldl )' > "$pkgdir/usr/lib/libbfd.so"
+    echo 'INPUT( /usr/lib/libopcodes.a -lbfd )' > "$pkgdir/usr/lib/libopcodes.so"
+}
+
+md5sums=('64f8ea283e571200f8b2b7f66fe8a0d6'
+         'SKIP'
+         'e2be862b79d74234e468981bcae2a964'
+         'f58fa8001d60c4c77595fbbb62b63c1d'
+         'SKIP'
+         '320fbc4463d4c8cb1e566929d8adc4f8'
+         'SKIP'
+         '4125404e41e482ec68282a2e687f6c73'
+         'SKIP')
