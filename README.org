@@ -589,3 +589,11 @@ add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
      done
      #+END_SRC
      Install with ~--force~ option to overwrite the symlinks created earlier.
+**** ~bzip2~
+     #+BEGIN_SRC sh :name bzip2
+     . PKGBUILD
+     makepkg -fcC
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC

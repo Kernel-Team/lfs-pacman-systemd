@@ -1,0 +1,134 @@
+# -*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgbase=bzip2
+pkgname=($pkgbase lib32-$pkgbase libx32-$pkgbase)
+pkgver=1.0.8
+pkgrel=1
+arch=('x86_64')
+license=('custom')
+url="http://sources.redhat.com/bzip2"
+source=(http://anduin.linuxfromscratch.org/LFS/${pkgbase}-${pkgver}.tar.gz
+        http://www.linuxfromscratch.org/patches/lfs/9.0-rc1/${pkgbase}-${pkgver}-install_docs-1.patch)
+
+if [[ "$(pacman -Ss ^sh$ 2>/dev/null)" ]];then
+    common_depends+=( 'sh')
+else
+    common_optdepends+=( 'sh')
+fi
+
+prepare(){
+    cp -rv "${srcdir}/${pkgname}-${pkgver}" lib32-$pkgbase-$pkgver
+    cp -rv "${srcdir}/${pkgname}-${pkgver}" libx32-$pkgbase-$pkgver
+    cd "${srcdir}/${pkgname}-${pkgver}"
+
+    for d in ${pkgbase}-${pkgver} lib32-$pkgbase-$pkgver libx32-$pkgbase-$pkgver;do
+        cd ${srcdir}/$d
+        # patch that will install the documentation for this package
+        patch -Np1 -i ${srcdir}/${pkgbase}-${pkgver}-install_docs-1.patch
+
+        # ensures installation of symbolic links are relative
+        sed -i 's@\(ln -s -f \)$(PREFIX)/bin/@\1@' Makefile
+
+        # Ensure the man pages are installed into the correct location
+        sed -i "s@(PREFIX)/man@(PREFIX)/share/man@g" Makefile
+    done
+}
+
+build(){
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    make -f Makefile-libbz2_so CC="gcc $CFLAGS $LDFLAGS"
+    make clean 
+    make CC="gcc $CFLAGS $LDFLAGS"
+
+    cd "${srcdir}/lib32-${pkgbase}-${pkgver}"
+    make -f Makefile-libbz2_so CC="gcc -m32 $CFLAGS $LDFLAGS"
+    make clean 
+    make libbz2.a CC="gcc -m32 $CFLAGS $LDFLAGS"
+
+    cd "${srcdir}/libx32-${pkgbase}-${pkgver}"
+    make -f Makefile-libbz2_so CC="gcc -mx32 $CFLAGS $LDFLAGS"
+    make clean 
+    make libbz2.a CC="gcc -mx32 $CFLAGS $LDFLAGS"
+}
+
+check() {
+    cd "$srcdir/$pkgbase-$pkgver"
+    make test
+
+    cd "${srcdir}/lib32-${pkgbase}-${pkgver}"
+    make test
+
+    cd "${srcdir}/libx32-${pkgbase}-${pkgver}"
+    make test
+}
+
+package_bzip2() {
+    pkgdesc="A high-quality data compression program"
+    depends=('glibc' "${common_depends[@]}")
+    optdepends=("${common_optdepends[@]}")
+    groups=('lfs-base')
+
+    cd "$srcdir/$pkgbase-$pkgver"
+
+    install -v -dm755 $pkgdir/{bin,lib}
+    install -v -dm755 $pkgdir/usr/{bin,include,share/man/man1}
+
+    install -v -m755 bzip2-shared $pkgdir/bin/bzip2
+    install -v -m755 bzip2recover bzdiff bzgrep bzmore $pkgdir/usr/bin
+    ln -svf bzip2 $pkgdir/bin/bunzip2
+    ln -svf bzip2 $pkgdir/bin/bzcat
+
+    install -v -m755 libbz2.so.$pkgver $pkgdir/lib
+    ln -sv libbz2.so.$pkgver $pkgdir/lib/libbz2.so
+    ln -sv libbz2.so.$pkgver $pkgdir/lib/libbz2.so.1
+    ln -sv libbz2.so.$pkgver $pkgdir/lib/libbz2.so.1.0
+
+    install -v -m644 bzlib.h $pkgdir/usr/include/
+
+    install -v -m644 bzip2.1 $pkgdir/usr/share/man/man1/
+    ln -svf bzip2.1 $pkgdir/usr/share/man/man1/bunzip2.1
+    ln -svf bzip2.1 $pkgdir/usr/share/man/man1/bzcat.1
+    ln -svf bzip2.1 $pkgdir/usr/share/man/man1/bzip2recover.1
+
+    install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/${pkgname}/LICENSE
+}
+
+package_lib32-bzip2(){
+    pkgdesc="A high-quality data compression program (32-bit)"
+    depends=('lib32-glibc' "$pkgbase" "${common_depends[@]}")
+    makedepends=('gcc-multilib')
+    optdepends=("${common_optdepends[@]}")
+    groups=('lfs-base' 'lfs-multilib')
+
+    cd lib32-${pkgbase}-${pkgver}
+
+    install -dm755 "$pkgdir"/usr/lib32
+    cp -a libbz2.so* "$pkgdir"/usr/lib32
+    ln -s libbz2.so.$pkgver "$pkgdir"/usr/lib32/libbz2.so
+    ln -s libbz2.so.$pkgver "$pkgdir"/usr/lib32/libbz2.so.1 # For compatibility with some other distros
+
+    install -Dm644 libbz2.a "$pkgdir"/usr/lib32/libbz2.a
+
+    install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/${pkgname}/LICENSE
+}
+
+package_libx32-bzip2(){
+    pkgdesc="A high-quality data compression program (x32 ABI)"
+    depends=('libx32-glibc' "$pkgbase" "${common_depends[@]}")
+    makedepends=('gcc-multilib')
+    optdepends=("${common_optdepends[@]}")
+    groups=('lfs-base' 'lfs-multilib')
+
+    cd "${srcdir}/libx32-${pkgbase}-${pkgver}"
+    install -Dm755 libbz2.so.$pkgver "${pkgdir}"/usr/libx32/libbz2.so.$pkgver
+    ln -s libbz2.so.$pkgver "${pkgdir}"/usr/libx32/libbz2.so
+    ln -s libbz2.so.$pkgver "${pkgdir}"/usr/libx32/libbz2.so.1
+    ln -s libbz2.so.$pkgver "${pkgdir}"/usr/libx32/libbz2.so.1.0
+
+    install -Dm644 libbz2.a ${pkgdir}/usr/libx32/libbz2.a
+
+    install -Dm644 LICENSE ${pkgdir}/usr/share/licenses/${pkgname}/LICENSE
+}
+
+md5sums=('67e051268d0c475ea773822f7500d0e5'
+         '6a5ac7e89b791aae556de0f745916f7f')
