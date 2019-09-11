@@ -1,0 +1,91 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgbase=libcap
+pkgname=($pkgbase)
+pkgver=2.27
+pkgrel=1
+arch=('x86_64')
+url='http://sites.google.com/site/fullycapable/'
+license=('GPL2')
+makedepends=('linux-api-headers' 'gcc-multilib')
+validpgpkeys=('38A644698C69787344E954CE29EE848AE2CCF3F4') # Andrew G. Morgan <morgan@kernel.org>
+source=(https://kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-$pkgver.tar.{xz,sign})
+
+if [[ $(pacman -Ss ^"$pkgbase"$ 2>/dev/null) ]];then
+    pkgname+=( lib{,x}32-$pkgbase)
+fi
+
+prepare() {
+    cd $pkgbase-$pkgver
+
+    # use our buildflags
+    sed -i "s/CFLAGS :=/CFLAGS += \$(CPPFLAGS) /" Make.Rules
+    sed -i "s/LDFLAGS :=/LDFLAGS +=/" Make.Rules
+
+    # Prevent a static library from being installed
+    sed -i '/install.*STALIBNAME/d' libcap/Makefile
+
+    cd $srcdir
+    cp -rv $pkgbase-$pkgver lib32-$pkgbase-$pkgver
+    cp -rv $pkgbase-$pkgver libx32-$pkgbase-$pkgver
+}
+
+build() {
+    make -C $pkgbase-$pkgver RAISE_SETFCAP=no lib=lib
+
+    if [[ $(pacman -Ss ^"$pkgbase"$ 2>/dev/null) ]];then
+        cd $srcdir/lib32-$pkgbase-$pkgver
+        export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"
+        make -C libcap CC="gcc -m32" prefix=/usr lib=lib32
+
+        cd $srcdir/libx32-$pkgbase-$pkgver
+        export PKG_CONFIG_PATH="/usr/libx32/pkgconfig"
+        make -C libcap CC="gcc -mx32" prefix=/usr lib=libx32
+    fi
+}
+
+package_libcap() {
+    pkgdesc='POSIX 1003.1e capabilities'
+    depends=('glibc' 'attr')
+    groups=('lfs-base')
+
+    cd $pkgname-$pkgver
+    make prefix=/usr lib=/lib DESTDIR="$pkgdir" RAISE_SETFCAP=no install
+
+    install -v -dm755 "$pkgdir"/lib
+    mv -v "$pkgdir"/usr/lib/libcap.so.* "$pkgdir"/lib
+    ln -sfv ../../lib/$(readlink "$pkgdir"/usr/lib/libcap.so) "$pkgdir"/usr/lib/libcap.so
+
+    install -Dm644 pam_cap/capability.conf \
+            "$pkgdir"/usr/share/doc/$pkgname/capability.conf.example
+}
+
+package_lib32-libcap(){
+    pkgdesc="POSIX 1003.1e capabilities (32-bit)"
+    groups=('lfs-base' 'lfs-multilib')
+    depends=('lib32-attr' $pkgbase)
+
+    cd $srcdir/lib32-$pkgbase-$pkgver
+
+    make prefix=/usr lib=lib32 \
+         DESTDIR=${pkgdir} -C libcap install
+    chmod 755 ${pkgdir}/usr/lib32/libcap.so.${pkgver}
+    rm -rf "${pkgdir}/usr/include"
+}
+
+package_libx32-libcap(){
+    pkgdesc="POSIX 1003.1e capabilities (x32 ABI)"
+    groups=('lfs-base' 'lfs-multilib')
+    depends=('libx32-attr' $pkgbase)
+
+    cd $srcdir/lib32-$pkgbase-$pkgver
+
+    make -C libcap prefix=/usr lib=libx32 \
+         DESTDIR=${pkgdir} install
+    chmod 755 ${pkgdir}/usr/libx32/libcap.so.${pkgver}
+
+    rm -rf "${pkgdir}/usr/include"
+}
+
+md5sums=('2e8f9fab32eb5ccb37969fe317fd17aa'
+         'SKIP')
