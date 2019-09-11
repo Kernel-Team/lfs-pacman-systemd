@@ -1,5 +1,5 @@
 #-*-mode:sh-*-
-# Maintainer: %s <%s>
+# Maintainer: alexforsale@yahoo.com
 pkgbase=glibc
 pkgname=(glibc lib32-glibc libx32-glibc)
 pkgver=2.30
@@ -305,7 +305,7 @@ package_libx32-glibc(){
     install -d "$pkgdir/usr/lib"
     ln -s ../libx32/ld-linux-x32.so.2 "$pkgdir/usr/lib/"
 
-    # Add lib32 paths to the default library search path
+    # Add libx32 paths to the default library search path
     install -Dm644 "$srcdir/libx32-glibc.conf" "$pkgdir/etc/ld.so.conf.d/libx32-glibc.conf"
 
     # Symlink /usr/lib32/locale to /usr/lib/locale
