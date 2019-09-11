@@ -1,0 +1,101 @@
+# -*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgbase=attr
+pkgname=($pkgbase lib{,x}32-$pkgbase)
+pkgver=2.4.48
+pkgrel=1
+arch=('x86_64')
+url="http://savannah.nongnu.org/projects/attr"
+license=('LGPL')
+makedepends=()
+source=(https://download.savannah.gnu.org/releases/$pkgbase/$pkgbase-$pkgver.tar.gz{,.sig})
+validpgpkeys=('600CD204FBCEA418BD2CA74F154343260542DF34' # Brandon Philips
+              'B902B5271325F892AC251AD441633B9FE837F581') # Frysinger <vapier@gentoo.org>
+
+_makedeps=('gcc-multilib' 'gettext')
+
+for m in ${_makedeps[@]};do
+    if [[ $(pacman -Ss ^"${m}"$ 2>/dev/null) ]];then
+        makedepends+=( "$m")
+        pkgrel=$((pkgrel+1))
+    fi
+done
+
+prepare(){
+    mkdir -pv build-$pkgbase build-lib{,x}32-$pkgbase
+
+    cd $srcdir/build-$pkgbase
+    $srcdir/$pkgname-$pkgver/configure \
+        --prefix=/usr \
+        --libexecdir=/usr/lib \
+        --sysconfdir=/etc \
+        --libdir=/usr/lib \
+        --disable-static
+
+    cd $srcdir/build-lib32-$pkgbase
+    CC="gcc -m32" \
+      PKG_CONFIG_PATH="/usr/lib32/pkgconfig" \
+      $srcdir/$pkgname-$pkgver/configure \
+      --prefix=/usr --disable-static \
+      --libdir=/usr/lib32 \
+      --sysconfdir=/etc \
+      --host=i686-pc-linux-gnu
+
+    cd $srcdir/build-libx32-$pkgbase
+    CC="gcc -mx32" \
+      PKG_CONFIG_PATH="/usr/libx32/pkgconfig" \
+      $srcdir/$pkgname-$pkgver/configure \
+      --prefix=/usr --disable-static \
+      --libdir=/usr/libx32 \
+      --sysconfdir=/etc \
+      --host=x86_64-pc-linux-gnux32
+}
+
+build() {
+    cd $srcdir/build-$pkgbase
+    make
+
+    cd $srcdir/build-lib32-$pkgbase
+    make
+
+    cd $srcdir/build-libx32-$pkgbase
+    make
+}
+
+package_attr() {
+    pkgdesc="Extended attribute support library for ACL support"
+    depends=('glibc')
+    groups=('lfs-base')
+
+    cd $srcdir/build-$pkgbase
+    make DESTDIR="${pkgdir}" install
+
+    install -v -dm755 "$pkgdir"/lib
+    mv -v "$pkgdir"/usr/lib/libattr.so.* "$pkgdir"/lib
+    ln -sfv ../../lib/$(readlink "$pkgdir"/usr/lib/libattr.so) "$pkgdir"/usr/lib/libattr.so
+}
+
+package_lib32-attr() {
+    pkgdesc='Extended attribute support library for ACL support (32-bit)'
+    depends=('lib32-glibc' "$pkgbase")
+    groups=('lfs-base' 'lfs-multilib')
+
+    cd $srcdir/build-lib32-$pkgbase
+
+    make DESTDIR="${pkgdir}" install
+    rm -rf "${pkgdir}"/{etc,usr/{bin,include,share}}
+}
+
+package_libx32-attr() {
+    pkgdesc='Extended attribute support library for ACL support (x32 ABI)'
+    depends=('libx32-glibc' "$pkgbase")
+    groups=('lfs-base' 'lfs-multilib')
+
+    cd $srcdir/build-libx32-$pkgbase
+
+    make DESTDIR="${pkgdir}" install
+    rm -rf "${pkgdir}"/{etc,usr/{bin,include,share}}
+}
+
+sha256sums=('5ead72b358ec709ed00bbf7a9eaef1654baad937c001c044fe8b74c57f5324e7'
+            'SKIP')
