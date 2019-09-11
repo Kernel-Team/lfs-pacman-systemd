@@ -102,7 +102,7 @@ EOF
     fi
 
     if [[ "x${_BUILD_ADA}" == "x1" ]]; then
-        if [[ -z "$(pacman -Ss ^gcc-ada$ 2>/dev/null)" ]];then
+        if [[ ! "$(pacman -Qq ^gcc-ada$ 2>/dev/null)" ]];then
             cd ${srcdir}
             tar -xf gnat-gpl-2017-x86_64-linux-bin.tar.gz
             cd ${srcdir}/gnat-gpl-2017-x86_64-linux-bin

@@ -11,7 +11,7 @@ makedepends=('linux-api-headers' 'gcc-multilib')
 validpgpkeys=('38A644698C69787344E954CE29EE848AE2CCF3F4') # Andrew G. Morgan <morgan@kernel.org>
 source=(https://kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-$pkgver.tar.{xz,sign})
 
-if [[ $(pacman -Ss ^"$pkgbase"$ 2>/dev/null) ]];then
+if [[ $(pacman -Qq "$pkgbase" 2>/dev/null) ]];then
     pkgname+=( lib{,x}32-$pkgbase)
 fi
 
@@ -33,7 +33,7 @@ prepare() {
 build() {
     make -C $pkgbase-$pkgver RAISE_SETFCAP=no lib=lib
 
-    if [[ $(pacman -Ss ^"$pkgbase"$ 2>/dev/null) ]];then
+    if [[ $(pacman -Qq "$pkgbase" 2>/dev/null) ]];then
         cd $srcdir/lib32-$pkgbase-$pkgver
         export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"
         make -C libcap CC="gcc -m32" prefix=/usr lib=lib32
