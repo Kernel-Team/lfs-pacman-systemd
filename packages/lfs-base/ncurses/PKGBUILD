@@ -1,0 +1,243 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgbase=ncurses
+pkgname=(${pkgbase} ${pkgbase}5-compat-libs)
+pkgver=6.1
+pkgrel=1
+arch=(x86_64)
+url='http://invisible-island.net/ncurses/ncurses.html'
+license=(MIT)
+#source=(http://invisible-mirror.net/archives/ncurses/current/ncurses-${_pkgver}.tgz{,.asc})
+source=(https://ftp.gnu.org/pub/gnu/ncurses/ncurses-$pkgver.tar.gz{,.sig})
+validpgpkeys=('C52048C0C0748FEE227D47A2702353E0F7E48EDB')  # Thomas Dickey
+
+if [[ $(pacman -Ss ^"sh"$ 2>/dev/null) ]];then
+    _deps=('sh')
+    pkgrel=$((pkgrel+1))
+else
+    _optdeps=('sh')
+fi
+
+if [[ $(pacman -Ss ^"gcc-ada"$ 2>/dev/null) ]];then
+    _makedeps=('gcc-ada')
+else
+    _optdeps+=( 'gcc-ada')
+fi
+
+if [[ $(pacman -Ss ^"${pkgbase}"$ 2>/dev/null) ]];then
+    pkgname+=( lib{,x}32-${pkgbase} lib32-${pkgbase}5-compat-libs)
+fi
+
+prepare(){
+    mkdir -pv compat-libs ncurses lib{,x}32-ncurses lib{,x}32-ncurses5-compat-libs
+    
+    cd $pkgbase-$pkgver
+    cd ${srcdir}/ncurses
+    ../$pkgbase-$pkgver/configure \
+        --prefix=/usr --mandir=/usr/share/man \
+        --with-shared --with-normal \
+        --without-debug --enable-widec \
+        --enable-pc-files --with-cxx-binding \
+        --with-pkg-config-libdir=/usr/lib/pkgconfig \
+        --with-cxx-shared --with-manpage-format=normal
+    
+    cd ${srcdir}/compat-libs
+    ../${pkgbase}-${pkgver}/configure \
+       --prefix=/usr --with-shared \
+       --without-ada --with-normal \
+       --enable-widec --disable-pc-files \
+       --without-debug --with-cxx-binding \
+       --with-cxx-shared --with-abi-version=5
+
+    if [[ $(pacman -Ss ^"${pkgbase}"$ 2>/dev/null) ]];then
+        cd ${srcdir}/lib32-ncurses
+        CC="gcc -m32" CXX="g++ -m32" \
+          ../${pkgbase}-${pkgver}/configure \
+          --libdir=/usr/lib32 --mandir=/usr/share/man \
+          --with-shared --without-debug --without-normal \
+          --enable-pc-files --enable-widec --without-ada \
+          --with-pkg-config-libdir=/usr/lib32/pkgconfig \
+          --host=i686-pc-linux-gnu
+
+        cd ${srcdir}/lib32-ncurses5-compat-libs
+        CC="gcc -m32" CXX="g++ -m32" \
+          ../${pkgbase}-${pkgver}/configure \
+          --with-shared --without-normal --without-ada \
+          --without-debug --without-cxx-binding \
+          --with-abi-version=5 --enable-widec \
+          --disable-pc-files --libdir=/usr/lib32 \
+          --without-pkg-config --without-gpm \
+          --host=i686-pc-linux-gnu
+
+        cd ${srcdir}/libx32-ncurses
+        CC="gcc -mx32" CXX="g++ -mx32" \
+          ../${pkgbase}-${pkgver}/configure \
+          --libdir=/usr/libx32 --mandir=/usr/share/man \
+          --with-shared --without-debug --without-normal \
+          --enable-pc-files --enable-widec --without-ada \
+          --with-pkg-config-libdir=/usr/libx32/pkgconfig \
+          --host=x86_64-pc-linux-gnux32
+    fi
+}
+
+build() {
+    cd ${srcdir}/ncurses
+    make
+
+    cd ${srcdir}/compat-libs
+    make
+
+    if [[ $(pacman -Ss ^"${pkgbase}"$ 2>/dev/null) ]];then
+        cd ${srcdir}/lib32-ncurses
+        make
+
+        cd ${srcdir}/lib32-ncurses5-compat-libs
+        make
+
+        cd ${srcdir}/libx32-ncurses
+        make
+    fi
+}
+
+package_ncurses() {
+    pkgdesc='System V Release 4.0 curses emulation library'
+    provides=(libncurses++w.so libformw.so libmenuw.so libpanelw.so libncursesw.so)
+    depends=(glibc gcc-libs ${_deps[@]})
+    makedepends=(${_makedeps[@]})
+    optdepends=(${_optdeps[@]})
+    groups=('lfs-base')
+    
+    cd ${srcdir}/ncurses
+    make DESTDIR="$pkgdir" install
+    install -Dm644 ${srcdir}/${pkgbase}-${pkgver}/COPYING "$pkgdir/usr/share/licenses/$pkgbase/LICENSE"
+
+    install -v -dm755 ${pkgdir}/lib
+    mv -v ${pkgdir}/usr/lib/libncursesw.so.6* ${pkgdir}/lib
+    ln -sfv ../../lib/$(readlink ${pkgdir}/usr/lib/libncursesw.so) ${pkgdir}/usr/lib/libncursesw.so
+
+    for lib in ncurses ncurses++ form panel menu ; do
+        rm -vf ${pkgdir}/usr/lib/lib${lib}.so
+        echo "INPUT(-l${lib}w)" > ${pkgdir}/usr/lib/lib${lib}.so
+        ln -sfv ${lib}w.pc ${pkgdir}/usr/lib/pkgconfig/${lib}.pc
+    done
+
+    for lib in tic tinfo; do
+        echo "INPUT(libncursesw.so.${pkgver:0:1})" > "$pkgdir/usr/lib/lib${lib}.so"
+        ln -s libncursesw.so.${pkgver:0:1} "$pkgdir/usr/lib/lib${lib}.so.${pkgver:0:1}"
+    done
+
+    # some packages look for -lcurses during build
+    echo 'INPUT(-lncursesw)' > "$pkgdir/usr/lib/libcursesw.so"
+    ln -s libncurses.so "$pkgdir/usr/lib/libcurses.so"
+}
+
+package_ncurses5-compat-libs(){
+    pkgdesc='System V Release 4.0 curses emulation library, ABI 5'
+    provides=(libtinfo5)
+    depends=(glibc gcc-libs ncurses)
+    groups=('lfs-base')
+
+    cd ${srcdir}/compat-libs
+    make DESTDIR="$pkgdir" install.libs
+    install -Dm644 ${srcdir}/ncurses-6.1/COPYING "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    rm -rf "$pkgdir/usr/include/" "$pkgdir/usr/lib/pkgconfig" \
+       "$pkgdir"/usr/lib/*.so
+    
+    for lib in ncurses ncurses++ form panel menu; do
+        ln -s lib${lib}w.so.5 "$pkgdir/usr/lib/lib${lib}.so.5"
+    done
+    ln -s libncurses.so.5 "$pkgdir/usr/lib/libtinfo.so.5"
+    ln -s libncurses.so.5 "$pkgdir/usr/lib/libtic.so.5"
+}
+
+package_lib32-ncurses(){
+    pkgdesc="System V Release 4.0 curses emulation library (32-bit)"
+    depends=('lib32-glibc' ${pkgbase})
+    groups=('lfs-base' 'lfs-multilib')
+
+    cd ${srcdir}/lib32-ncurses
+
+    make DESTDIR="${pkgdir}" install
+
+    # fool packages looking to link to non-wide-character ncurses libraries
+    for lib in curses ncurses form panel menu; do
+        echo "INPUT(-l${lib}w)" >"${pkgdir}"/usr/lib32/lib${lib}.so
+        ln -sf lib${lib}w.a "${pkgdir}"/usr/lib32/lib${lib}.a
+    done
+    ln -sf libncurses++w.a "${pkgdir}"/usr/lib32/libncurses++.a
+
+    for lib in tic tinfo; do
+        echo "INPUT(libncursesw.so.${pkgver:0:1})" > "${pkgdir}/usr/lib32/lib${lib}.so"
+        ln -s libncursesw.so.${pkgver:0:1} "${pkgdir}/usr/lib32/lib${lib}.so.${pkgver:0:1}"
+    done
+
+    # some packages look for -lcurses during build
+    rm -f "${pkgdir}"/usr/lib32/libcursesw.so
+    echo "INPUT(-lncursesw)" >"${pkgdir}"/usr/lib32/libcursesw.so
+    ln -sf libncurses.so "${pkgdir}"/usr/lib32/libcurses.so
+    ln -sf libncursesw.a "${pkgdir}"/usr/lib32/libcursesw.a
+    ln -sf libncurses.a "${pkgdir}"/usr/lib32/libcurses.a
+
+    rm -rf "${pkgdir}"/usr/{include,share,bin}
+    mkdir -p "${pkgdir}/usr/share/licenses"
+    ln -s ${pkgbase} "${pkgdir}/usr/share/licenses/${pkgname}"
+}
+
+package_libx32-ncurses(){
+    pkgdesc="System V Release 4.0 curses emulation library (x32 ABI)"
+    depends=('libx32-glibc' ${pkgbase})
+    groups=('lfs-base' 'lfs-multilib')
+
+    cd ${srcdir}/libx32-ncurses
+    make DESTDIR="${pkgdir}" install
+
+    install -dm755 ${pkgdir}/usr/libx32
+
+    # fool packages looking to link to non-wide-character ncurses libraries
+    for lib in curses ncurses form panel menu; do
+        rm -f ${pkgdir}/usr/libx32/lib${lib}.so
+        echo "INPUT(-l${lib}w)" >${pkgdir}/usr/libx32/lib${lib}.so
+        ln -sf lib${lib}w.a ${pkgdir}/usr/libx32/lib${lib}.a
+    done
+    ln -sf libncurses++w.a ${pkgdir}/usr/libx32/libncurses++.a
+
+    # some packages look for -lcurses during build
+    rm -f ${pkgdir}/usr/libx32/libcursesw.so
+    echo "INPUT(-lncursesw)" >${pkgdir}/usr/libx32/libcursesw.so
+    ln -sf libncurses.so ${pkgdir}/usr/libx32/libcurses.so
+    ln -sf libncursesw.a ${pkgdir}/usr/libx32/libcursesw.a
+    ln -sf libncurses.a ${pkgdir}/usr/libx32/libcurses.a
+
+    rm -rf "${pkgdir}"/usr/{include,share,bin}
+    mkdir -p "$pkgdir/usr/share/licenses"
+    ln -s $pkgbase "$pkgdir/usr/share/licenses/$pkgname"
+}
+
+package_lib32-ncurses5-compat-libs(){
+    pkgdesc="System V Release 4.0 curses emulation library (32-bit), ABI 5"
+    depends=('lib32-glibc' "lib32-${pkgbase}")
+    groups=('lfs-base' 'lfs-multilib')
+
+    cd ${srcdir}/lib32-ncurses5-compat-libs
+
+    make DESTDIR="${pkgdir}" install.libs
+
+    # fool packages looking to link to non-wide-character ncurses libraries
+    for lib in ncurses form panel menu; do
+        ln -s lib${lib}w.so.5 "$pkgdir"/usr/lib32/lib${lib}.so.5
+    done
+
+    for lib in tic tinfo; do
+        ln -s libncursesw.so.5 "${pkgdir}/usr/lib32/lib${lib}.so.5"
+    done
+
+    # Remove .so symlinks and static libraries (conflicting with lib32-ncurses)
+    rm -f "${pkgdir}"/usr/{lib32/*.so,lib32/*.a}
+
+    rm -rf "${pkgdir}"/usr/{include,share,bin}
+    mkdir -p "$pkgdir/usr/share/licenses"
+    ln -s $pkgbase "$pkgdir/usr/share/licenses/$pkgname"
+}
+
+md5sums=('98c889aaf8d23910d2b92d65be2e737a'
+         'SKIP')
