@@ -1,0 +1,546 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgbase=gcc
+pkgname=(gcc gcc-libs lib32-gcc-libs libx32-gcc-libs)
+pkgver=9.2.0
+_majorver=${pkgver:0:1}
+pkgrel=1
+pkgdesc="GNU compiler collection, which includes the C and C++ compilers"
+arch=(x86_64)
+license=(GPL LGPL FDL custom)
+url='http://gcc.gnu.org'
+_makedeps=('gcc-ada' 'doxygen' 'lib32-glibc' 'python')
+makedepends=('binutils'
+             'libmpc'
+            )
+_checkdeps=('dejagnu' 'inetutils')
+checkdepends=()
+options=(!emptydirs)
+source=("https://ftp.gnu.org/gnu/${pkgbase}/${pkgbase}-${pkgver}/${pkgbase}-${pkgver}.tar.xz"{,.sig}
+        "gnat-gpl-2017-x86_64-linux-bin.tar.gz::http://mirrors.cdn.adacore.com/art/591c6d80c7a447af2deed1d7"
+        c89 c99
+       )
+noextract=("gnat-gpl-2017-x86_64-linux-bin.tar.gz")
+validpgpkeys=(F3691687D867B81B51CE07D9BBE43771487328A9  # bpiotrowski@archlinux.org
+              13975A70E63C361C73AE69EF6EEB81F8981C74C7  # richard.guenther@gmail.com
+              33C235A34C46AA3FFB293709A328C3A2C3C45C06) # Jakub Jelinek <jakub@redhat.com>
+
+for _m in "${_makedeps[@]}";do
+    if [[ "$(pacman -Ss "^${_m}$" 2>/dev/null)" ]];then
+        makedepends+=( "${_m}")
+    else
+        optdepends+=( "${_m}")
+    fi
+done
+for _c in "${_checkdeps[@]}";do
+    if [[ "$(pacman -Ss "^${_c}$" 2>/dev/null)" ]];then
+        checkdepends+=( "${_c}")
+    else
+        optdepends+=( "${_c}")
+    fi
+done
+
+_confargs=""
+_languages="c,c++,lto"
+_libdir=usr/lib/gcc/$CHOST/${pkgver%%+*}
+
+# build all by default
+for configs in _BUILD_ADA _BUILD_FORTRAN _BUILD_GO _BUILD_OBJC;do
+    case $configs in
+        "_BUILD_ADA")
+            if [[ -z "${_BUILD_ADA}" ]];then export _BUILD_ADA=1;fi
+            pkgname+=( 'gcc-ada');;
+        "_BUILD_FORTRAN")
+            if [[ -z "${_BUILD_FORTRAN}" ]];then export _BUILD_FORTRAN=1;fi
+            pkgname+=( 'gcc-fortran');;
+        "_BUILD_GO")
+            if [[ -z "${_BUILD_GO}" ]];then export _BUILD_GO=1;fi
+            pkgname+=( 'gcc-go');;
+        "_BUILD_OBJC")
+            if [[ -z "${_BUILD_OBJC}" ]];then export _BUILD_OBJC=1;fi
+            pkgname+=( 'gcc-objc');;
+    esac
+done
+
+prepare(){
+    [[ ! -d gcc ]] && ln -sv gcc-${pkgver/+/-} gcc
+
+    if [[ -L /usr/lib/gcc ]];then
+        msg2 "/usr/lib/gcc appears to be symlinks, if this is a fresh LFS build, please remove it before compiling."
+        return 1
+    fi
+
+    cd gcc
+
+    # Do not run fixincludes
+    sed -i 's@\./fixinc\.sh@-c true@' gcc/Makefile.in
+
+    # Change the default directory name for 64-bit libraries to “lib”
+    case $(uname -m) in
+        x86_64)
+            sed -e '/m64=/s/lib64/lib/' \
+                -i.orig gcc/config/i386/t-linux64
+            ;;
+    esac
+
+    cat > gcc/config/i386/t-linux64 <<"EOF"
+comma=,
+MULTILIB_OPTIONS    = $(subst $(comma),/,$(TM_MULTILIB_CONFIG))
+MULTILIB_DIRNAMES   = $(patsubst m%, %, $(subst /, ,$(MULTILIB_OPTIONS)))
+MULTILIB_OSDIRNAMES = m64=../lib$(call if_multiarch,:x86_64-linux-gnu)
+MULTILIB_OSDIRNAMES+= m32=../lib32$(call if_multiarch,:i386-linux-gnu)
+MULTILIB_OSDIRNAMES+= mx32=../libx32$(call if_multiarch,:x86_64-linux-gnux32)
+EOF
+
+    # hack! - some configure tests for header files using "$CPP $CPPFLAGS"
+    sed -i "/ac_cpp=/s/\$CPPFLAGS/\$CPPFLAGS -O2/" {libiberty,gcc}/configure
+
+    mkdir -pv "$srcdir/gcc-build" && cd $_
+
+    if [[ "$(command -v sed)" == "/tools/bin/sed" ]];then
+        _sed=sed
+    fi
+
+    if [[ "x${_BUILD_ADA}" == "x1" ]]; then
+        if [[ -z "$(pacman -Ss ^gcc-ada$ 2>/dev/null)" ]];then
+            cd ${srcdir}
+            tar -xf gnat-gpl-2017-x86_64-linux-bin.tar.gz
+            cd ${srcdir}/gnat-gpl-2017-x86_64-linux-bin
+            make ins-all prefix=${srcdir}/gnat
+            find ${srcdir}/gnat -name ld -exec mv -v {} {}.old \;
+            find ${srcdir}/gnat -name as -exec mv -v {} {}.old \;
+            export PATH=${srcdir}/gnat/bin:${PATH}
+        fi
+        _languages="${_languages},ada"
+    fi
+    
+    if [[ "x${_BUILD_FORTRAN}" == "x1" ]]; then
+        _languages="${_languages},fortran"
+    fi
+
+    if [[ "x${_BUILD_GO}" == "x1" ]]; then
+        _languages="${_languages},go"
+    fi
+
+    if [[ "x${_BUILD_OBJC}" == "x1" ]]; then
+        _languages="${_languages},objc,obj-c++"
+    fi
+
+    cd ${srcdir}/gcc-build
+    CFLAGS=${CFLAGS/-pipe/} \
+          CXXFLAGS=${CXXFLAGS/-pipe/} \
+          SED=${_sed} \
+          "$srcdir/gcc/configure" --prefix=/usr \
+          --libdir=/usr/lib \
+          --libexecdir=/usr/lib \
+          --enable-multilib \
+          --with-multilib-list=m32,m64,mx32 \
+          --with-system-zlib \
+          --disable-werror \
+          --enable-install-libiberty \
+          --enable-shared \
+          --enable-threads=posix \
+          --with-isl \
+          --enable-__cxa_atexit \
+          --disable-libunwind-exceptions \
+          --enable-clocale=gnu \
+          --enable-gnu-unique-object \
+          --enable-linker-build-id \
+          --enable-lto \
+          --enable-plugin \
+          --with-linker-hash-style=gnu \
+          --enable-gnu-indirect-function \
+          --enable-checking=release \
+          --enable-default-pie \
+          --enable-default-ssp \
+          --enable-cet=auto \
+          --disable-bootstrap \
+          --enable-languages=${_languages} \
+          ${_confargs}
+    msg2 "gcc with ${_languages} languages"
+    sleep 2
+}
+
+build(){
+    cd ${srcdir}/gcc-build
+    make
+    if [[ -n "$(pacman -Qq doxygen 2>/dev/null)" ]];then
+        # make documentation
+        make -C $CHOST/libstdc++-v3/doc doc-man-doxygen
+    fi
+}
+
+
+check() {
+    cd ${srcdir}/gcc-build
+    if [[ -n "$(pacman -Qq dejagnu inetutils 2>/dev/null)" ]];then
+        # Remove one test known to cause a problem
+        rm ../gcc/testsuite/g++.dg/pr83239.C
+        # do not abort on error as some are "expected"
+        make -k check || true
+        "$srcdir/gcc/contrib/test_summary"
+    fi
+}
+
+package_gcc-libs() {
+    pkgdesc='Runtime libraries shipped by GCC'
+    depends=('glibc>=2.27')
+    options+=(!strip)
+    provides=($pkgname-multilib libubsan.so libasan.so libtsan.so liblsan.so)
+    groups=('lfs-base')
+
+    if [[ "x${_BUILD_GO}" == "x1" ]]; then
+        provides+=( 'libgo.so')
+    fi
+    if [[ "x${_BUILD_FORTRAN}" == "x1" ]]; then
+        provides+=( 'libgfortran.so')
+    fi
+
+    replaces=($pkgname-multilib)
+
+    cd gcc-build
+    make -C $CHOST/libgcc DESTDIR="$pkgdir" install-shared
+    rm -fv "$pkgdir/$_libdir/libgcc_eh.a"
+
+    _libs=('libatomic' 'libgomp' 'libitm' 'libquadmath' 'libsanitizer/asan' 'libsanitizer/lsan' 'libsanitizer/ubsan' 'libsanitizer/tsan' 'libstdc++-v3/src' 'libvtv')
+    if [[ -d "$CHOST/libgfortran" ]]; then
+        _libs+=( 'libgfortran')
+    fi
+    if [[ -d "$CHOST/libgo" ]]; then
+        _libs+=( 'libgo')
+    fi
+    for lib in ${_libs[@]}; do
+        make -C $CHOST/$lib DESTDIR="$pkgdir" install-toolexeclibLTLIBRARIES
+    done
+
+    [[ -d "$CHOST/libobjc" ]] && make -C $CHOST/libobjc DESTDIR="$pkgdir" install-libs
+    make -C $CHOST/libstdc++-v3/po DESTDIR="$pkgdir" install
+    #make -C $CHOST/libmpx DESTDIR="$pkgdir" install
+    #rm -fv "$pkgdir/usr/lib/libmpx.spec"
+
+    for lib in libgomp \
+                   libitm \
+                   libquadmath; do
+        make -C $CHOST/$lib DESTDIR="$pkgdir" install-info
+    done
+
+    rm -rvf "$pkgdir"/usr/lib{,x}32/
+}
+
+package_gcc() {
+    pkgdesc="The GNU Compiler Collection - C and C++ frontends"
+    depends=("gcc-libs=$pkgver-$pkgrel" 'binutils>=2.28' libmpc)
+    optdepends=('lib32-gcc-libs: for generating code for 32-bit ABI')
+    provides=($pkgname-multilib)
+    replaces=($pkgname-multilib)
+    options+=(staticlibs)
+    groups=('lfs-base')
+
+    cd gcc-build
+
+    make -C gcc DESTDIR="$pkgdir" install-driver install-cpp install-gcc-ar \
+         c++.install-common install-headers install-plugin install-lto-wrapper
+
+    install -v -m755 -t "$pkgdir/usr/bin/" gcc/gcov{,-tool}
+    install -v -m755 -t "$pkgdir/${_libdir}/" gcc/{cc1,cc1plus,collect2,lto1}
+
+    make -C $CHOST/libgcc DESTDIR="$pkgdir" install
+    make -C $CHOST/32/libgcc DESTDIR="$pkgdir" install
+    make -C $CHOST/x32/libgcc DESTDIR=${pkgdir} install
+    rm -fv "$pkgdir"/usr/lib{,32,x32}/libgcc_s.so*
+
+    make -C $CHOST/libstdc++-v3/src DESTDIR="$pkgdir" install
+    make -C $CHOST/libstdc++-v3/include DESTDIR="$pkgdir" install
+    make -C $CHOST/libstdc++-v3/libsupc++ DESTDIR="$pkgdir" install
+    make -C $CHOST/libstdc++-v3/python DESTDIR="$pkgdir" install
+    make -C $CHOST/32/libstdc++-v3/src DESTDIR="$pkgdir" install
+    make -C $CHOST/32/libstdc++-v3/include DESTDIR="$pkgdir" install
+    make -C $CHOST/32/libstdc++-v3/libsupc++ DESTDIR="$pkgdir" install
+    make -C $CHOST/x32/libstdc++-v3/src DESTDIR=${pkgdir} install
+    make -C $CHOST/x32/libstdc++-v3/include DESTDIR=${pkgdir} install
+    make -C $CHOST/x32/libstdc++-v3/libsupc++ DESTDIR=${pkgdir} install
+
+    make DESTDIR="$pkgdir" install-libcc1
+    install -v -d "$pkgdir/usr/share/gdb/auto-load/usr/lib"
+    mv -v "$pkgdir"/usr/lib/libstdc++.so.6.*-gdb.py \
+       "$pkgdir/usr/share/gdb/auto-load/usr/lib/"
+    rm -v "$pkgdir"/usr/lib{,32,x32}/libstdc++.so*
+
+    make DESTDIR="$pkgdir" install-fixincludes
+    make -C gcc DESTDIR="$pkgdir" install-mkheaders
+
+    make -C lto-plugin DESTDIR="$pkgdir" install
+    install -v -dm755 "$pkgdir"/usr/lib/bfd-plugins/
+    ln -sv /${_libdir}/liblto_plugin.so \
+       "$pkgdir/usr/lib/bfd-plugins/"
+
+    make -C $CHOST/libgomp DESTDIR="$pkgdir" install-nodist_{libsubinclude,toolexeclib}HEADERS
+    make -C $CHOST/libitm DESTDIR="$pkgdir" install-nodist_toolexeclibHEADERS
+    make -C $CHOST/libquadmath DESTDIR="$pkgdir" install-nodist_libsubincludeHEADERS
+    make -C $CHOST/libsanitizer DESTDIR="$pkgdir" install-nodist_{saninclude,toolexeclib}HEADERS
+    make -C $CHOST/libsanitizer/asan DESTDIR="$pkgdir" install-nodist_toolexeclibHEADERS
+    make -C $CHOST/libsanitizer/tsan DESTDIR="$pkgdir" install-nodist_toolexeclibHEADERS
+    make -C $CHOST/libsanitizer/lsan DESTDIR="$pkgdir" install-nodist_toolexeclibHEADERS
+    #make -C $CHOST/libmpx DESTDIR="$pkgdir" install-nodist_toolexeclibHEADERS
+    make -C $CHOST/32/libgomp DESTDIR="$pkgdir" install-nodist_toolexeclibHEADERS
+    make -C $CHOST/32/libitm DESTDIR="$pkgdir" install-nodist_toolexeclibHEADERS
+    make -C $CHOST/32/libsanitizer DESTDIR="$pkgdir" install-nodist_{saninclude,toolexeclib}HEADERS
+    make -C $CHOST/32/libsanitizer/asan DESTDIR="$pkgdir" install-nodist_toolexeclibHEADERS
+    #make -C $CHOST/32/libmpx DESTDIR="$pkgdir" install-nodist_toolexeclibHEADERS
+    #make -C $CHOST/x32/libcilkrts DESTDIR=${pkgdir} install-nodist_toolexeclibHEADERS
+    make -C $CHOST/x32/libgomp DESTDIR=${pkgdir} install-nodist_toolexeclibHEADERS
+    make -C $CHOST/x32/libitm DESTDIR=${pkgdir} install-nodist_toolexeclibHEADERS
+    make -C $CHOST/x32/libsanitizer DESTDIR=${pkgdir} install-nodist_{saninclude,toolexeclib}HEADERS
+    make -C $CHOST/x32/libsanitizer/asan DESTDIR=${pkgdir} install-nodist_toolexeclibHEADERS
+    #make -C $CHOST/x32/libmpx DESTDIR=${pkgdir} install-nodist_toolexeclibHEADERS
+
+    make -C libiberty DESTDIR="$pkgdir" install
+    install -v -m644 libiberty/pic/libiberty.a "$pkgdir/usr/lib"
+
+    make -C gcc DESTDIR="$pkgdir" install-man install-info
+    [[ -f "$pkgdir"/usr/share/man/man1/gccgo.1 ]] && rm -v "$pkgdir"/usr/share/man/man1/gccgo.1
+    [[ -f "$pkgdir"/usr/share/man/man1/gfortran.1 ]] && rm -v "$pkgdir"/usr/share/man/man1/gfortran.1
+
+    [[ -f "$pkgdir"/usr/share/info/gccgo.info ]] && rm -rv "$pkgdir"/usr/share/info/gccgo.info
+    [[ -f "$pkgdir"/usr/share/info/gfortran.info ]] && rm -rv "$pkgdir"/usr/share/info/gfortran.info
+    [[ -f "$pkgdir"/usr/share/info/gnat-style.info ]] && rm -rv "$pkgdir"/usr/share/info/gnat-style.info
+    [[ -f "$pkgdir"/usr/share/info/gnat_rm.info ]] && rm -rv "$pkgdir"/usr/share/info/gnat_rm.info
+    [[ -f "$pkgdir"/usr/share/info/gnat_ugn.info ]] && rm -rv "$pkgdir"/usr/share/info/gnat_ugn.info
+    #rm -v "$pkgdir"/usr/share/info/{gccgo,gfortran,gnat-style,gnat_rm,gnat_ugn}.info
+
+    make -C libcpp DESTDIR="$pkgdir" install
+    make -C gcc DESTDIR="$pkgdir" install-po
+
+    # many packages expect this symlink
+    ln -sv gcc "$pkgdir"/usr/bin/cc
+
+    # POSIX conformance launcher scripts for c89 and c99
+    install -v -Dm755 "$srcdir/c89" "$pkgdir/usr/bin/c89"
+    install -v -Dm755 "$srcdir/c99" "$pkgdir/usr/bin/c99"
+
+    # install the libstdc++ man pages
+    # make -C $CHOST/libstdc++-v3/doc DESTDIR="$pkgdir" doc-install-man
+    
+    # remove files provided by lib32-gcc-libs
+    rm -fv "$pkgdir"/usr/lib32/lib{stdc++,gcc_s}.so
+
+    # byte-compile python libraries
+    python3 -m compileall "$pkgdir/usr/share/gcc-${pkgver%%+*}/"
+    python3 -O -m compileall "$pkgdir/usr/share/gcc-${pkgver%%+*}/"
+
+    install -v -dm755 ${pkgdir}/lib
+    ln -sv ../usr/bin/cpp ${pkgdir}/lib
+
+    # Install Runtime Library Exception
+    install -d "$pkgdir/usr/share/licenses/$pkgname/"
+    ln -s /usr/share/licenses/gcc-libs/RUNTIME.LIBRARY.EXCEPTION \
+       "$pkgdir/usr/share/licenses/$pkgname/"
+}
+
+package_gcc-fortran() {
+    pkgdesc='Fortran front-end for GCC'
+    depends=("gcc=$pkgver-$pkgrel")
+    provides=($pkgname-multilib)
+    replaces=($pkgname-multilib)
+    groups=('extra')
+
+    cd gcc-build
+    make -C $CHOST/libgfortran DESTDIR="$pkgdir" install-cafexeclibLTLIBRARIES \
+         install-{toolexeclibDATA,nodist_fincludeHEADERS}
+    make -C $CHOST/32/libgfortran DESTDIR=$pkgdir install-cafexeclibLTLIBRARIES \
+         install-{toolexeclibDATA,nodist_fincludeHEADERS}
+    make -C $CHOST/x32/libgfortran DESTDIR=$pkgdir install-cafexeclibLTLIBRARIES \
+         install-{toolexeclibDATA,nodist_fincludeHEADERS}
+    make -C $CHOST/libgomp DESTDIR="$pkgdir" install-nodist_fincludeHEADERS
+    make -C gcc DESTDIR="$pkgdir" fortran.install-{common,man,info}
+    [[ -f gcc/f951 ]] && install -v -Dm755 gcc/f951 "$pkgdir/${_libdir}/f951"
+    [[ -f "$pkgdir/usr/bin/gfortran" ]] && ln -sv gfortran "$pkgdir/usr/bin/f95"
+
+    # Install Runtime Library Exception
+    install -d "$pkgdir/usr/share/licenses/$pkgname/"
+    ln -s /usr/share/licenses/gcc-libs/RUNTIME.LIBRARY.EXCEPTION \
+       "$pkgdir/usr/share/licenses/$pkgname/"
+}
+
+package_gcc-objc() {
+    pkgdesc='Objective-C front-end for GCC'
+    depends=("gcc=$pkgver-$pkgrel")
+    provides=($pkgname-multilib)
+    replaces=($pkgname-multilib)
+    groups=('extra')
+
+    if [[ "x${_BUILD_OBJC}" != "x1" ]];then
+        return 0
+    fi
+    cd gcc-build
+    make DESTDIR="$pkgdir" -C $CHOST/libobjc install-headers
+    install -v -dm755 "$pkgdir/${_libdir}"
+    [[ -f gcc/cc1obj ]] && install -v -m755 gcc/cc1obj "$pkgdir/${_libdir}/"
+    [[ -f gcc/cc1objplus ]] && install -v -m755 gcc/cc1objplus "$pkgdir/${_libdir}/"
+
+    # Install Runtime Library Exception
+    install -d "$pkgdir/usr/share/licenses/$pkgname/"
+    ln -s /usr/share/licenses/gcc-libs/RUNTIME.LIBRARY.EXCEPTION \
+       "$pkgdir/usr/share/licenses/$pkgname/"
+}
+
+package_gcc-ada() {
+    pkgdesc='Ada front-end for GCC (GNAT)'
+    depends=("gcc=$pkgver-$pkgrel")
+    provides=($pkgname-multilib)
+    replaces=($pkgname-multilib)
+    options+=(staticlibs)
+    groups=('extra')
+
+    if [[ "x${_BUILD_ADA}" != "x1" ]];then
+        return 0
+    fi
+    cd gcc-build/gcc
+    make DESTDIR="$pkgdir" ada.install-{common,info}
+    [[ -f gnat1 ]] && install -v -m755 gnat1 "$pkgdir/${_libdir}"
+
+    cd "$srcdir"/gcc-build/$CHOST/32/libada
+    make DESTDIR=${pkgdir} INSTALL="install" \
+         INSTALL_DATA="install -m644" install-libada
+
+    cd ${srcdir}/gcc-build/$CHOST/x32/libada
+    make DESTDIR=${pkgdir} INSTALL="install" \
+         INSTALL_DATA="install -m644" install-libada
+
+    ln -sv gcc "$pkgdir/usr/bin/gnatgcc"
+
+    # insist on dynamic linking, but keep static libraries because gnatmake complains
+    mv -v "$pkgdir"/${_libdir}/adalib/libgna{rl,t}-${_majorver}.so "$pkgdir/usr/lib"
+    ln -sv libgnarl-${_majorver}.so "$pkgdir/usr/lib/libgnarl.so"
+    ln -sv libgnat-${_majorver}.so "$pkgdir/usr/lib/libgnat.so"
+    rm -fv "$pkgdir"/${_libdir}/adalib/libgna{rl,t}.so
+
+    install -v -d "$pkgdir/usr/lib32/"
+    mv -v "$pkgdir"/${_libdir}/32/adalib/libgna{rl,t}-${_majorver}.so "$pkgdir/usr/lib32"
+    ln -sv libgnarl-${_majorver}.so "$pkgdir/usr/lib32/libgnarl.so"
+    ln -sv libgnat-${_majorver}.so "$pkgdir/usr/lib32/libgnat.so"
+    rm -fv "$pkgdir"/${_libdir}/32/adalib/libgna{rl,t}.so
+
+    install -d ${pkgdir}/usr/libx32/
+    mv ${pkgdir}/${_libdir}/x32/adalib/libgna{rl,t}-${_majorver}.so ${pkgdir}/usr/libx32
+    ln -s libgnarl-${_majorver}.so ${pkgdir}/usr/libx32/libgnarl.so
+    ln -s libgnat-${_majorver}.so ${pkgdir}/usr/libx32/libgnat.so
+    rm ${pkgdir}/${_libdir}/x32/adalib/libgna{rl,t}.so
+
+    # Install Runtime Library Exception
+    install -d "$pkgdir/usr/share/licenses/$pkgname/"
+    ln -s /usr/share/licenses/gcc-libs/RUNTIME.LIBRARY.EXCEPTION \
+       "$pkgdir/usr/share/licenses/$pkgname/"
+}
+
+package_gcc-go() {
+    pkgdesc='Go front-end for GCC'
+    depends=("gcc=$pkgver-$pkgrel")
+    provides=("go=1.10.1" $pkgname-multilib)
+    replaces=($pkgname-multilib)
+    conflicts=(go)
+    groups=('extra')
+
+    if [[ "x${_BUILD_GO}" != "x1" ]];then
+        return 0
+    fi
+    cd gcc-build
+    make -C $CHOST/libgo DESTDIR="$pkgdir" install-exec-am
+    make -C $CHOST/32/libgo DESTDIR="$pkgdir" install-exec-am
+    make -C $CHOST/x32/libgo DESTDIR=$pkgdir install-exec-am
+    make DESTDIR="$pkgdir" install-gotools
+    make -C gcc DESTDIR="$pkgdir" go.install-{common,man,info}
+
+    rm -fv "$pkgdir"/usr/lib{,32,x32}/libgo.so*
+    install -v -Dm755 gcc/go1 "$pkgdir/${_libdir}/go1"
+
+    # Install Runtime Library Exception
+    install -d "$pkgdir/usr/share/licenses/$pkgname/"
+    ln -s /usr/share/licenses/gcc-libs/RUNTIME.LIBRARY.EXCEPTION \
+       "$pkgdir/usr/share/licenses/$pkgname/"
+}
+
+package_lib32-gcc-libs() {
+    pkgdesc='32-bit runtime libraries shipped by GCC'
+    depends=('lib32-glibc>=2.27')
+    provides=(libubsan.so libasan.so)
+    if [[ "x${_BUILD_GO}" == "x1" ]]; then
+        provides+=( 'libgo.so')
+    fi
+    if [[ "x${_BUILD_FORTRAN}" == "x1" ]]; then
+        provides+=( 'libgfortran.so')
+    fi
+    options=(!emptydirs !strip)
+    groups=('lfs-base' 'lfs-multilib')
+
+    cd gcc-build
+
+    make -C $CHOST/32/libgcc DESTDIR="$pkgdir" install-shared
+    rm -fv "$pkgdir/$_libdir/32/libgcc_eh.a"
+
+    _libs=('libatomic' 'libgomp' 'libitm' 'libquadmath' 'libsanitizer/asan' 'libsanitizer/lsan' 'libsanitizer/ubsan' 'libstdc++-v3/src' 'libvtv')
+
+    if [[ -d "$CHOST/libgfortran" ]]; then
+        _libs+=( 'libgfortran')
+    fi
+    if [[ -d "$CHOST/libgo" ]]; then
+        _libs+=( 'libgo')
+    fi
+
+    for lib in ${_libs[@]}; do
+        make -C $CHOST/32/$lib DESTDIR="$pkgdir" install-toolexeclibLTLIBRARIES
+    done
+
+    [[ -d $CHOST/32/libobjc ]] && make -C $CHOST/32/libobjc DESTDIR="$pkgdir" install-libs
+    #make -C $CHOST/32/libmpx DESTDIR="$pkgdir" install
+    #rm -fv "$pkgdir/usr/lib32/libmpx.spec"
+
+    # remove files provided by gcc-libs
+    rm -rfv "$pkgdir"/usr/lib
+
+    # Install Runtime Library Exception
+    install -Dm644 "$srcdir/gcc/COPYING.RUNTIME" \
+            "$pkgdir/usr/share/licenses/lib32-gcc-libs/RUNTIME.LIBRARY.EXCEPTION"
+}
+
+package_libx32-gcc-libs() {
+    pkgdesc="Runtime libraries shipped by GCC (x32 ABI)"
+    depends=('libx32-glibc>=2.23')
+    options=('!emptydirs' '!strip')
+    groups=('lfs-base' 'lfs-multilib')
+
+    cd gcc-build
+
+    make -C $CHOST/x32/libgcc DESTDIR=${pkgdir} install-shared
+    rm ${pkgdir}/${_libdir}/x32/libgcc_eh.a
+
+    _libs=('libatomic' 'libgomp' 'libitm' 'libquadmath' 'libsanitizer/asan' 'libsanitizer/lsan' 'libsanitizer/ubsan' 'libstdc++-v3/src' 'libvtv')
+
+    if [[ -d "$CHOST/libgfortran" ]]; then
+        _libs+=( 'libgfortran')
+    fi
+    if [[ -d "$CHOST/libgo" ]]; then
+        _libs+=( 'libgo')
+    fi
+
+    for lib in ${_libs[@]}; do
+        make -C $CHOST/x32/$lib DESTDIR="$pkgdir" install-toolexeclibLTLIBRARIES
+    done
+
+    [[ -d $CHOST/x32/libobjc ]] && make -C $CHOST/x32/libobjc DESTDIR="$pkgdir" install-libs
+
+    #make -C $CHOST/x32/libmpx DESTDIR="$pkgdir" install
+    #rm -rfv "$pkgdir/usr/libx32/libmpx.spec"
+
+    rm -r ${pkgdir}/usr/lib
+
+    # Install Runtime Library Exception
+    install -Dm644 "$srcdir/gcc/COPYING.RUNTIME" \
+            "$pkgdir/usr/share/licenses/libx32-gcc-libs/RUNTIME.LIBRARY.EXCEPTION"
+}
+
+md5sums=('3818ad8600447f05349098232c2ddc78'
+         'SKIP'
+         '226dac83d9e6490fc8542ac0934a1db0'
+         '3d333df77302ed89e06a4a8539943b7d'
+         'da96f545b863e57c6ab2598c1ea9a740')

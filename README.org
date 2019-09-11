@@ -517,7 +517,7 @@ add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
      #+BEGIN_SRC sh :name ed
      . PKGBUILD
      makepkg -fcC
-     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z extra
      #+END_SRC
 **** ~bc~
      #+BEGIN_SRC sh :name bc
@@ -563,6 +563,29 @@ add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
        add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
      done
      #+END_SRC
-
-
-
+**** /Optional/ ~cracklib~
+     This package is in extra repository.
+     #+BEGIN_SRC sh :name cracklib
+     . PKGBUILD
+     makepkg -fcC
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z extra
+     #+END_SRC
+**** ~shadow~
+     #+BEGIN_SRC sh :name shadow
+     . PKGBUILD
+     makepkg -fcC
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+     Now you can set root password with ~passwd root~.
+**** ~gcc~
+     This package has several split-packages. The bare minimum is /gcc/,/gcc-libs/,/lib32-gcc-libs/ and /libx32-gcc-libs/, the other optional packages (/gcc-go/, /gcc-ada/, /gcc-objc/ and /gcc-fortran/) can be included or excluded with environment variables (_BUILD_ADA, _BUILD_FORTRAN, _BUILD_GO, and _BUILD_OBJC). The default is include all, but beware for /gcc-ada/ we'll need to bootstrap with /gnat-gpl-2017-x86_64-linux-bin.tar.gz/ which is around 480Mb in size.
+     #+BEGIN_SRC sh :name gcc
+     # if you want only the minimal packages
+     # note: rm -fv /usr/lib/gcc from the root terminal before compiling
+     . PKGBUILD
+     _BUILD_ADA=0 _BUILD_FORTRAN=0 _BUILD_GO=0 _BUILD_OBJC=0 makepkg -fcC
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC
+     Install with ~--force~ option to overwrite the symlinks created earlier.
