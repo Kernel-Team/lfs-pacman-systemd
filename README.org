@@ -77,6 +77,7 @@
    make install
    #+END_SRC
  - [[https://curl.haxx.se/][curl]]
+   Notes: this package probably not necessary.
    #+BEGIN_SRC sh :name curl
    ./configure --prefix=/tools --without-ssl
    make
@@ -651,4 +652,15 @@ add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
      makepkg -fcC
      add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
      #+END_SRC
-
+**** ~psmisc~
+     #+BEGIN_SRC sh :name psmisc
+     . PKGBUILD
+     makepkg -fcC
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~bison~
+     #+BEGIN_SRC sh :name bison
+     . PKGBUILD
+     makepkg -fcC
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
