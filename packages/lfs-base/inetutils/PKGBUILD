@@ -1,0 +1,83 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=inetutils
+pkgver=1.9.4
+pkgrel=1
+pkgdesc="A collection of common network programs"
+arch=('x86_64')
+url="http://www.gnu.org/software/inetutils/"
+license=('GPL3')
+depends=('libcap')
+makedepends=()
+options=('!emptydirs')
+groups=('lfs-base')
+backup=('etc/xinetd.d/telnet' 'etc/xinetd.d/talk')
+source=("https://ftp.gnu.org/gnu/inetutils/${pkgname}-${pkgver}.tar.xz"{,.sig}
+        'talk.service' 'talk.socket' 'talk.xinetd' 'ftpd.service' 'telnet.xinetd'
+        'telnet@.service' 'telnet.socket')
+validpgpkeys=('4FBD67621082C4C502448E3B180551BAD95A3C35')
+
+_confargs=()
+
+if [[ "$(pacman -Ss ^linux-pam$ 2>/dev/null)" ]];then
+    depends+=( 'linux-pam')
+    _confargs+=( '--with-pam')
+    pkgrel=$((pkgrel+1))
+else
+    _confargs=( '--without-pam')
+    optdepends+=( 'linux-pam')
+fi
+if [[ -n "$(pacman -Ss ^help2man$ 2>/dev/null)" ]];then
+    makedepends+=( 'help2man')
+else
+    optdepends+=( 'help2man')
+fi
+
+prepare(){
+    cd ${pkgname}-${pkgver}
+    ./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc \
+                --disable-logger --disable-whois --disable-rcp \
+                --disable-rexec --disable-rlogin --disable-rsh \
+                --disable-servers --enable-talk --enable-talkd \
+                --enable-ftp --enable-ftpd --enable-telnet --enable-telnetd \
+                ${_confargs[@]}
+}
+
+build() {
+    cd ${pkgname}-${pkgver}
+    make
+}
+
+check() {
+    cd ${pkgname}-${pkgver}
+    make check || true
+}
+
+package() {
+    cd ${pkgname}-${pkgver}
+    make DESTDIR="${pkgdir}" install
+
+    install -v -dm755 ${pkgdir}/{bin,sbin}
+    mv -v ${pkgdir}/usr/bin/{hostname,ping,ping6,traceroute} ${pkgdir}/bin
+    mv -v ${pkgdir}/usr/bin/ifconfig ${pkgdir}/sbin
+
+    install -D -m644 "${srcdir}/talk.xinetd" "${pkgdir}/etc/xinetd.d/talk"
+    install -D -m644 "${srcdir}/talk.service" "${pkgdir}/lib/systemd/system/talk.service"
+    install -D -m644 "${srcdir}/talk.socket" "${pkgdir}/lib/systemd/system/talk.socket"
+
+    install -D -m644 "${srcdir}/ftpd.service" "${pkgdir}/lib/systemd/system/ftpd.service"
+
+    install -D -m644 "${srcdir}/telnet.xinetd" "${pkgdir}/etc/xinetd.d/telnet"
+    install -D -m644 "${srcdir}/telnet@.service" "${pkgdir}/lib/systemd/system/telnet@.service"
+    install -D -m644 "${srcdir}/telnet.socket" "${pkgdir}/lib/systemd/system/telnet.socket"
+}
+
+md5sums=('87fef1fa3f603aef11c41dcc097af75e'
+         'SKIP'
+         '2b7ea36e13178c7a3b3c9b38ac7eb588'
+         'bd581fa64b91ded853317334b1489346'
+         'ae4539ffbabae314744aea8467125f85'
+         'fe181e22d3544456f52e64f3bdf5f291'
+         'ab71e7458e8ed2b9d31c48eba5ab4c3a'
+         'd7e5d8f70b7fc7321ab0e61178829b06'
+         'bafd84474b3a0942307571e742dd096f')
