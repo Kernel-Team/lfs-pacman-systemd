@@ -1,0 +1,137 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=python2
+pkgver=2.7.16
+pkgrel=1
+_pybasever=2.7
+pkgdesc="A high-level scripting language"
+arch=('x86_64')
+license=('PSF')
+url="http://www.python.org/"
+_deps=('libnsl' 'sqlite')
+depends=('bzip2'
+         'expat'
+         'gdbm'
+         'libffi'
+         'openssl'
+         'zlib'
+        )
+_makedeps=('tk' 'valgrind' 'bluez-libs' 'gdb' 'llvm' 'xorg-server-xvfb')
+makedepends=()
+_checkdeps=('gdb' 'xorg-server-xvfb')
+checkdepends=('file')
+optdepends=('tk: for IDLE'
+            'python2-setuptools'
+            'python2-pip')
+conflicts=('python<3')
+groups=('blfs')
+source=("https://www.python.org/ftp/python/${pkgver%rc?}/Python-${pkgver}.tar.xz"{,.asc})
+validpgpkeys=('C01E1CAD5EA2C4F0B8E3571504C367C218ADD4FF')  # Benjamin Peterson
+
+for _d in "${_deps[@]}";do
+    if [[ "$(pacman -Ss "^${_d}$" 2>/dev/null)" ]];then
+        depends+=( "${_d}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_d}")
+    fi
+done
+for _m in "${_makedeps[@]}";do
+    if [[ -n "$(pacman -Ss "^${_m}$" 2>/dev/null)" ]];then
+        makedepends+=( "${_m}")
+    else
+        optdepends+=( "${_m}")
+    fi
+done
+for _c in "${_checkdeps[@]}";do
+    if [[ -n "$(pacman -Ss "^${_c}$" 2>/dev/null)" ]];then
+        depends+=( "${_c}")
+    else
+        optdepends+=( "${_c}")
+    fi
+done
+
+prepare() {
+    cd Python-${pkgver}
+
+    # Temporary workaround for FS#22322
+    # See http://bugs.python.org/issue10835 for upstream report
+    sed -i "/progname =/s/python/python${_pybasever}/" Python/pythonrun.c
+
+    # Enable built-in SQLite module to load extensions (fix FS#22122)
+    sed -i "/SQLITE_OMIT_LOAD_EXTENSION/d" setup.py
+
+    # FS#23997
+    sed -i -e "s|^#.* /usr/local/bin/python|#!/usr/bin/python2|" Lib/cgi.py
+
+    sed -i "s/python2.3/python2/g" Lib/distutils/tests/test_build_scripts.py \
+        Lib/distutils/tests/test_install_scripts.py
+
+    #build the python _ssl module
+    sed -i '/#SSL/,+3 s/^#//' Modules/Setup.dist
+
+    export OPT="${CFLAGS}"
+    ./configure --prefix=/usr \
+                --enable-shared \
+                --with-system-expat \
+                --with-system-ffi \
+                --enable-unicode=ucs4 \
+                --without-ensurepip
+}
+
+build() {
+    cd "${srcdir}/Python-${pkgver}"
+    make
+}
+
+check() {
+    cd Python-${pkgver}
+
+    if [[ -n "$(pacman -Qq xorg-server-xvfb 2>/dev/null)" ]] &&
+           [[ -n "$(pacman -Qq tk 2>/dev/null)" ]] &&
+           [[ -n "$(pacman -Qq gdb 2>/dev/null)" ]];then
+
+        LD_LIBRARY_PATH="${srcdir}/Python-${pkgver}":${LD_LIBRARY_PATH} \
+                       xvfb-run "${srcdir}/Python-${pkgver}/python" -m test.regrtest -v -uall -x test_idle test_tk test_ttk_guionly test_ctypes
+    else
+        make -k test || true
+    fi
+}
+
+package() {
+    cd Python-${pkgver}
+
+    # Hack to avoid building again
+    sed -i 's/^all:.*$/all: build_all/' Makefile
+
+    make DESTDIR="${pkgdir}" altinstall maninstall
+
+    rm "${pkgdir}"/usr/share/man/man1/python.1
+
+    ln -sf python${_pybasever}        "${pkgdir}"/usr/bin/python2
+    ln -sf python${_pybasever}-config "${pkgdir}"/usr/bin/python2-config
+    ln -sf python${_pybasever}.1      "${pkgdir}"/usr/share/man/man1/python2.1
+
+    # FS#33954
+    ln -sf python-${_pybasever}.pc    "${pkgdir}"/usr/lib/pkgconfig/python2.pc
+
+    ln -sf ../../libpython${_pybasever}.so "${pkgdir}"/usr/lib/python${_pybasever}/config/libpython${_pybasever}.so
+
+    mv "${pkgdir}"/usr/bin/smtpd.py "${pkgdir}"/usr/lib/python${_pybasever}/
+
+    # some useful "stuff"
+    install -dm755 "${pkgdir}"/usr/lib/python${_pybasever}/Tools/{i18n,scripts}
+    install -m755 Tools/i18n/{msgfmt,pygettext}.py "${pkgdir}"/usr/lib/python${_pybasever}/Tools/i18n/
+    install -m755 Tools/scripts/{README,*py} "${pkgdir}"/usr/lib/python${_pybasever}/Tools/scripts/
+
+    # fix conflicts with python
+    mv "${pkgdir}"/usr/bin/idle{,2}
+    mv "${pkgdir}"/usr/bin/pydoc{,2}
+    mv "${pkgdir}"/usr/bin/2to3{,-2.7}
+
+    # clean-up reference to build directory
+    sed -i "s#${srcdir}/Python-${pkgver}:##" "${pkgdir}"/usr/lib/python${_pybasever}/config/Makefile
+}
+
+md5sums=('30157d85a2c0479c09ea2cbe61f2aaf5'
+         'SKIP')

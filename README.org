@@ -845,3 +845,53 @@ add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
      makepkg -fcC
      add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
      #+END_SRC
+From here we need to travel a bit and install lots of /python/ packages in order to have /setuptools/.
+**** ~python2~
+     #+BEGIN_SRC sh :name python2
+     . PKGBUILD
+     makepkg -fcC
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+**** ~python-six~
+     #+BEGIN_SRC sh :name python-six
+     . PKGBUILD
+     makepkg -fcC
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z extra
+     done
+     #+END_SRC
+**** ~python-appdirs~
+     #+BEGIN_SRC sh :name python-appdirs
+     . PKGBUILD
+     makepkg -fcC
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z extra
+     done
+     #+END_SRC
+**** ~python-packaging~
+     #+BEGIN_SRC sh :name python-packaging
+     . PKGBUILD
+     makepkg -fcC
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z extra
+     done
+     #+END_SRC
+**** ~python-setuptools~
+     run ~wget https://bootstrap.pypa.io/get-pip.py~ from host terminals and save it to $LFS home directory. This is needed to bootstrap /setuptools/
+     #+BEGIN_SRC sh :name python-setuptools
+     python3 ~/get-pip.py --user
+     python2 ~/get-pip.py --user
+     ~/.local/bin/pip3 install pyparsing --user
+     ~/.local/bin/pip2 install pyparsing --user
+     . PKGBUILD
+     makepkg -fcC
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z extra
+     done
+     #+END_SRC
+**** ~meson~
+     #+BEGIN_SRC sh :name meson
+     . PKGBUILD
+     makepkg -fcC
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC

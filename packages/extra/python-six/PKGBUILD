@@ -1,0 +1,59 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgbase=python-six
+pkgname=('python2-six' 'python-six')
+pkgver=1.12.0
+pkgrel=1
+pkgdesc="Python 2 and 3 compatibility utilities"
+arch=('any')
+url="http://pypi.python.org/pypi/six/"
+license=('MIT')
+makedepends=()
+checkdepends=()
+groups=('python-extra')
+source=("https://pypi.io/packages/source/s/six/six-$pkgver.tar.gz")
+sha512sums=('937728372edf1e0ac13bbd706723d0de35e015c30d0ae41f789c5ed2e3669bb0db70cdc6e036ec2d437a6c4aa0d5d1e727b6d09ac34cca7e4e92e5d3b4775151')
+
+if [[ "$(pacman -Ss python-setuptools 2>/dev/null)" ]];then
+    makedepends+=( 'python-setuptools')
+fi
+if [[ "$(pacman -Ss python2-setuptools 2>/dev/null)" ]];then
+    makedepends+=( 'python2-setuptools')
+fi
+if [[ "$(pacman -Ss python-pytest-runner 2>/dev/null)" ]];then
+    checkdepends+=( 'python-pytest-runner')
+fi
+if [[ "$(pacman -Ss python2-pytest-runner 2>/dev/null)" ]];then
+    checkdepends+=( 'python2-pytest-runner')
+fi
+if [[ "$(pacman -Ss tk 2>/dev/null)" ]];then
+    checkdepends+=( 'tk')
+fi
+
+build() {
+    cp -a six-$pkgver{,-py2}
+}
+
+check() {
+    cd "$srcdir"/six-$pkgver
+    python setup.py pytest
+
+    cd "$srcdir"/six-$pkgver-py2
+    python2 setup.py pytest
+}
+
+package_python-six() {
+    depends=('python')
+
+    cd six-$pkgver
+    python setup.py install --root "$pkgdir" --optimize=1
+    install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+}
+
+package_python2-six() {
+    depends=('python2')
+
+    cd six-$pkgver-py2
+    python2 setup.py install --root "$pkgdir" --optimize=1
+    install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+}

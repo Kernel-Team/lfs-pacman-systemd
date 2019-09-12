@@ -1,0 +1,65 @@
+#-*-mode:sh-
+# Maintainer: alexforsale@yahoo.com
+pkgname=meson
+pkgver=0.51.1
+pkgrel=1
+pkgdesc='High productivity build system'
+url='http://mesonbuild.com/'
+arch=('any')
+license=('Apache')
+depends=('python' 'ninja')
+makedepends=()
+_checkdeps=( 'vala' 'gcc-objc' 'rust' 'gcc-fortran' 'mono' 'boost' 'qt4' 'qt5-base' 'git' 'cython' 'gtkmm3' 'gmock' 'gtest' 'protobuf' 'wxgtk'
+             'python-gobject' 'gobject-introspection' 'itstool' 'gtk3' 'java-environment=8' 'gtk-doc' 'llvm' 'clang' 'sdl2' 'graphviz' 'doxygen'
+             'vulkan-validation-layers' 'openmpi' 'openssh' 'mercurial' 'gtk-sharp-2' 'qt5-tools' 'libwmf' 'dmd' 'valgrind')
+checkdepends=()
+source=(https://github.com/mesonbuild/meson/releases/download/${pkgver}/meson-${pkgver}.tar.gz{,.asc}
+        meson-helper)
+validpgpkeys=('95181F4EED14FDF4E41B518D3BF4693BFEEB9428') # Jussi Pakkanen <jpakkane@gmail.com>
+
+if [[ -n "$(pacman -Ss ^python-setuptools$ 2>/dev/null)" ]];then
+  makedepends+=( 'python-setuptools')
+else
+  optdepends+=( 'python-setuptools')
+fi
+for _c in ${_checkdeps[@]};do
+  if [[ -n "$(pacman -Ss "^${_c}$" 2>/dev/null)" ]];then
+    checkdepends+=( "${_c}")
+  fi
+done
+
+build() {
+  cd ${pkgname}-${pkgver}
+  python3 setup.py build
+}
+
+check() (
+  cd ${pkgname}-${pkgver}
+
+  # --as-needed breaks openmpi linking
+  LDFLAGS="${LDFLAGS/,--as-needed/}"
+
+  # set for debug output
+  #export MESON_PRINT_TEST_OUTPUT=1
+
+  export LC_CTYPE=en_US.UTF-8
+  ./run_tests.py
+)
+
+package() {
+  cd ${pkgname}-${pkgver}
+  python3 setup.py install --root="${pkgdir}" --optimize=1 --skip-build
+
+  install -d "${pkgdir}/usr/share/vim/vimfiles"
+  cp -rt "${pkgdir}/usr/share/vim/vimfiles" data/syntax-highlighting/vim/*
+
+  install -Dt "${pkgdir}/usr/share/emacs/site-lisp" -m644 data/syntax-highlighting/emacs/*
+  install -Dt "${pkgdir}/usr/share/zsh/site-functions" -m644 data/shell-completions/zsh/*
+
+  # packaging helper
+  install -D ../meson-helper -t "${pkgdir}/usr/bin"
+}
+
+md5sums=('48787e391ec5c052799a3dd491f73909'
+         'SKIP'
+         '78d05dfbc940aa916019bcabfee1550e')

@@ -1,0 +1,50 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=python-pyparsing
+pkgname=('python-pyparsing' 'python2-pyparsing')
+pkgver=2.4.2
+pkgrel=1
+pkgdesc='General parsing module for Python'
+arch=('any')
+url='https://github.com/pyparsing/pyparsing/'
+makedepends=()
+license=('MIT')
+source=("https://github.com/pyparsing/pyparsing/archive/pyparsing_$pkgver.tar.gz")
+sha512sums=('6f16f507bedfe29f5c1bd6c2632ee859d54f5755697612baccaa7046f7411642dc271f699ec9e852b3ac81bf0e089a5fe3980218ba2ea68ee9b8269eecbff787')
+
+if [[ -n "$(pacman -Qq python-setuptools 2>/dev/null)" ]];then
+    makedepends+=( 'python-setuptools')
+fi
+if [[ -n "$(pacman -Qq python2-setuptools 2>/dev/null)" ]];then
+    makedepends+=( 'python2-setuptools')
+fi
+
+build() {
+    cd pyparsing-pyparsing_$pkgver
+    python setup.py build
+    python2 setup.py build
+}
+
+check() {
+    cd pyparsing-pyparsing_$pkgver
+    python unitTests.py
+    python2 unitTests.py
+}
+
+package_python-pyparsing() {
+    depends=('python')
+
+    cd pyparsing-pyparsing_$pkgver
+
+    python setup.py install --prefix=/usr --root="$pkgdir" --optimize=1
+    install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+}
+
+package_python2-pyparsing() {
+    depends=('python2')
+
+    cd pyparsing-pyparsing_$pkgver
+
+    python2 setup.py install --prefix=/usr --root="$pkgdir" --optimize=1
+    install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+}
