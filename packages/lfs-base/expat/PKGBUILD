@@ -1,0 +1,89 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgbase=expat
+pkgname=($pkgbase lib{,x}32-$pkgbase)
+pkgver=2.2.7
+pkgrel=1
+arch=(x86_64)
+url='https://libexpat.github.io/'
+license=(custom)
+source=(https://github.com/libexpat/libexpat/releases/download/R_${pkgver//./_}/$pkgbase-$pkgver.tar.bz2)
+
+prepare(){
+    mkdir -pv build-$pkgbase build-lib{,x}32-$pkgbase
+
+    cd $srcdir/$pkgbase-$pkgver
+    # fix a problem with the regession tests in the LFS environment
+    sed -i 's|usr/bin/env |bin/|' run.sh.in
+
+    cd $srcdir/build-$pkgbase
+    $srcdir/$pkgbase-$pkgver/configure \
+        --prefix=/usr --disable-static \
+        --docdir=/usr/share/doc/${pkgname}-${pkgver}
+
+    cd $srcdir/build-lib32-$pkgbase
+    CC='gcc -m32' PKG_CONFIG_PATH=/usr/lib32/pkgconfig \
+      $srcdir/$pkgbase-$pkgver/configure \
+      --prefix=/usr --disable-static \
+      --docdir=/usr/share/doc/${pkgname}-${pkgver} \
+      --libdir=/usr/lib32 --host=i686-pc-linux-gnu
+
+    cd $srcdir/build-libx32-$pkgbase
+    CC='gcc -mx32' PKG_CONFIG_PATH=/usr/libx32/pkgconfig \
+      $srcdir/$pkgbase-$pkgver/configure \
+      --prefix=/usr --disable-static \
+      --docdir=/usr/share/doc/${pkgname}-${pkgver} \
+      --libdir=/usr/libx32 --host=x86_64-pc-linux-gnux32
+}
+
+build() {
+    cd $srcdir/build-$pkgbase
+    make
+
+    cd $srcdir/build-lib32-$pkgbase
+    make
+
+    cd $srcdir/build-libx32-$pkgbase
+    make
+}
+
+check() {
+    make -C $srcdir/build-$pkgbase check
+}
+
+package_expat() {
+    pkgdesc='An XML parser library'
+    depends=(glibc)
+    groups=('lfs-base')
+
+    cd $srcdir/build-$pkgbase
+    make DESTDIR="$pkgdir" install
+    install -Dm644 "-t$pkgdir/usr/share/licenses/$pkgbase" \
+            $srcdir/$pkgbase-$pkgver/COPYING
+}
+
+package_lib32-expat() {
+    pkgdesc='An XML Parser library written in C (32 bit)'
+    depends=(lib32-glibc $pkgbase)
+    groups=('lfs-base' 'lfs-multilib')
+
+    cd $srcdir/build-lib32-$pkgbase
+    make DESTDIR="${pkgdir}" install
+    rm -rf "${pkgdir}"/usr/{bin,include,share/man,share/doc}
+    install -dm 755 "${pkgdir}"/usr/share/licenses
+    ln -s $pkgbase "${pkgdir}"/usr/share/licenses/lib32-expat
+}
+
+package_libx32-expat() {
+    pkgdesc='An XML Parser library written in C (x32 ABI)'
+    depends=(libx32-glibc $pkgbase)
+    groups=('lfs-base' 'lfs-multilib')
+
+    cd $srcdir/build-libx32-$pkgbase
+    make DESTDIR="${pkgdir}" install
+    rm -rf "${pkgdir}"/usr/{bin,include,share/man,share/doc}
+    install -dm 755 "${pkgdir}"/usr/share/licenses
+    ln -s $pkgbase "${pkgdir}"/usr/share/licenses/libx32-expat
+}
+
+sha256sums=('cbc9102f4a31a8dafd42d642e9a3aa31e79a0aedaa1f6efd2795ebc83174ec18')
