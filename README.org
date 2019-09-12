@@ -772,3 +772,10 @@ add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
        add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
      done
      #+END_SRC
+
+**** ~gettext~
+     #+BEGIN_SRC sh :name gettext
+     . PKGBUILD
+     makepkg -fcC
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC

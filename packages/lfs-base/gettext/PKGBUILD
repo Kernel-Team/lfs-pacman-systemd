@@ -1,0 +1,77 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=gettext
+pkgver=0.20.1
+pkgrel=1
+pkgdesc="GNU internationalization library"
+url="https://www.gnu.org/software/gettext/"
+arch=(x86_64)
+license=(GPL)
+depends=('gcc-libs' 'acl' 'sh')
+makedepends=()
+optdepends=('git: for autopoint infrastructure updates')
+options=(!docs)
+source=(https://ftp.gnu.org/pub/gnu/gettext/$pkgname-$pkgver.tar.gz{,.sig})
+validpgpkeys=('462225C3B46F34879FC8496CD605848ED7E69871')  # Daiki Ueno
+
+if [[ "$(pacman -Ss ^glib2$ 2>/dev/null)" ]];then
+    depends+=( 'glib2')
+    pkgrel=$((pkgrel+1))
+else
+    optdepends+=( 'glib2')
+fi
+if [[ "$(pacman -Ss ^libunistring$ 2>/dev/null)" ]];then
+    depends+=( 'libunistring')
+    pkgrel=$((pkgrel+1))
+else
+    optdepends+=( 'libunistring')
+fi
+if [[ "$(pacman -Ss ^libcroco$ 2>/dev/null)" ]];then
+    depends+=( 'libcroco')
+    pkgrel=$((pkgrel+1))
+else
+    optdepends+=( 'libcroco')
+fi
+if [[ "$(pacman -Ss ^gettext$ 2>/dev/null)" ]];then
+    makedepends+=( 'gettext')
+    pkgrel=$((pkgrel+1))
+else
+    optdepends+=( 'gettext')
+fi
+if [[ "$(pacman -Ss ^emacs$ 2>/dev/null)" ]];then
+    makedepends+=( 'emacs')
+else
+    optdepends+=( 'emacs')
+fi
+if [[ "$(pacman -Ss ^git$ 2>/dev/null)" ]];then
+    makedepends+=( 'git')
+else
+    optdepends+=( 'git')
+fi
+
+prepare() {
+    cd $pkgname-$pkgver
+    ./configure \
+        --prefix=/usr \
+        --disable-static \
+        --docdir=/usr/share/doc/${pkgname}-${pkgver}
+}
+
+build() {
+    cd $pkgname-$pkgver
+    make
+}
+
+check() {
+    cd $pkgname-$pkgver
+    make check
+}
+
+package() {
+    cd $pkgname-$pkgver
+    make DESTDIR="$pkgdir" install
+    chmod -v 0755 "$pkgdir"/usr/lib/preloadable_libintl.so
+}
+
+md5sums=('bb5b0c0caa028105f3ca1905ddc306e2'
+         'SKIP')
