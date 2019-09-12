@@ -46,7 +46,6 @@ package() {
     cd $pkgname-$pkgver
     make DESTDIR="$pkgdir" install
 
-    # fix makepkg tools yang mencari di /usr/bin
     install -d -m755 "$pkgdir"/usr/bin
     ln -sv ../../bin/sed "$pkgdir"/usr/bin/sed
     install -d -m755 "$pkgdir"/usr/share/doc/${pkgname}-${pkgver}
