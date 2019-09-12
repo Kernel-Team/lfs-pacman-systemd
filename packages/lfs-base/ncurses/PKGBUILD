@@ -114,6 +114,7 @@ package_ncurses() {
     install -v -dm755 ${pkgdir}/lib
     mv -v ${pkgdir}/usr/lib/libncursesw.so.6* ${pkgdir}/lib
     ln -sfv ../../lib/$(readlink ${pkgdir}/usr/lib/libncursesw.so) ${pkgdir}/usr/lib/libncursesw.so
+    ln -sv ../../lib/libncursesw.so.${pkgver} ${pkgdir}/usr/lib/libncursesw.so.${pkgver:0:1}
 
     for lib in ncurses ncurses++ form panel menu ; do
         rm -vf ${pkgdir}/usr/lib/lib${lib}.so
