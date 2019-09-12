@@ -1,0 +1,53 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=libtool
+pkgver=2.4.6
+pkgrel=1
+_gccver=$(gcc --version | grep -o "[0-9]\.[0-9]\.[0-9]")
+pkgdesc='A generic library support script'
+arch=(x86_64)
+url='http://www.gnu.org/software/libtool'
+license=(GPL)
+depends=('sh' 'glibc')
+makedepends=("gcc>=$_gccver")
+checkdepends=(gcc-fortran)
+provides=("libltdl=$pkgver" "libtool-multilib=$pkgver")
+conflicts=(libltdl libtool-multilib)
+replaces=(libltdl libtool-multilib)
+groups=('lfs-base')
+source=(http://ftp.gnu.org/gnu/libtool/libtool-${pkgver}.tar.xz)
+
+if [[ "$(pacman -Ss ^tar$ 2>/dev/null)" ]];then
+    depends+=( 'tar')
+    pkgrel=$((pkgrel+1))
+else
+    optdepends+=( 'tar')
+fi
+if [[ "$(pacman -Ss ^help2man$ 2>/dev/null)" ]];then
+    makedepends+=( 'help2man')
+    pkgrel=$((pkgrel+1))
+else
+    optdepends+=( 'help2man')
+fi
+
+prepare() {
+    cd ${pkgname}-${pkgver}
+    M4=/usr/bin/m4 ./configure --prefix=/usr lt_cv_sys_lib_dlsearch_path_spec="/usr/lib /usr/lib32 /usr/libx32"
+}
+
+build() {
+    cd ${pkgname}-${pkgver}
+    make
+}
+
+check() {
+    cd ${pkgname}-${pkgver}
+    make check gl_public_submodule_commit= || true
+}
+
+package() {
+    cd ${pkgname}-${pkgver}
+    make DESTDIR="$pkgdir" install
+}
+
+md5sums=('1bfb9b923f2c1339b4d2ce1807064aa5')
