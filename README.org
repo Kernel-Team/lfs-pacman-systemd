@@ -718,3 +718,19 @@ add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
      makepkg -fcC
      add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
      #+END_SRC
+
+**** ~berkeley-db~
+     Part of the /extra/ repository, dependency for /[[*~perl~][perl]]/
+     #+BEGIN_SRC sh :name berkeley-db
+     . PKGBUILD
+     makepkg -fcC
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~perl~
+     Basically the same as in /arch/, because we'll want to package /perl-modules/ with pacman too.
+     Don't forget to [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter06/perl.html][set the host file in root terminal]].
+     #+BEGIN_SRC sh :name perl
+     . PKGBUILD
+     makepkg -fcC
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
