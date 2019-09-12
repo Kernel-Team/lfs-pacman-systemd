@@ -670,3 +670,12 @@ add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
      makepkg -fcC
      add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
      #+END_SRC
+
+**** ~bash~
+     #+BEGIN_SRC sh :name bash
+     . PKGBUILD
+     makepkg -fcC
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+     Install with ~--force~ to overwrite the symlinks created earlier.
+
