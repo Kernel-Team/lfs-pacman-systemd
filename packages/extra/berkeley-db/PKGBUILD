@@ -1,0 +1,44 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=berkeley-db
+pkgver=5.3.28
+pkgrel=1
+pkgdesc="The Berkeley DB embedded database system"
+arch=('x86_64')
+url="http://www.oracle.com/technology/software/products/berkeley-db/index.html"
+license=('custom')
+depends=('gcc-libs' 'sh')
+provides=('db')
+groups=('extra')
+source=(http://download.oracle.com/${pkgname}/db-${pkgver}.tar.gz)
+
+_confargs=()
+if [[ "$(pacman -Ss ^tcl$ 2>/dev/null)" ]];then
+    _confargs+=( '--enable-tcl --with-tcl=/usr/lib')
+    depends+=( 'tcl')
+    pkgrel=$((pkgrel+1))
+else
+    optdepends+=( 'tcl')
+fi
+
+prepare() {
+    cd db-$pkgver
+    sed -i 's/\(__atomic_compare_exchange\)/\1_db/' src/dbinc/atomic.h
+    cd build_unix
+    ../dist/configure --prefix=/usr --enable-compat185 \
+                      --disable-static --enable-cxx --enable-dbm \
+                      --enable-stl ${_confargs[@]}
+}
+
+build() {
+    cd "${srcdir}"/db-${pkgver}/build_unix
+    make LIBSO_LIBS=-lpthread
+}
+
+package() {
+    cd "${srcdir}"/db-${pkgver}/build_unix
+    make DESTDIR="${pkgdir}" docdir=/usr/share/doc/${pkgname}-${pkgver} install
+    install -Dm644 "${srcdir}"/db-${pkgver}/LICENSE \
+            "${pkgdir}"/usr/share/licenses/${pkgname}/LICENSE
+}
+md5sums=('b99454564d5b4479750567031d66fe24')
