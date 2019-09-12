@@ -1,0 +1,106 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgbase=elfutils
+pkgname=(elfutils libelf lib{,x}32-libelf)
+pkgver=0.177
+pkgrel=1
+arch=('x86_64')
+url="https://sourceware.org/elfutils/"
+license=('LGPL3' 'GPL' 'GPL3')
+options=('staticlibs')
+source=(https://sourceware.org/elfutils/ftp/${pkgver}/elfutils-${pkgver}.tar.bz2{,.sig})
+validpgpkeys=('47CC0331081B8BC6D0FD4DA08370665B57816A6A')  # Mark J. Wielaard <mark@klomp.org>
+validpgpkeys+=('EC3CFE88F6CA0788774F5C1D1AA44BE649DE760A') # Mark Wielaard <mjw@gnu.org>
+
+prepare(){
+    mkdir -pv build-elfutils build-lib{,x}32-libelf
+
+    cd $srcdir/build-elfutils
+    CFLAGS+=" -g" $srcdir/${pkgbase}-${pkgver}/configure \
+           --prefix=/usr --program-prefix="eu-" \
+           --enable-deterministic-archives
+    
+    cd $srcdir/build-lib32-libelf
+    CC="gcc -m32" CXX="g++ -m32" PKG_CONFIG_PATH="/usr/lib32/pkgconfig" \
+      CFLAGS+=" -g" $srcdir/${pkgbase}-${pkgver}/configure \
+      --prefix=/usr --libdir=/usr/lib32 --host=i686-pc-linux-gnu
+
+    cd $srcdir/build-libx32-libelf
+    CC="gcc -mx32" CXX="g++ -mx32" PKG_CONFIG_PATH="/usr/libx32/pkgconfig" \
+      CFLAGS+=" -g" $srcdir/${pkgbase}-${pkgver}/configure \
+      --prefix=/usr --libdir=/usr/libx32 --host=x86_64-pc-linux-gnux32
+}
+
+build() {
+    cd $srcdir/build-elfutils
+    make
+
+    cd $srcdir/build-lib32-libelf
+    make
+
+    cd $srcdir/build-libx32-libelf
+    make
+}
+
+check() {
+    cd $srcdir/build-elfutils
+    make check
+
+    cd $srcdir/build-lib32-libelf
+    make check
+
+    cd $srcdir/build-libx32-libelf
+    make check
+}
+
+package_elfutils() {
+    pkgdesc="Utilities to handle ELF object files and DWARF debugging information"
+    depends=("libelf=$pkgver-$pkgrel")
+    groups=('lfs-base')
+
+    cd $srcdir/build-elfutils
+
+    make DESTDIR="${pkgdir}" install
+
+    mkdir "${srcdir}"/libelf
+    mv "${pkgdir}"/usr/{lib,include} "${srcdir}/libelf"
+}
+
+package_libelf() {
+    pkgdesc="Libraries to handle ELF object files and DWARF debugging information"
+    depends=('gcc-libs' 'zlib' 'bzip2' 'xz')
+    groups=('lfs-base')
+
+    mv libelf "${pkgdir}/usr"
+}
+
+package_lib32-libelf(){
+    pkgdesc="Libraries to handle ELF object files and DWARF debugging information (32-bit)"
+    depends=('lib32-bzip2' 'lib32-zlib' 'libelf')
+    makedepends=('gcc-multilib')
+    provides=('lib32-elfutils')
+    conflicts=('lib32-elfutils')
+    replaces=('lib32-elfutils')
+    groups=('lfs-base' 'lfs-multilib')
+
+    cd $srcdir/build-lib32-libelf
+    make DESTDIR=${pkgdir} install
+    rm -rf ${pkgdir}/usr/{bin,include,share}
+}
+
+package_libx32-libelf(){
+    pkgdesc="Libraries to handle ELF object files and DWARF debugging information (x32 ABI)"
+    depends=('libx32-bzip2' 'libx32-zlib' 'libelf')
+    makedepends=('gcc-multilib')
+    provides=('libx32-elfutils')
+    conflicts=('libx32-elfutils')
+    replaces=('libx32-elfutils')
+    groups=('lfs-base' 'lfs-multilib')
+
+    cd $srcdir/build-libx32-libelf
+    make DESTDIR=${pkgdir} install
+    rm -rf ${pkgdir}/usr/{bin,include,share}
+}
+
+sha1sums=('922161f84baaae845382338098071544b98ca92d'
+          'SKIP')

@@ -1,0 +1,41 @@
+# Maintainer: %s <%s>
+pkgname=libffi
+pkgver=3.2.1
+pkgrel=1
+pkgdesc='Portable foreign function interface library'
+arch=('x86_64')
+url='http://sourceware.org/libffi/'
+license=('MIT')
+depends=('glibc')
+checkdepends=('dejagnu')
+source=(ftp://sourceware.org/pub/libffi/libffi-$pkgver.tar.gz)
+sha1sums=('280c265b789e041c02e5c97815793dfc283fb1e6')
+
+prepare(){
+  cd $pkgname-$pkgver
+
+  # Modify the Makefile to install headers into the standard /usr/include directory instead of /usr/lib/libffi-3.2.1/include
+  sed -e '/^includesdir/ s/$(libdir).*$/$(includedir)/' \
+      -i include/Makefile.in
+
+  sed -e '/^includedir/ s/=.*$/=@includedir@/' \
+      -e 's/^Cflags: -I${includedir}/Cflags:/' \
+      -i libffi.pc.in
+  
+  ./configure --prefix=/usr --disable-static
+}
+
+build() {
+  cd $pkgname-$pkgver
+  make
+}
+
+check() {
+  make -C $pkgname-$pkgver check
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="$pkgdir" install
+  install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+}
