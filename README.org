@@ -734,3 +734,9 @@ add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
      makepkg -fcC
      add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
      #+END_SRC
+**** ~perl-xml-parser~
+     #+BEGIN_SRC sh :name perl-xml-parser
+     . PKGBUILD
+     makepkg -fcC
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
