@@ -78,9 +78,11 @@ package_bzip2() {
     ln -svf bzip2 $pkgdir/bin/bunzip2
     ln -svf bzip2 $pkgdir/bin/bzcat
 
+    install -vdm755 $pkgdir/usr/lib
     install -v -m755 libbz2.so.$pkgver $pkgdir/lib
     ln -sv libbz2.so.$pkgver $pkgdir/lib/libbz2.so
     ln -sv libbz2.so.$pkgver $pkgdir/lib/libbz2.so.1
+    ln -sv ../../lib/libbz2.so.$pkgver $pkgdir/usr/lib/libbz2.so.1.0
     ln -sv libbz2.so.$pkgver $pkgdir/lib/libbz2.so.1.0
 
     install -v -m644 bzlib.h $pkgdir/usr/include/
