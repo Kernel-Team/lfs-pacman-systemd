@@ -1,0 +1,163 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgbase=tcl
+pkgname=(tcl lib{,x}32-tcl)
+pkgver=8.6.9
+pkgrel=1
+arch=('x86_64')
+url="http://tcl.sourceforge.net/"
+license=('custom')
+options=('staticlibs')
+source=(http://downloads.sourceforge.net/sourceforge/tcl/tcl${pkgver}-src.tar.gz)
+
+prepare() {
+    mkdir -pv build-tcl build-lib{,x}32-tcl
+    cd tcl${pkgver}
+    rm -rf pkgs/sqlite3*
+
+    cd $srcdir/build-tcl
+    $srcdir/tcl${pkgver}/unix/configure \
+               --prefix=/usr --mandir=/usr/share/man \
+               --enable-threads --enable-64bit
+
+    cd $srcdir/build-lib32-tcl
+    CC='gcc -m32' CXX='g++ -m32' \
+      PKG_CONFIG_PATH=/usr/lib32/pkgconfig \
+      $srcdir/tcl${pkgver}/unix/configure \
+      --prefix=/usr --libdir=/usr/lib32 \
+      --mandir=/usr/share/man --enable-threads \
+      --host=i686-pc-linux-gnu
+
+    cd $srcdir/build-libx32-tcl
+    CC='gcc -mx32' CXX='g++ -mx32' \
+      PKG_CONFIG_PATH=/usr/libx32/pkgconfig \
+      $srcdir/tcl${pkgver}/unix/configure \
+      --prefix=/usr --libdir=/usr/libx32 \
+      --mandir=/usr/share/man --enable-threads \
+      --host=x86_64-pc-linux-gnux32
+}
+
+build() {
+    cd $srcdir/build-tcl
+    make
+
+    cd $srcdir/build-lib32-tcl
+    make
+
+    cd $srcdir/build-libx32-tcl
+    make
+}
+
+check() {
+    cd $srcdir/build-tcl
+    make test
+
+    cd $srcdir/build-lib32-tcl
+    make test
+
+    cd $srcdir/build-libx32-tcl
+    make test
+}
+
+package_tcl() {
+    pkgdesc="The Tcl scripting language"
+    depends=('zlib')
+    groups=('blfs')
+
+    cd $srcdir/build-tcl
+    make INSTALL_ROOT="${pkgdir}" install install-private-headers
+    ln -sf tclsh${pkgver%.*} "${pkgdir}/usr/bin/tclsh"
+    ln -sf libtcl${pkgver%.*}.so "${pkgdir}/usr/lib/libtcl.so"
+    install -Dm644 $srcdir/tcl${pkgver}/license.terms "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+    install -Dm644 $srcdir/tcl${pkgver}/unix/tcl.m4 -t "$pkgdir"/usr/share/aclocal
+
+    # remove buildroot traces
+    sed -e "s#${srcdir}/tcl${pkgver}/unix#/usr/lib#" \
+        -e "s#${srcdir}/tcl${pkgver}#/usr/include#" \
+        -i "${pkgdir}/usr/lib/tclConfig.sh"
+
+    tdbcver=tdbc1.1.0
+    sed -e "s#${srcdir}/tcl${pkgver}/unix/pkgs/$tdbcver#/usr/lib/$tdbcver#" \
+        -e "s#${srcdir}/tcl${pkgver}/pkgs/$tdbcver/generic#/usr/include#" \
+        -e "s#${srcdir}/tcl${pkgver}/pkgs/$tdbcver/library#/usr/lib/tcl${pkgver%.*}#" \
+        -e "s#${srcdir}/tcl${pkgver}/pkgs/$tdbcver#/usr/include#" \
+        -i "${pkgdir}/usr/lib/$tdbcver/tdbcConfig.sh"
+
+    itclver=itcl4.1.2
+    sed -e "s#${srcdir}/tcl${pkgver}/unix/pkgs/$itclver#/usr/lib/$itclver#" \
+        -e "s#${srcdir}/tcl${pkgver}/pkgs/$itclver/generic#/usr/include#" \
+        -e "s#${srcdir}/tcl${pkgver}/pkgs/$itclver#/usr/include#" \
+        -i "${pkgdir}/usr/lib/$itclver/itclConfig.sh"
+}
+
+package_lib32-tcl() {
+    pkgdesc="The Tcl scripting language (32-bit)"
+    depends=('lib32-glibc' 'lib32-zlib' 'tcl')
+    groups=('blfs' 'blfs-multilib')
+
+    cd $srcdir/build-lib32-tcl
+
+    make INSTALL_ROOT="${pkgdir}" install install-private-headers
+    rm -rf "${pkgdir}"/usr/{bin,include,lib,share}
+    ln -sf libtcl${pkgver%.*}.so "${pkgdir}"/usr/lib32/libtcl.so
+    strip "${pkgdir}"/usr/lib32/libtcl8.6.so
+    chmod 644 "${pkgdir}"/usr/lib32/libtclstub8.6.a
+
+    sed -e "s#${srcdir}/tcl${pkgver}/unix#/usr/lib32#" \
+        -e "s#${srcdir}/tcl${pkgver}#/usr/include#" \
+        -i "${pkgdir}/usr/lib32/tclConfig.sh"
+
+    tdbcver=1.1.0
+    sed -e "s#${srcdir}/tcl${pkgver}/unix/pkgs/tdbc${tdbcver}#/usr/lib32/tdbc${tdbcver}#" \
+        -e "s#${srcdir}/tcl${pkgver}/pkgs/tdbc${tdbcver}/generic#/usr/include#" \
+        -e "s#${srcdir}/tcl${pkgver}/pkgs/tdbc${tdbcver}/library#/usr/lib32/tcl${pkgver%.*}#" \
+        -e "s#${srcdir}/tcl${pkgver}/pkgs/tdbc${tdbcver}#/usr/include#" \
+        -i "${pkgdir}/usr/lib32/tdbc${tdbcver}/tdbcConfig.sh"
+
+    ictlver=4.1.2
+    sed -e "s#${srcdir}/tcl${pkgver}/unix/pkgs/itcl${ictlver}#/usr/lib32/${ictlver}#" \
+        -e "s#${srcdir}/tcl${pkgver}/pkgs/itcl${ictlver}/generic#/usr/include#" \
+        -e "s#${srcdir}/tcl${pkgver}/pkgs/itcl${ictlver}#/usr/include#" \
+        -i "${pkgdir}/usr/lib32/itcl${ictlver}/itclConfig.sh"
+
+
+    install -dm 755 -p "${pkgdir}"/usr/share/licenses
+    ln -s tcl "${pkgdir}"/usr/share/licenses/lib32-tcl
+}
+
+package_libx32-tcl() {
+    pkgdesc="The Tcl scripting language (x32 ABI)"
+    depends=('libx32-glibc' 'libx32-zlib' 'tcl')
+    groups=('blfs' 'blfs-multilib')
+
+    cd $srcdir/build-libx32-tcl
+
+    make INSTALL_ROOT="${pkgdir}" install install-private-headers
+    rm -rf "${pkgdir}"/usr/{bin,include,lib,share}
+    ln -sf libtcl${pkgver%.*}.so "${pkgdir}"/usr/libx32/libtcl.so
+    strip "${pkgdir}"/usr/libx32/libtcl8.6.so
+    chmod 644 "${pkgdir}"/usr/libx32/libtclstub8.6.a
+
+    sed -e "s#${srcdir}/tcl${pkgver}/unix#/usr/libx32#" \
+        -e "s#${srcdir}/tcl${pkgver}#/usr/include#" \
+        -i "${pkgdir}/usr/libx32/tclConfig.sh"
+
+    tdbcver=1.1.0
+    sed -e "s#${srcdir}/tcl${pkgver}/unix/pkgs/tdbc${tdbcver}#/usr/libx32/tdbc${tdbcver}#" \
+        -e "s#${srcdir}/tcl${pkgver}/pkgs/tdbc${tdbcver}/generic#/usr/include#" \
+        -e "s#${srcdir}/tcl${pkgver}/pkgs/tdbc${tdbcver}/library#/usr/libx32/tcl${pkgver%.*}#" \
+        -e "s#${srcdir}/tcl${pkgver}/pkgs/tdbc${tdbcver}#/usr/include#" \
+        -i "${pkgdir}/usr/libx32/tdbc${tdbcver}/tdbcConfig.sh"
+
+    ictlver=4.1.2
+    sed -e "s#${srcdir}/tcl${pkgver}/unix/pkgs/itcl${ictlver}#/usr/libx32/${ictlver}#" \
+        -e "s#${srcdir}/tcl${pkgver}/pkgs/itcl${ictlver}/generic#/usr/include#" \
+        -e "s#${srcdir}/tcl${pkgver}/pkgs/itcl${ictlver}#/usr/include#" \
+        -i "${pkgdir}/usr/libx32/itcl${ictlver}/itclConfig.sh"
+
+
+    install -dm 755 -p "${pkgdir}"/usr/share/licenses
+    ln -s tcl "${pkgdir}"/usr/share/licenses/libx32-tcl
+}
+
+sha1sums=('861c5c8bbce9eda892c5e63b6035e09fad90a25f')
