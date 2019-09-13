@@ -895,3 +895,17 @@ From here we need to travel a bit and install lots of /python/ packages in order
      makepkg -fcC
      add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
      #+END_SRC
+
+**** TODO ~coreutils~
+     got error:
+     #+BEGIN_EXAMPLE :name coreutils-build-error
+     help2man: can't get `--help' info from man/cp.td/cp
+     Try `--no-discard-stderr' if option outputs to stderr
+     make[2]: *** [Makefile:15302: man/cp.1] Error 127
+     make[2]: *** Waiting for unfinished jobs....
+     #+END_EXAMPLE
+     #+BEGIN_SRC sh :name coreutils
+     . PKGBUILD
+     makepkg -fcC
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC

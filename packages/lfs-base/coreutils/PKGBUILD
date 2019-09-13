@@ -1,0 +1,62 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=coreutils
+pkgver=8.31
+pkgrel=1
+pkgdesc='The basic file, shell and text manipulation utilities of the GNU operating system'
+arch=('x86_64')
+license=('GPL3')
+url='https://www.gnu.org/software/coreutils/'
+depends=('glibc' 'acl' 'attr' 'gmp' 'libcap' 'openssl')
+groups=('lfs-base')
+source=("https://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.xz"{,.sig}
+        http://www.linuxfromscratch.org/patches/lfs/9.0-rc1/${pkgname}-${pkgver}-i18n-1.patch)
+validpgpkeys=('6C37DC12121A5006BC1DB804DF6FD971306037D9') # Pádraig Brady
+
+prepare() {
+    cd $pkgname-$pkgver
+
+    # The following patch fixes this non-compliance and other internationalization-related bugs
+    patch -Np1 -i ../${pkgname}-${pkgver}-i18n-1.patch
+
+    # Suppress a test which on some machines can loop forever
+    sed -i '/test.lock/s/^/#/' gnulib-tests/gnulib.mk
+
+    #autoreconf -fiv
+    
+    ./configure \
+        --prefix=/usr \
+        --with-openssl \
+        --enable-no-install-program=kill,uptime
+}
+
+build() {
+    cd $pkgname-$pkgver
+    make
+}
+
+check() {
+    cd $pkgname-$pkgver
+    #make check
+}
+
+package() {
+    cd $pkgname-$pkgver
+    make DESTDIR="$pkgdir" install
+
+    install -v -dm755 "$pkgdir"/{bin,sbin}
+    install -v -dm755 "$pkgdir"/usr/share/man/man8
+    install -v -dm755 "$pkgdir"/usr/sbin
+    mv -v "$pkgdir"/usr/bin/{cat,chgrp,chmod,chown,cp,date,dd,df,echo} "$pkgdir"/bin
+    mv -v "$pkgdir"/usr/bin/{false,ln,ls,mkdir,mknod,mv,pwd,rm} "$pkgdir"/bin
+    mv -v "$pkgdir"/usr/bin/{rmdir,stty,sync,true,uname} "$pkgdir"/bin
+    mv -v "$pkgdir"/usr/bin/chroot "$pkgdir"/usr/sbin
+    mv -v "$pkgdir"/usr/share/man/man1/chroot.1 "$pkgdir"/usr/share/man/man8/chroot.8
+    sed -i s/\"1\"/\"8\"/1 "$pkgdir"/usr/share/man/man8/chroot.8
+
+    mv -v "$pkgdir"/usr/bin/{head,sleep,nice} "$pkgdir"/bin
+}
+
+md5sums=('0009a224d8e288e8ec406ef0161f9293'
+         'SKIP'
+         'a9404fb575dfd5514f3c8f4120f9ca7d')
