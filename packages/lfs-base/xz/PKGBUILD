@@ -62,6 +62,10 @@ package_xz() {
 
   cd ${srcdir}/build-$pkgbase
   make DESTDIR=${pkgdir} install
+
+  install -d -m755 ${pkgdir}/usr/share/licenses/xz/
+  ln -sf /usr/share/doc/xz/COPYING ${pkgdir}/usr/share/licenses/xz/
+  ln -sf /usr/share/licenses/common/GPL2/license.txt ${pkgdir}/usr/share/doc/xz/COPYING.GPLv2
 }
 
 package_lib32-xz(){
