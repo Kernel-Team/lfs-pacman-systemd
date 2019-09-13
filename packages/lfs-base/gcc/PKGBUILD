@@ -225,6 +225,10 @@ package_gcc-libs() {
     done
 
     rm -rvf "$pkgdir"/usr/lib{,x}32/
+
+  # Install Runtime Library Exception
+  install -Dm644 "$srcdir/gcc/COPYING.RUNTIME" \
+          "$pkgdir/usr/share/licenses/gcc-libs/RUNTIME.LIBRARY.EXCEPTION"
 }
 
 package_gcc() {
