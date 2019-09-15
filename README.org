@@ -677,6 +677,13 @@ add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
      add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
      #+END_SRC
 
+**** ~grep~
+     #+BEGIN_SRC sh :name grep
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+
 **** ~bash~
      #+BEGIN_SRC sh :name bash
      . PKGBUILD
@@ -1039,8 +1046,103 @@ add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
      done
      #+END_SRC
 * Beyond /LFS/.
+Although we've finished /[[http://linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter06/introduction.html][Chapter 6]]/, please note that most of those packages we're not installed with full dependencies. Some packages will need several times compiling for adding those dependencies. In my /pkgbuilds/ I listed those /optional dependencies/ in /optdepends/, the simple way to check it is with ~pacman -Qi <packagename>~.
+** Installing pacman
+We need to install some other packages before installing /pacman/.
+*** Packages
+**** ~wget~
+     Belongs to /blfs/ repository
+     #+BEGIN_SRC sh :name wget
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+**** ~libtasn1~
+     Belongs to /blfs/ repository
+     #+BEGIN_SRC sh :name libtasn1
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
 
-**** TODO ~fakeroot~
+**** ~p11-kit~
+     Belongs to /blfs/ repository
+     #+BEGIN_SRC sh :name p11-kit
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+**** ~make-ca~
+     Belongs to /blfs/ repository
+     #+BEGIN_SRC sh :name wget
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+**** ~curl~
+     Belongs to /blfs/ repository
+     #+BEGIN_SRC sh :name curl
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+Now you can download sources from ~makepkg~ directly.
+**** ~npth~
+     Belongs to /blfs/ repository
+     #+BEGIN_SRC sh :name npth
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+**** ~libgpg-error~
+     Belongs to /blfs/ repository
+     #+BEGIN_SRC sh :name libgpg-error
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+**** ~libgcrypt~
+     Belongs to /blfs/ repository
+     #+BEGIN_SRC sh :name libgcrypt
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+**** ~libksba~
+     Belongs to /blfs/ repository
+     #+BEGIN_SRC sh :name libksba
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+**** ~libassuan~
+     Belongs to /blfs/ repository
+     #+BEGIN_SRC sh :name libassuan
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+**** ~pinentry~
+     Belongs to /blfs/ repository
+     #+BEGIN_SRC sh :name pinentry
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+**** ~nettle~
+     Belongs to /blfs/ repository
+     #+BEGIN_SRC sh :name nettle
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+**** ~libidn~
+     Belongs to /blfs/ repository
+     #+BEGIN_SRC sh :name libidn
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC**** TODO ~fakeroot~
      From /extra/ repository.
      #+BEGIN_SRC sh :name fakeroot
      . PKGBUILD
@@ -1054,7 +1156,13 @@ add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
      makepkg -fcC
      add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
      #+END_SRC
-**** TODO ~python-six~
+**** ~libunistring~
+     Belongs to /blfs/ repository
+     #+BEGIN_SRC sh :name libunistring
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC**** TODO ~python-six~
      #+BEGIN_SRC sh :name python-six
      . PKGBUILD
      makepkg -fcC
@@ -1062,7 +1170,91 @@ add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
        add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z extra
      done
      #+END_SRC
-**** TODO ~python-appdirs~
+**** ~gnutls~
+     Belongs to /blfs/ repository
+     #+BEGIN_SRC sh :name gnutls
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+**** ~sqlite~
+     Belongs to /blfs/ repository
+     #+BEGIN_SRC sh :name sqlite
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     done
+     #+END_SRC
+**** ~gnupg~
+     Belongs to /blfs/ repository
+     #+BEGIN_SRC sh :name gnupg
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+     After this, you can receive keys via ~gpg --recv-keys <keys>~ so ~--skippgpcheck~ options are no longer needed.
+**** ~python2~
+     Belongs to /blfs/ repository
+     #+BEGIN_SRC sh :name python2
+     . PKGBUILD
+     makepkg -fcC
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+**** ~gpgme~
+     Belongs to /blfs/ repository
+     #+BEGIN_SRC sh :name gpgme
+     . PKGBUILD
+     makepkg -fcC
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     done
+     #+END_SRC
+**** ~lz4~
+     Belongs to /extra/ repository
+     #+BEGIN_SRC sh :name libarchive
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z extra
+     #+END_SRC
+**** ~libarchive~
+     Belongs to /blfs/ repository
+     #+BEGIN_SRC sh :name libarchive
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+**** ~fakeroot~
+     Belongs to /extra/ repository
+     #+BEGIN_SRC sh :name fakeroot
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z extra
+     #+END_SRC
+**** ~pacman~
+     Belongs to /extra/ repository
+     #+BEGIN_SRC sh :name extra
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+     After installing pacman, log out of both terminal and relogin again, but without //tools/bin/.
+     #+BEGIN_SRC sh :name chroot2
+     sudo chroot --userspec=$(id -u):$(id -g) "$LFS" /usr/bin/env -i \
+       HOME=/home/$USER TERM="$TERM" PS1='(lfs chroot) \u:\w\$ ' \
+       PATH=/bin:/usr/bin:/sbin:/usr/sbin \
+       /bin/bash --login +h
+     #+END_SRC
+** Python modules
+**** ~python-six~
+     #+BEGIN_SRC sh :name python-six
+     . PKGBUILD
+     makepkg -fcC
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     done
+     #+END_SRC
+**** ~python-appdirs~
      #+BEGIN_SRC sh :name python-appdirs
      . PKGBUILD
      makepkg -fcC
@@ -1070,7 +1262,7 @@ add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
        add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z extra
      done
      #+END_SRC
-**** TODO ~python-packaging~
+**** ~python-packaging~
      #+BEGIN_SRC sh :name python-packaging
      . PKGBUILD
      makepkg -fcC
@@ -1078,10 +1270,18 @@ add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
        add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z extra
      done
      #+END_SRC
-**** TODO ~python-setuptools~
+**** ~python-setuptools~
      #+BEGIN_SRC sh :name python-setuptools
      python2 ~/get-pip.py --user
      ~/.local/bin/pip2 install pyparsing --user
+     . PKGBUILD
+     makepkg -fcC
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z extra
+     done
+     #+END_SRC
+**** ~python-pip~
+     #+BEGIN_SRC sh :name python-setuptools
      . PKGBUILD
      makepkg -fcC
      for p in ${pkgname[@]};do

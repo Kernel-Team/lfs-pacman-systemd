@@ -1,0 +1,50 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=libgcrypt
+pkgver=1.8.5
+pkgrel=1
+pkgdesc="General purpose cryptographic library based on the code from GnuPG"
+arch=(x86_64)
+url="http://www.gnupg.org"
+license=('LGPL')
+depends=('libgpg-error')
+options=('!emptydirs')
+# https://www.gnupg.org/download/integrity_check.html
+source=(https://gnupg.org/ftp/gcrypt/${pkgname}/${pkgname}-${pkgver}.tar.bz2{,.sig})
+validpgpkeys=('031EC2536E580D8EA286A9F22071B08A33BD3F06' # "NIIBE Yutaka (GnuPG Release Key) <gniibe@fsij.org>"
+              'D8692123C4065DEA5E0F3AB5249B39D24F25E3B6') # Werner Koch
+options=(!makeflags)
+groups=('blfs' 'general-libraries')
+
+prepare() {
+    cd ${pkgname}-${pkgver}
+    # tests fail due to systemd+libseccomp preventing memory syscalls when building in chroots
+    #  t-secmem: line 176: gcry_control (GCRYCTL_INIT_SECMEM, pool_size, 0) failed: General error
+    #  FAIL: t-secmem
+    #  t-sexp: line 1174: gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0) failed: General error
+    #  FAIL: t-sexp
+    sed -i "s:t-secmem::" tests/Makefile.am
+    sed -i "s:t-sexp::" tests/Makefile.am
+    autoreconf -vfi
+    ./configure --prefix=/usr \
+	        --disable-static \
+	        --disable-padlock-support
+}
+
+build() {
+    cd ${pkgname}-${pkgver}
+    make
+}
+
+check() {
+    cd ${pkgname}-${pkgver}
+    make check || true
+}
+
+package() {
+    cd ${pkgname}-${pkgver}
+    make DESTDIR=${pkgdir} install
+}
+
+md5sums=('348cc4601ca34307fc6cd6c945467743'
+         'SKIP')

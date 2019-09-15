@@ -31,8 +31,8 @@ check() {
 package() {
     make -C $pkgname-$pkgver DESTDIR="$pkgdir" install
 
-    install -dm755 "$pkgdir"/usr/local/share/libalpm/hooks/
-    install -m644 texinfo-{install,remove}.hook "$pkgdir"/usr/local/share/libalpm/hooks/
+    install -dm755 "$pkgdir"/usr/share/libalpm/hooks/
+    install -m644 texinfo-{install,remove}.hook "$pkgdir"/usr/share/libalpm/hooks/
 }
 
 md5sums=('5231da3e6aa106cd0532b8609e5b3702'

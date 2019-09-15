@@ -1,0 +1,61 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=pinentry
+pkgver=1.1.0
+pkgrel=1
+pkgdesc='Collection of simple PIN or passphrase entry dialogs which utilize the Assuan protocol'
+url='https://gnupg.org/related_software/pinentry/'
+arch=('x86_64')
+license=('GPL')
+depends=('ncurses' 'libcap' 'libassuan')
+makedepends=()
+optdepends=('gtk2: gtk2 backend'
+            'qt5-base: qt backend'
+            'gcr: gnome3 backend')
+validpgpkeys=('D8692123C4065DEA5E0F3AB5249B39D24F25E3B6')
+source=("https://www.gnupg.org/ftp/gcrypt/${pkgname}/${pkgname}-${pkgver}.tar.bz2"{,.sig}
+        'pinentry')
+backup=('usr/bin/pinentry')
+groups=('blfs' 'general-utilities')
+
+_confargs=('--prefix=/usr' '--enable-pinentry-tty' '--enable-pinentry-curses' '--enable-fallback-curses')
+
+if [[ "$(pacman -Qq gcr 2>/dev/null)" ]];then
+    _confargs+=( '--enable-pinentry-gnome3')
+    makedepends+=( 'gcr')
+fi
+if [[ "$(pacman -Qq emacs 2>/dev/null)" ]];then
+    _confargs+=( '--enable-pinentry-emacs')
+fi
+if [[ "$(pacman -Qq gtk2 2>/dev/null)" ]];then
+    _confargs+=( '--enable-pinentry-gtk2')
+    makedepends+=( 'gtk2')
+fi
+if [[ "$(pacman -Qq qt5-base 2>/dev/null)" ]];then
+    _confargs+=( '--enable-pinentry-qt')
+    makedepends+=( 'qt5-base')
+fi
+if [[ "$(pacman -Qq libsecret 2>/dev/null)" ]];then
+    _confargs+=( '--enable-libsecret')
+    depends+=( 'libsecret')
+fi
+
+prepare(){
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    ./configure ${_confargs[@]}
+}
+
+build() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    make
+}
+
+package() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    make DESTDIR="${pkgdir}" install
+    install ../pinentry "${pkgdir}/usr/bin/pinentry"
+}
+
+md5sums=('3829315cb0a1e9cedc05ffe6def7a2c6'
+         'SKIP'
+         'da6885af254bd302094f4cf3eec8afe8')

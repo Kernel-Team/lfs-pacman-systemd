@@ -209,8 +209,8 @@ package_systemd() {
     # install -v -d -o root -g 102 -m 750 "$pkgdir"/usr/share/polkit-1/rules.d
 
     # pacman hooks
-    install -Dm755 systemd-hook "$pkgdir"/usr/local/share/libalpm/scripts/systemd-hook
-    install -Dm644 -t "$pkgdir"/usr/local/share/libalpm/hooks *.hook
+    install -Dm755 systemd-hook "$pkgdir"/usr/share/libalpm/scripts/systemd-hook
+    install -Dm644 -t "$pkgdir"/usr/share/libalpm/hooks *.hook
 
     # overwrite the systemd-user PAM configuration with our own
     install -Dm644 systemd-user.pam "$pkgdir"/etc/pam.d/systemd-user

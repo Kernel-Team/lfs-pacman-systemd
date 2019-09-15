@@ -1,7 +1,7 @@
 #-*-mode:sh-*-
 # Maintainer: alexforsale@yahoo.com
 pkgname=('python-pip' 'python2-pip')
-pkgver=18.1
+pkgver=19.2.3
 pkgrel=1
 pkgdesc="The PyPA recommended tool for installing Python packages"
 url="https://pip.pypa.io/"
@@ -14,27 +14,28 @@ makedepends=('python-setuptools' 'python2-setuptools')
 _checkdeps=('pytest-runner' 'scripttest' 'virtualenv' 'pretend' 'yaml' 'mock' 'freezegun')
 checkdepends=()
 source=("pip-${pkgver}.tar.gz::https://github.com/pypa/pip/archive/${pkgver}.tar.gz")
-sha512sums=('ddb67ad52c2b4f0cae89e11bd90dbd20275fce0ee34a8e0929210a8907cd61c2298221a4ddf1e7b196b0274241eb88097decbbb84196ab30dd4e979e7378d91f')
+sha512sums=('59fcb79173529097662fcb9662f78fee7b00f441d49ea41f280da4b27875a425cccaa3daeda647ac7cddf936111923dc1546a3474fcdd7003777178e7143f6eb')
+groups=('extra' 'python-extra')
 
-if [[ -n "$(pacman -Qq python2-ipaddress 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq python2-ipaddress 2>/dev/null)" ]];then
     makedepends+=( 'python2-ipaddress')
 fi
-if [[ -n "$(pacman -Qq python-sphinx 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq python-sphinx 2>/dev/null)" ]];then
     makedepends+=( 'python-sphinx')
 fi
 
 for _d in ${_deps[@]};do
-    if [[ -n "$(pacman -Qq "${_d[@]/#/python-}" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_d[@]/#/python-}" 2>/dev/null)" ]];then
         makedepends+=( "${_d[@]/#/python-}")
         depends+=( "${_d[@]/#/python-}")
     fi
-    if [[ -n "$(pacman -Qq "${_d[@]/#/python2-}" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_d[@]/#/python2-}" 2>/dev/null)" ]];then
         makedepends+=( "${_d[@]/#/python2-}")
         depends+=( "${_d[@]/#/python2-}")
     fi
 done
 for _c in ${_checkdeps[@]};do
-    if [[ -n "$(pacman -Qq "${_c[@]/#/python-}" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_c[@]/#/python-}" 2>/dev/null)" ]];then
         checkdepends+=( "${_c[@]/#/python-}")
     fi
 done
@@ -55,7 +56,7 @@ build() {
     python setup.py build
     python2 setup.py build
 
-    if [[ -n "$(pacman -Qq python-sphinx 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq python-sphinx 2>/dev/null)" ]];then
         cd docs/
         PYTHONPATH="$srcdir/pip-$pkgver/src/" sphinx-build -W -b man -d build/doctrees/man man build/man -c html
         mkdir -p build/man-pip2
@@ -78,7 +79,7 @@ package_python-pip() {
     install -D -m644 LICENSE.txt \
 	    "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 
-    if [[ -n "$(pacman -Qq python-sphinx 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq python-sphinx 2>/dev/null)" ]];then
         install -Dm644 -t "$pkgdir"/usr/share/man/man1 docs/build/man/*
     fi
     
@@ -101,7 +102,7 @@ package_python2-pip() {
     install -D -m644 LICENSE.txt \
 	    "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 
-    if [[ -n "$(pacman -Qq python-sphinx 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq python-sphinx 2>/dev/null)" ]];then
         install -Dm644 -t "$pkgdir"/usr/share/man/man1 docs/build/man-pip2/*
     fi
 

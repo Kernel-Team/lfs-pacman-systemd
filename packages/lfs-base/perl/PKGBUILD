@@ -220,8 +220,8 @@ package() {
     #(cd ${pkgdir}/usr/bin; mv perl${pkgver} perl)
     rm "$pkgdir/usr/bin/perl$pkgver"
 
-    install -D -m755 -t "$pkgdir/usr/local/share/libalpm/scripts" "$srcdir/detect-old-perl-modules.sh"
-    install -D -m644 -t "$pkgdir/usr/local/share/libalpm/hooks" "$srcdir/detect-old-perl-modules.hook"
+    install -D -m755 -t "$pkgdir/usr/share/libalpm/scripts" "$srcdir/detect-old-perl-modules.sh"
+    install -D -m644 -t "$pkgdir/usr/share/libalpm/hooks" "$srcdir/detect-old-perl-modules.hook"
 
     find $pkgdir -name perllocal.pod -delete
     find $pkgdir -name .packlist -delete
@@ -233,4 +233,4 @@ sha512sums=('68a295eccd64debd9d6a10f0d5577f872a19ad8c2d702798f6b0f45b8c3af6ab323
             '79da9a664876f39bedbe349b1b82a9e0afac94d3ee2ee3c4e014afd7b24609edaac9f7ac54c82729689d14fb68e14aed5d9bdbba86b88ccb92358eb62ceb1cbf'
             '9f9b0ab30fae49513fa0488d0dc96035be38f6f225cf150e8801570bec20e976123b761d04bf1c177fd730c43353c845a5c30ba556f3cb99269a6d96d9b734e4'
             '23f6d805e1859d644854e24ad5f0b575e7476a949fc7768723a5084fa0869cfcd88522e26e71a53e59edc34196c2d4af060cc229a5e82af046186949b78717ff'
-            '3e15bda44b1afd0b339e1aa4d504e5956cac4cea5a3f6471d3a801beed9e3770564c2ce5353783a52f7868485ddd2411e97a1a65a13f147ee7caffb5991c8b60')
+            '6b5b2ba606d443da22c6c1a754829abd36f3fdfef1089bcf06c8f9db0217f2c2f02ebc14958ffa7afe618c9a80bd1025e76704f67466c0c3db7d40ef2c0e56b3')

@@ -12,6 +12,7 @@ makedepends=()
 groups=('python-extra')
 source=("https://pypi.io/packages/source/a/appdirs/appdirs-$pkgver.tar.gz")
 md5sums=('44c679904082a2133f5566c8a0d3ab42')
+groups=('extra' 'python-extra')
 
 if [[ "$(pacman -Qq python-setuptools 2>/dev/null)" ]];then
     makedepends+=( 'python-setuptools')

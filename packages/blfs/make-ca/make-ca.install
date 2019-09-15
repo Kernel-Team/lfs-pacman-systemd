@@ -1,0 +1,7 @@
+# -*-sh-*-
+post_install(){
+    /usr/sbin/make-ca -g
+
+    ln -sfv /etc/pki/tls/certs/ca-bundle.crt \
+       /etc/ssl/ca-bundle.crt
+}

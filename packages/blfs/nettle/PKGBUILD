@@ -1,0 +1,48 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=nettle
+pkgver=3.5.1
+pkgrel=1
+pkgdesc="A low-level cryptographic library"
+arch=('x86_64')
+url="https://www.lysator.liu.se/~nisse/nettle"
+license=('GPL2')
+depends=('gmp')
+_checkdeps=('valgrind')
+checkdepends=()
+source=(https://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.gz{,.sig})
+validpgpkeys=('343C2FF0FBEE5EC2EDBEF399F3599FF828C67298') # Niels Möller <nisse@lysator.liu.se>
+groups=('blfs' 'security')
+
+for _c in ${_checkdeps[@]};do
+    if [[ -n "$(pacman -Qq "${_c}" 2>/dev/null)" ]];then
+        checkdepends+=( "${_c}")
+    else
+        optdepends+=( "${_c}")
+    fi
+done
+
+prepare(){
+    cd $pkgname-$pkgver
+    ./configure --prefix=/usr --disable-static
+}
+
+build() {
+    cd $pkgname-$pkgver
+    make
+}
+
+check() {
+    cd $pkgname-$pkgver
+    if [[ "$(pacman -Qq valgrind 2>/dev/null)" ]];then
+        make -k check
+    fi
+}
+
+package() {
+    cd $pkgname-$pkgver
+    make DESTDIR="$pkgdir/" install
+}
+
+sha256sums=('75cca1998761b02e16f2db56da52992aef622bf55a3b45ec538bc2eedadc9419'
+            'SKIP')

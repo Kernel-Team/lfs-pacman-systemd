@@ -1,0 +1,65 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=p11-kit
+pkgver=0.23.16.1
+pkgrel=1
+pkgdesc="Provides a way to load and enumerate PKCS#11 modules"
+arch=(x86_64)
+url="https://p11-glue.freedesktop.org"
+license=(BSD)
+depends=(glibc libtasn1 libffi)
+_makedeps=('gtk-doc')
+makedepends=()
+install=${pkgname}.install
+source=("https://github.com/p11-glue/p11-kit/releases/download/$pkgver/$pkgname-$pkgver.tar.gz")
+validpgpkeys=('C0F67099B808FB063E2C81117BFB1108D92765AF'  # Stef Walter
+              '462225C3B46F34879FC8496CD605848ED7E69871') # Daiki Ueno
+groups=('blfs' 'security')
+
+for _m in ${_makedeps[@]};do
+    if [[ -n "$(pacman -Ss "^${_m}$" 2>/dev/null)" ]];then
+        makedepends+=( "${_m}")
+    fi
+done
+
+prepare() {
+    cd $pkgname-$pkgver
+
+    sed '20,$ d' -i trust/trust-extract-compat.in
+    cat >> trust/trust-extract-compat.in << "EOF"
+echo "Please create an OpenSSL Trusted Certificate with appropriate"
+echo "trust arguments in /etc/ssl/local/ and run '/usr/sbin/make-ca -f'"
+echo "as the root user."
+exit 1
+EOF
+
+    # Build and install an additional library (libnssckbi-p11-kit.so) which
+    # is a copy of p11-kit-trust.so but uses the same label for root certs as
+    # libnssckbi.so ("Builtin Object Token" instead of "Default Trust")
+    # https://bugs.freedesktop.org/show_bug.cgi?id=66161
+    #patch -Np1 -i ../0001-Build-and-install-libnssckbi-p11-kit.so.patch
+    
+    _confargs=()
+    if [[ -z "$(pacman -Qq gtk-doc 2>&1 >/dev/null)" ]];then
+        _confargs+=( '--enable-doc')
+    fi
+    ./configure --prefix=/usr --sysconfdir=/etc --with-trust-paths=/etc/pki/anchors ${_confargs[@]}
+}
+
+build() {
+    cd $pkgname-$pkgver
+    make
+}
+
+check() {
+    cd $pkgname-$pkgver
+    make check || true
+}
+
+package() {
+    cd $pkgname-$pkgver
+    make DESTDIR="$pkgdir" install
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
+
+md5sums=('090a9cf689efd8d4899600c3093b3735')

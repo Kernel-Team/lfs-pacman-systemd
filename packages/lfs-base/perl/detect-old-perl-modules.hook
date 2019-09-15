@@ -7,4 +7,4 @@ Target = usr/lib/perl5/*/
 [Action]
 Description = Warn about old perl modules
 When = PostTransaction
-Exec = /usr/local/share/libalpm/scripts/detect-old-perl-modules.sh
+Exec = /usr/share/libalpm/scripts/detect-old-perl-modules.sh

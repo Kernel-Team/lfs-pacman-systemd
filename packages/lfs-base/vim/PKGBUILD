@@ -104,7 +104,7 @@ package(){
             "${pkgdir}"/usr/share/vim/vimfiles/lfs.vim
     
     # pacman hook for documentation helptags
-    install -Dm 644 "${srcdir}"/vimdoc.hook "${pkgdir}"/usr/local/share/libalpm/hooks/vimdoc.hook
+    install -Dm 644 "${srcdir}"/vimdoc.hook "${pkgdir}"/usr/share/libalpm/hooks/vimdoc.hook
 }
 
 md5sums=('1739a1df312305155285f0cfa6118294'

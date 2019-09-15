@@ -10,7 +10,7 @@ url="http://pypi.python.org/pypi/six/"
 license=('MIT')
 makedepends=()
 checkdepends=()
-groups=('python-extra')
+groups=('extra' 'python-extra')
 source=("https://pypi.io/packages/source/s/six/six-$pkgver.tar.gz")
 sha512sums=('937728372edf1e0ac13bbd706723d0de35e015c30d0ae41f789c5ed2e3669bb0db70cdc6e036ec2d437a6c4aa0d5d1e727b6d09ac34cca7e4e92e5d3b4775151')
 

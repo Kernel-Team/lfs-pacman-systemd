@@ -16,25 +16,26 @@ makedepends=()
 checkdepends=()
 source=("https://pypi.io/packages/source/p/packaging/packaging-$pkgver.tar.gz")
 sha512sums=('1dec7f49c325801eb85b11432f8a316d228bb1881a04ac546f5556d60f5fa33f8085d0e91bbd5abfeb30bfcb05ec0532ed75a977dc996e256b4dc8c27c10e79b')
+groups=('extra' 'python-extra')
 
 for _b in ${_deps[@]};do
-    if [[ -n "$(pacman -Qq "${_d[@]/#/python-}" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_d[@]/#/python-}" 2>/dev/null)" ]];then
         depends+=( "${_d[@]/#/python-}")
     fi
-    if [[ -n "$(pacman -Qq "${_d[@]/#/python2-}" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_d[@]/#/python2-}" 2>/dev/null)" ]];then
         depends+=( "${_d[@]/#/python-}")
     fi
 done
 for _d in ${_makedeps[@]};do
-    if [[ -n "$(pacman -Qq "${_d[@]/#/python-}" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_d[@]/#/python-}" 2>/dev/null)" ]];then
         makedepends+=( "${_d[@]/#/python-}")
     fi
-    if [[ -n "$(pacman -Qq "${_d[@]/#/python2-}" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_d[@]/#/python2-}" 2>/dev/null)" ]];then
         makedepends+=( "${_d[@]/#/python2-}")
     fi
 done
 for _c in ${_checkdeps[@]};do
-    if [[ -n "$(pacman -Qq "${_c[@]/#/python-}" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_c[@]/#/python-}" 2>/dev/null)" ]];then
         checkdepends+=( "${_c[@]/#/python-}")
     fi
 done
