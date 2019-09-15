@@ -2,6 +2,13 @@ pathappend /usr/lib/pkgconfig PKG_CONFIG_PATH
 if [ -d /usr/local/lib/pkgconfig ] ; then
         pathappend /usr/local/lib/pkgconfig PKG_CONFIG_PATH
 fi
+if [ -d /usr/local/lib64/pkgconfig ] ; then
+        pathappend /usr/local/lib64/pkgconfig PKG_CONFIG_PATH
+fi
+if [ -d /usr/lib64/pkgconfig ] ; then
+        pathappend /usr/lib64/pkgconfig PKG_CONFIG_PATH
+fi
+
 if [ -d /usr/local/bin ]; then
         pathprepend /usr/local/bin
 fi
