@@ -15,6 +15,7 @@ source=("https://pkg-config.freedesktop.org/releases/pkg-config-$pkgver.tar.gz"{
         0001-Workaround-error-m4_copy.patch)
 validpgpkeys=('6B99CE97F17F48C27F722D71023A4420C7EC6914')
 
+_confargs=( '--with-pc-path=/usr/lib/pkgconfig:/usr/lib64/pkgconfig:/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig')
 if [[ "$(pacman -Ss ^glib2$ 2>/dev/null)" ]];then
     depends+=( 'glib2')
     pkgrel=$((pkgrel+1))
@@ -27,6 +28,7 @@ prepare() {
     cd $pkgname-$pkgver
     if [[ $(pacman -Qq automake 2>/dev/null) ]];then
         patch -Np1 -i "$srcdir/0001-Workaround-error-m4_copy.patch"
+        autoreconf -fvi
     fi
 }
 
