@@ -9,7 +9,7 @@ url="http://www.oracle.com/technology/software/products/berkeley-db/index.html"
 license=('custom')
 depends=('gcc-libs' 'sh')
 provides=('db')
-groups=('extra')
+groups=('blfs')
 source=(http://download.oracle.com/${pkgname}/db-${pkgver}.tar.gz)
 
 _confargs=()

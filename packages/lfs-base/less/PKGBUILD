@@ -1,0 +1,32 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=less
+pkgver=551
+pkgrel=1
+pkgdesc='A terminal based program for viewing text files'
+license=('GPL3')
+arch=('x86_64')
+url='http://www.greenwoodsoftware.com/less'
+depends=('glibc' 'ncurses' 'pcre')
+validpgpkeys=('AE27252BD6846E7D6EAE1DD6F153A7C833235259') # Mark Nudelman
+source=("http://www.greenwoodsoftware.com/$pkgname/$pkgname-$pkgver.tar.gz"
+        "$pkgname-$pkgver.sig::http://www.greenwoodsoftware.com/$pkgname/$pkgname-$pkgver.sig")
+md5sums=('4ad4408b06d7a6626a055cb453f36819'
+         'SKIP')
+groups=('lfs-base')
+
+prepare(){
+    cd $pkgname-$pkgver
+    sh configure --prefix=/usr --sysconfdir=/etc --with-regex=pcre
+}
+
+build() {
+    cd $pkgname-$pkgver
+    make
+}
+
+package() {
+    cd $pkgname-$pkgver
+    make DESTDIR="$pkgdir" install
+}
+

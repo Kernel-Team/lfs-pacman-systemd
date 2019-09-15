@@ -22,7 +22,7 @@ prepare() {
     # Suppress a test which on some machines can loop forever
     sed -i '/test.lock/s/^/#/' gnulib-tests/gnulib.mk
 
-    #autoreconf -fiv
+    autoreconf -fiv
     
     ./configure \
         --prefix=/usr \
@@ -53,6 +53,7 @@ package() {
     mv -v "$pkgdir"/usr/bin/chroot "$pkgdir"/usr/sbin
     mv -v "$pkgdir"/usr/share/man/man1/chroot.1 "$pkgdir"/usr/share/man/man8/chroot.8
     sed -i s/\"1\"/\"8\"/1 "$pkgdir"/usr/share/man/man8/chroot.8
+    chmod 644 "$pkgdir"/usr/share/man/man8/chroot.8
 
     mv -v "$pkgdir"/usr/bin/{head,sleep,nice} "$pkgdir"/bin
 }

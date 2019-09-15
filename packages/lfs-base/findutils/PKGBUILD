@@ -1,0 +1,46 @@
+#-*-mode:sh-*-
+# Maintainer: %s <%s>
+pkgname=findutils
+pkgver=4.6.0
+pkgrel=1
+pkgdesc="GNU utilities to locate files"
+arch=('x86_64')
+license=('GPL3')
+depends=('glibc' 'sh')
+url="http://www.gnu.org/software/findutils"
+source=(ftp://ftp.gnu.org/pub/gnu/findutils/${pkgname}-${pkgver}.tar.gz)
+sha1sums=('f18e8aaee3f3d4173a1f598001003be8706d28b0')
+groups=('lfs-base')
+
+prepare(){
+    cd "${srcdir}/${pkgname}-${pkgver}"
+
+    # suppress a test which on some machines can loop forever
+    sed -i 's/test-lock..EXEEXT.//' tests/Makefile.in
+
+    sed -i 's/IO_ftrylockfile/IO_EOF_SEEN/' gl/lib/*.c
+    sed -i '/unistd/a #include <sys/sysmacros.h>' gl/lib/mountlist.c
+    echo "#define _IO_IN_BACKUP 0x100" >> gl/lib/stdio-impl.h
+
+    ./configure --prefix=/usr --localstatedir=/var/lib/locate
+}
+
+build() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    make
+}
+
+check() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    make check
+}
+
+package() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    make DESTDIR=$pkgdir install
+
+    install -v -dm755 $pkgdir/bin
+    mv -v $pkgdir/usr/bin/find $pkgdir/bin
+    sed -i 's|find:=${BINDIR}|find:=/bin|' $pkgdir/usr/bin/updatedb
+    chmod 755 $pkgdir/usr/bin/updatedb
+}

@@ -1,0 +1,74 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=e2fsprogs
+pkgver=1.45.3
+pkgrel=1
+pkgdesc="Ext2/3/4 filesystem utilities"
+arch=('x86_64')
+license=('GPL' 'LGPL' 'MIT')
+url="http://e2fsprogs.sourceforge.net"
+depends=('sh')
+makedepends=()
+backup=('etc/mke2fs.conf')
+options=('staticlibs')
+validpgpkeys=('3AB057B7E78D945C8C5591FBD36F769BC11804F0') # Theodore Ts'o <tytso@mit.edu>
+source=("https://www.kernel.org/pub/linux/kernel/people/tytso/${pkgname}/v${pkgver}/${pkgname}-${pkgver}.tar."{xz,sign})
+groups=('lfs-base')
+
+if [[ "$(pacman -Qq libutil-linux 2>/dev/null)" ]];then
+    makedepends+=( 'libutil-linux')
+fi
+if [[ "$(pacman -Qq util-linux 2>/dev/null)" ]];then
+    makedepends+=( 'util-linux')
+fi
+
+prepare() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+
+    # Remove unnecessary init.d directory
+    sed -i '/init\.d/s|^|#|' misc/Makefile.in
+
+    if [[ -n "$(pacman -Qq util-linux 2>&1 >/dev/null)" ]];then
+        LIBS="${LIBS} -L/cross-tools/lib"
+        CFLAGS="${CFLAGS} -I/cross-tools/include"
+        PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:/cross-tools/lib/pkgconfig"
+    fi
+
+    ./configure \
+        --prefix=/usr \
+        --bindir=/bin \
+        --with-root-prefix="" \
+        --enable-elf-shlibs \
+        --disable-libblkid \
+        --disable-libuuid \
+        --disable-uuidd \
+        --disable-fsck
+}
+
+build() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    make
+}
+
+package() {
+    unset MAKEFLAGS
+
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    make DESTDIR="${pkgdir}" install install-libs
+
+    chmod -v u+w "${pkgdir}"/usr/lib/{libcom_err,libe2p,libext2fs,libss}.a
+
+    sed -i -e 's/^AWK=.*/AWK=awk/' "${pkgdir}/bin/compile_et"
+    chmod 755 "${pkgdir}/bin/compile_et"
+
+    # remove references to build directory
+    sed -i -e 's#^SS_DIR=.*#SS_DIR="/usr/share/ss"#' "${pkgdir}/bin/mk_cmds"
+    sed -i -e 's#^ET_DIR=.*#ET_DIR="/usr/share/et"#' "${pkgdir}/bin/compile_et"
+    chmod 755 "${pkgdir}/bin/"{mk_cmds,compile_et}
+
+    # remove static libraries with a shared counterpart
+    rm "${pkgdir}"/usr/lib/lib{com_err,e2p,ext2fs,ss}.a
+}
+
+md5sums=('9bbf7ce425dfe58d3d54f1bb679aaf07'
+         'SKIP')

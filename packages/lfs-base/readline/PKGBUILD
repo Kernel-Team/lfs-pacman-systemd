@@ -17,6 +17,7 @@ validpgpkeys=('7C0135FB088AAF6C66C650B9BB5869F064EA74AB') # Chet Ramey
 
 if [[ -n "$(pacman -Ss ncurses$ 2>/dev/null)" ]];then
     readline_depends+=( 'ncurses' 'libncursesw.so')
+    pkgrel=$((pkgrel+1))
 else
     readline_optdepends+=( 'ncurses')
 fi

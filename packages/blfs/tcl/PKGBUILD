@@ -75,6 +75,7 @@ package_tcl() {
     sed -e "s#${srcdir}/tcl${pkgver}/unix#/usr/lib#" \
         -e "s#${srcdir}/tcl${pkgver}#/usr/include#" \
         -i "${pkgdir}/usr/lib/tclConfig.sh"
+    chmod 755 "${pkgdir}/usr/lib/tclConfig.sh"
 
     tdbcver=tdbc1.1.0
     sed -e "s#${srcdir}/tcl${pkgver}/unix/pkgs/$tdbcver#/usr/lib/$tdbcver#" \
@@ -82,12 +83,14 @@ package_tcl() {
         -e "s#${srcdir}/tcl${pkgver}/pkgs/$tdbcver/library#/usr/lib/tcl${pkgver%.*}#" \
         -e "s#${srcdir}/tcl${pkgver}/pkgs/$tdbcver#/usr/include#" \
         -i "${pkgdir}/usr/lib/$tdbcver/tdbcConfig.sh"
+    chmod 755 "${pkgdir}/usr/lib/$tdbcver/tdbcConfig.sh"
 
     itclver=itcl4.1.2
     sed -e "s#${srcdir}/tcl${pkgver}/unix/pkgs/$itclver#/usr/lib/$itclver#" \
         -e "s#${srcdir}/tcl${pkgver}/pkgs/$itclver/generic#/usr/include#" \
         -e "s#${srcdir}/tcl${pkgver}/pkgs/$itclver#/usr/include#" \
         -i "${pkgdir}/usr/lib/$itclver/itclConfig.sh"
+    chmod 755 "${pkgdir}/usr/lib/$itclver/itclConfig.sh"
 }
 
 package_lib32-tcl() {
@@ -106,6 +109,7 @@ package_lib32-tcl() {
     sed -e "s#${srcdir}/tcl${pkgver}/unix#/usr/lib32#" \
         -e "s#${srcdir}/tcl${pkgver}#/usr/include#" \
         -i "${pkgdir}/usr/lib32/tclConfig.sh"
+    chmod 755 "${pkgdir}/usr/lib32/tclConfig.sh"
 
     tdbcver=1.1.0
     sed -e "s#${srcdir}/tcl${pkgver}/unix/pkgs/tdbc${tdbcver}#/usr/lib32/tdbc${tdbcver}#" \
@@ -113,13 +117,14 @@ package_lib32-tcl() {
         -e "s#${srcdir}/tcl${pkgver}/pkgs/tdbc${tdbcver}/library#/usr/lib32/tcl${pkgver%.*}#" \
         -e "s#${srcdir}/tcl${pkgver}/pkgs/tdbc${tdbcver}#/usr/include#" \
         -i "${pkgdir}/usr/lib32/tdbc${tdbcver}/tdbcConfig.sh"
+    chmod 755 "${pkgdir}/usr/lib32/tdbc${tdbcver}/tdbcConfig.sh"
 
     ictlver=4.1.2
     sed -e "s#${srcdir}/tcl${pkgver}/unix/pkgs/itcl${ictlver}#/usr/lib32/${ictlver}#" \
         -e "s#${srcdir}/tcl${pkgver}/pkgs/itcl${ictlver}/generic#/usr/include#" \
         -e "s#${srcdir}/tcl${pkgver}/pkgs/itcl${ictlver}#/usr/include#" \
         -i "${pkgdir}/usr/lib32/itcl${ictlver}/itclConfig.sh"
-
+    chmod 755 "${pkgdir}/usr/lib32/itcl${ictlver}/itclConfig.sh"
 
     install -dm 755 -p "${pkgdir}"/usr/share/licenses
     ln -s tcl "${pkgdir}"/usr/share/licenses/lib32-tcl
@@ -141,6 +146,7 @@ package_libx32-tcl() {
     sed -e "s#${srcdir}/tcl${pkgver}/unix#/usr/libx32#" \
         -e "s#${srcdir}/tcl${pkgver}#/usr/include#" \
         -i "${pkgdir}/usr/libx32/tclConfig.sh"
+    chmod 755 "${pkgdir}/usr/libx32/tclConfig.sh"
 
     tdbcver=1.1.0
     sed -e "s#${srcdir}/tcl${pkgver}/unix/pkgs/tdbc${tdbcver}#/usr/libx32/tdbc${tdbcver}#" \
@@ -148,13 +154,14 @@ package_libx32-tcl() {
         -e "s#${srcdir}/tcl${pkgver}/pkgs/tdbc${tdbcver}/library#/usr/libx32/tcl${pkgver%.*}#" \
         -e "s#${srcdir}/tcl${pkgver}/pkgs/tdbc${tdbcver}#/usr/include#" \
         -i "${pkgdir}/usr/libx32/tdbc${tdbcver}/tdbcConfig.sh"
+    chmod 755 "${pkgdir}/usr/libx32/tdbc${tdbcver}/tdbcConfig.sh"
 
     ictlver=4.1.2
     sed -e "s#${srcdir}/tcl${pkgver}/unix/pkgs/itcl${ictlver}#/usr/libx32/${ictlver}#" \
         -e "s#${srcdir}/tcl${pkgver}/pkgs/itcl${ictlver}/generic#/usr/include#" \
         -e "s#${srcdir}/tcl${pkgver}/pkgs/itcl${ictlver}#/usr/include#" \
         -i "${pkgdir}/usr/libx32/itcl${ictlver}/itclConfig.sh"
-
+    chmod 755 "${pkgdir}/usr/libx32/itcl${ictlver}/itclConfig.sh"
 
     install -dm 755 -p "${pkgdir}"/usr/share/licenses
     ln -s tcl "${pkgdir}"/usr/share/licenses/libx32-tcl

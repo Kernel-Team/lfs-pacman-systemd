@@ -65,7 +65,6 @@ package_openssl() {
     groups=('lfs-base')
 
     cd $srcdir/build-$pkgbase
-    sed -i '/INSTALL_LIBS/s/libcrypto.a libssl.a//' Makefile
     make DESTDIR=$pkgdir MANDIR=/usr/share/man MANSUFFIX=ssl install_sw install_ssldirs install_man_docs
     install -D -m644 $srcdir/$pkgname-$_ver/LICENSE $pkgdir/usr/share/licenses/$pkgname/LICENSE
 }

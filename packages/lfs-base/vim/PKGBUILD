@@ -1,0 +1,113 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=vim
+pkgver=8.1
+pkgrel=1
+pkgdesc="a powerful text editor"
+arch=('x86_64')
+url='https://www.vim.org'
+license=('custom:ex')
+_deps=('libxt' 'lua' 'racket' 'perl' 'python2' 'python' 'tcl' 'ruby' 'cscope' 'gtk2' 'gpm')
+depends=('ncurses'
+        )
+source=(ftp://ftp.vim.org/pub/$pkgname/unix/$pkgname-${pkgver}.tar.bz2
+        vimdoc.hook
+        vimrc
+        lfs.vim
+       )
+
+for _d in ${_deps[@]};do
+    if [[ -n "$(pacman -Qq "${_d}" 2>/dev/null)" ]];then
+        depends+=( "${_d}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_d}")
+    fi
+done
+
+prepare(){
+    cd $pkgname${pkgver/.}
+
+    # change the default location of the vimrc configuration file to /etc
+    echo '#define SYS_VIMRC_FILE "/etc/vimrc"' >> src/feature.h
+
+    _confargs=()
+    if [[ "$(pacman -Qq libxt 2>/dev/null)" ]];then
+        _confargs+=( '--enable-xsmp --enable-xsmp-interact')
+    else
+        _confargs+=( 'disable-xsmp --disable-xsmp-interact')
+    fi
+
+    if [[ "$(pacman -Qq lua 2>/dev/null)" ]];then
+        _confargs+=( '--enable-luainterp=dynamic')
+    fi
+
+    if [[ "$(pacman -Qq racket 2>/dev/null)" ]];then
+        _confargs+=( '--enable-mzschemeinterp')
+    fi
+
+    if [[ "$(pacman -Qq perl 2>/dev/null)" ]];then
+        _confargs+=( '--enable-perlinterp=dynamic')
+    fi
+
+    if [[ "$(pacman -Qq python2 2>/dev/null)" ]];then
+        _confargs+=( '--enable-pythoninterp=dynamic')
+    fi
+
+    if [[ "$(pacman -Qq python 2>/dev/null)" ]];then
+        _confargs+=( '--enable-python3interp=dynamic')
+    fi
+
+    if [[ "$(pacman -Qq tcl 2>/dev/null)" ]];then
+        _confargs+=( '--enable-tclinterp=dynamic')
+    fi
+
+    if [[ "$(pacman -Qq ruby 2>/dev/null)" ]];then
+        _confargs+=( '--enable-rubyinterp=dynamic')
+    fi
+
+    if [[ "$(pacman -Qq cscope 2>/dev/null)" ]];then
+        _confargs+=( '--enable-cscope')
+    fi
+
+    if [[ "$(pacman -Qq gtk3 2>/dev/null)" ]];then
+        _confargs+=( '--enable-gui=gtk3')
+    elif [[ "$(pacman -Qq gtk2 2>/dev/null)" ]];then
+        _confargs+=( '--enable-gui=gtk2')
+    else
+        _confargs+=( '--enable-gui=auto --enable-gtk3-check')
+    fi
+
+    if [[ "$(pacman -Qq gpm 2>/dev/null)" ]];then
+        _confargs+=( '--enable-gpm')
+    fi
+    ./configure --prefix=/usr
+}
+
+build(){
+    cd $pkgname${pkgver/.}
+    make
+}
+
+package(){
+    cd $pkgname${pkgver/.}
+    make DESTDIR="$pkgdir" install
+
+    ln -sv vim "$pkgdir"/usr/bin/vi
+    for L in  "$pkgdir"/usr/share/man/{,*/}man1/vim.1; do
+        ln -sv vim.1 $(dirname $L)/vi.1
+    done
+
+    # rc files
+    install -Dm 644 "${srcdir}"/vimrc "${pkgdir}"/etc/vimrc
+    install -Dm 644 "${srcdir}"/lfs.vim \
+            "${pkgdir}"/usr/share/vim/vimfiles/lfs.vim
+    
+    # pacman hook for documentation helptags
+    install -Dm 644 "${srcdir}"/vimdoc.hook "${pkgdir}"/usr/local/share/libalpm/hooks/vimdoc.hook
+}
+
+md5sums=('1739a1df312305155285f0cfa6118294'
+         '757f3030dfdab8dbced7117470ec0976'
+         '235f644382a435b7e8082ed71789f641'
+         '590daf7f73388addfac58a67e6df8518')

@@ -17,7 +17,6 @@ _makedeps=('gcc-multilib' 'gettext')
 for m in ${_makedeps[@]};do
     if [[ $(pacman -Ss ^"${m}"$ 2>/dev/null) ]];then
         makedepends+=( "$m")
-        pkgrel=$((pkgrel+1))
     fi
 done
 

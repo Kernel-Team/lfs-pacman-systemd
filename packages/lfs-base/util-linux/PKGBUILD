@@ -1,0 +1,141 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgbase=util-linux
+pkgname=(util-linux libutil-linux lib{,x}32-util-linux)
+_pkgmajor=2.34
+pkgver=${_pkgmajor}
+pkgrel=1
+pkgdesc="Miscellaneous system utilities for Linux"
+url="https://www.kernel.org/pub/linux/utils/util-linux/"
+arch=('x86_64')
+_makedeps=('linux-pam' 'libcap-ng')
+makedepends=('systemd')
+license=('GPL2')
+options=('strip')
+validpgpkeys=('B0C64D14301CC6EFAEDF60E4E4B71D5EEC39C284')  # Karel Zak
+source=("https://www.kernel.org/pub/linux/utils/util-linux/v$_pkgmajor/$pkgbase-$pkgver.tar."{xz,sign}
+        'util-linux.sysusers'
+        '60-rfkill.rules'
+        'rfkill-unblock_.service'
+        'rfkill-block_.service')
+
+for _c in ${_makedeps[@]};do
+    if [[ "$(pacman -Qq "${_c}" 2>/dev/null)" ]];then
+        makedepends+=( "${_c}")
+    else
+        optdepends+=( "${_c}")
+    fi
+done
+
+if [[ "$(pacman -Qq "libcap-ng" 2>/dev/null)" ]];then
+    _deps=( 'libcap-ng')
+    pkgrel=$((pkgrel+1))
+fi
+
+_confargs=("ADJTIME_PATH=/var/lib/hwclock/adjtime" "--docdir=/usr/share/doc/util-linux-${pkgver}" "--disable-chfn-chsh"
+           "--disable-login" "--disable-nologin" "--disable-su" "--disable-setpriv" "--disable-runuser" "--disable-static"
+           "--disable-pylibmount" "--without-python")
+#if [[ -n "$(pacman -Qq "linux-pam" 2>/dev/null)" ]];then
+#  _confargs+=( '--enable-chfn-chsh')
+#fi
+
+prepare() {
+    mkdir -pv build-util-linux lib{,x}32-util-linux
+
+    cd build-util-linux
+      $srcdir/$pkgbase-$pkgver/configure ${_confargs[@]}                
+
+    cd $srcdir/lib32-util-linux
+    CC="${CC:-cc} -m32" \
+      PKG_CONFIG_PATH="/usr/lib32/pkgconfig" \
+      $srcdir/$pkgbase-$pkgver/configure \
+      --libdir=/usr/lib32 --host=i686-pc-linux-gnu
+
+    cd $srcdir/libx32-util-linux
+    CC="${CC:-cc} -mx32" \
+      PKG_CONFIG_PATH="/usr/libx32/pkgconfig" \
+      $srcdir/$pkgbase-$pkgver/configure \
+      --libdir=/usr/libx32 --host=x86_64-pc-linux-gnux32
+}
+
+build() {
+    cd $srcdir/build-util-linux 
+    make
+
+    cd ../lib32-util-linux
+    make lib{uuid,blkid,fdisk,mount,smartcols}.la
+
+    cd ../libx32-util-linux
+    make lib{uuid,blkid,fdisk,mount,smartcols}.la
+}
+
+package_util-linux() {
+    conflicts=('eject' 'zramctl' 'rfkill')
+    provides=('eject' 'zramctl' 'rfkill')
+    replaces=('zramctl' 'rfkill')
+    depends=('shadow' 'coreutils' 'libsystemd' 'libutil-linux' ${_deps[@]})
+    groups=('lfs-base')
+
+    cd $srcdir/build-util-linux 
+
+    make DESTDIR="$pkgdir" install
+
+    # TODO(dreisner): offer this upstream?
+    sed -i '/ListenStream/ aRuntimeDirectory=uuidd' "$pkgdir/lib/systemd/system/uuidd.socket"
+    chmod 644 "$pkgdir/lib/systemd/system/uuidd.socket"
+
+    ### runtime libs are shipped as part of libutil-linux
+    rm "$pkgdir"/usr/lib/lib*.so*
+    rm "$pkgdir"/lib/lib*.so*
+
+    ### install systemd-sysusers
+    install -Dm644 "$srcdir/util-linux.sysusers" \
+            "$pkgdir/usr/lib/sysusers.d/util-linux.conf"
+
+    install -Dm644 "$srcdir/60-rfkill.rules" \
+            "$pkgdir/lib/udev/rules.d/60-rfkill.rules"
+
+    install -Dm644 "$srcdir/rfkill-unblock_.service" \
+            "$pkgdir/lib/systemd/system/rfkill-unblock@.service"
+    install -Dm644 "$srcdir/rfkill-block_.service" \
+            "$pkgdir/lib/systemd/system/rfkill-block@.service"
+}
+
+package_libutil-linux() {
+    pkgdesc="util-linux runtime libraries"
+    provides=('libblkid.so' 'libfdisk.so' 'libmount.so' 'libsmartcols.so' 'libuuid.so')
+    groups=('lfs-base')
+
+    make -C $srcdir/build-util-linux  DESTDIR="$pkgdir" install-usrlib_execLTLIBRARIES
+}
+
+package_lib32-util-linux(){
+    pkgdesc="Miscellaneous system utilities for Linux (32-bit)"
+    depends=('lib32-glibc' "$pkgbase")
+    provides=('libuuid.so' 'libblkid.so' 'libfdisk.so' 'libmount.so' 'libsmartcols.so')
+    groups=('lfs-base' 'lfs-multilib')
+
+    make -C "lib32-util-linux" \
+         DESTDIR="$pkgdir" \
+         install-usrlib_execLTLIBRARIES \
+         install-pkgconfigDATA
+}
+
+package_libx32-util-linux(){
+    pkgdesc="Miscellaneous system utilities for Linux (x32 ABI)"
+    depends=('libx32-glibc' "$pkgbase")
+    provides=('libuuid.so' 'libblkid.so' 'libfdisk.so' 'libmount.so' 'libsmartcols.so')
+    groups=('lfs-base' 'lfs-multilib')
+
+    make -C "libx32-util-linux" \
+         DESTDIR="$pkgdir" \
+         install-usrlib_execLTLIBRARIES \
+         install-pkgconfigDATA
+}
+
+md5sums=('a78cbeaed9c39094b96a48ba8f891d50'
+         'SKIP'
+         '095fb3d048d5304cce5719831bdad6dc'
+         '63f9bf9264911242e430867a41e8918c'
+         '634499b415d11c22e48208ddee24795f'
+         'cc4acb51d86b0d14b2dbab075d71ad7f')

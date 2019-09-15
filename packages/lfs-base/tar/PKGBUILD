@@ -1,0 +1,37 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=tar
+pkgver=1.32
+pkgrel=1
+pkgdesc='Utility used to store, backup, and transport files'
+arch=('x86_64')
+url='https://www.gnu.org/software/tar/'
+license=('GPL3')
+depends=('glibc' 'acl' 'attr')
+options=('!emptydirs')
+validpgpkeys=('325F650C4C2B6AD58807327A3602B07F55D0C732') # Sergey Poznyakoff
+source=("https://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.xz"{,.sig})
+groups=('lfs-base')
+
+prepare() {
+    cd $pkgname-$pkgver
+    ./configure --prefix=/usr --bindir=/bin
+}
+
+build() {
+    cd $pkgname-$pkgver
+    make
+}
+
+check() {
+    cd $pkgname-$pkgver
+    make check || true
+}
+
+package() {
+    cd $pkgname-$pkgver
+    make DESTDIR="$pkgdir" install
+}
+
+md5sums=('83e38700a80a26e30b2df054e69956e5'
+         'SKIP')

@@ -27,6 +27,7 @@ source=(https://github.com/shadow-maint/shadow/releases/download/${pkgver}/${pkg
 for d in ${_deps[@]};do
     if [[ $(pacman -Ss ^${d}$ 2>/dev/null) ]];then
         depends+=( "$d")
+        pkgrel=$((pkgrel+1))
     else
         optdepends+=( "$d")
     fi
@@ -119,7 +120,7 @@ package() {
 
         # systemd timer
         install -D -m644 "$srcdir/shadow.timer" "$pkgdir/lib/systemd/system/shadow.timer"
-        install -D -m644 "$srcdir/shadow.service" $pkgdir/lib/systemd/system/shadow.service
+        install -D -m644 "$srcdir/shadow.service" "$pkgdir/lib/systemd/system/shadow.service"
         install -d -m755 "$pkgdir/usr/lib/systemd/system/timers.target.wants"
         ln -s ../shadow.timer "$pkgdir/lib/systemd/system/timers.target.wants/shadow.timer"
 

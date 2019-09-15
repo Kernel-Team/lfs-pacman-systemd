@@ -1,0 +1,63 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=kbd
+pkgver=2.2.0
+pkgrel=1
+pkgdesc="Keytable files and keyboard utilities"
+arch=('x86_64')
+url="http://www.kbd-project.org"
+license=('GPL')
+depends=('glibc')
+makedepends=('check')
+source=(https://www.kernel.org/pub/linux/utils/${pkgname}/${pkgname}-${pkgver}.tar.gz
+        https://www.kernel.org/pub/linux/utils/kbd/${pkgname}-${pkgver}.tar.sign
+        http://www.linuxfromscratch.org/patches/lfs/9.0-rc1/${pkgname}-${pkgver}-backspace-1.patch
+       )
+provides=('vlock')
+conflicts=('vlock')
+replaces=('vlock')
+validpgpkeys=(
+    '7F2A3D07298149A0793C9A4EA45ABA544CFFD434' #Alexey Gladkov 
+)
+groups=('lfs-base')
+
+if [[ "$(pacman -Qq linux-pam 2>/dev/null)" ]];then
+    depends+=( 'linux-pam')
+    pkgrel=$((pkgrel+1))
+else
+    optdepends+=( 'linux-pam')
+fi
+
+prepare() {
+    cd ${srcdir}/${pkgname}-${pkgver}
+
+    # The following patch fixes this issue for i386 keymaps
+    patch -Np1 -i ../${pkgname}-${pkgver}-backspace-1.patch
+
+    # Remove the redundant resizecons program
+    sed -i 's/\(RESIZECONS_PROGS=\)yes/\1no/g' configure
+    sed -i 's/resizecons.8 //' docs/man/man8/Makefile.in
+
+    _confargs=()
+    if [[ -z "$(pacman -Qq linux-pam 2>&1 >/dev/null)" ]];then
+        _confargs+=( '--enable-vlock')
+    else
+        _confargs+=( '--disable-vlock')
+    fi
+    
+    ./configure --prefix=/usr ${_confargs[@]}
+}
+
+build() {
+    cd ${srcdir}/${pkgname}-${pkgver}
+    make
+}
+
+package() {
+    cd ${srcdir}/${pkgname}-${pkgver}
+    make DESTDIR=${pkgdir} install
+}
+
+md5sums=('5b07c5cf73f2a2bdff5a489368969f70'
+         'SKIP'
+         'f75cca16a38da6caa7d52151f7136895')

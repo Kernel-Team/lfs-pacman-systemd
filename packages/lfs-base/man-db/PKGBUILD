@@ -1,0 +1,100 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=man-db
+pkgver=2.8.7
+pkgrel=1
+pkgdesc="A utility for reading man pages"
+arch=('x86_64')
+url="http://www.nongnu.org/man-db/"
+license=('GPL' 'LGPL')
+_deps=('libseccomp')
+depends=( 'bash'
+          'gdbm'
+          'zlib'
+          'groff'
+          'libpipeline'
+          'less'
+        )
+_makedeps=('po4a')
+makedepends=()
+optdepends=('gzip')
+backup=('etc/man_db.conf')
+conflicts=('man')
+provides=('man')
+replaces=('man')
+install=${pkgname}.install
+source=(
+    https://savannah.nongnu.org/download/man-db/$pkgname-$pkgver.tar.xz{,.asc}
+    convert-mans
+    man-db.{timer,service})
+validpgpkeys=('AC0A4FF12611B6FCCF01C111393587D97D86500B') # Colin Watson <cjwatson@debian.org>
+groups=('lfs-base')
+
+for _d in ${_deps[@]};do
+    if [[ -n "$(pacman -Qq "${_d}" 2>/dev/null)" ]];then
+        depends+=( "${_d}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_d}")
+    fi
+done
+for _m in ${_makedeps[@]};do
+    if [[ -n "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
+        makedepends+=( "${_m}")
+    else
+        optdepends+=( "${_m}")
+    fi
+done
+
+prepare(){
+    cd ${pkgname}-${pkgver}
+
+    # changes a harcoded path to the find utility, which we install in /bin
+    sed -i '/find/s@/usr@@' init/systemd/man-db.service.in
+    _confargs=()
+    if [[ "$(pacman -Qq gdbm 2>/dev/null)" ]];then
+        _confargs=( '--with-db=gdbm')
+    fi
+    
+    ./configure --prefix=/usr \
+                --docdir=/usr/share/doc/${pkgname}-${pkgver} \
+                --sysconfdir=/etc \
+                --disable-setuid \
+                --enable-cache-owner=bin \
+                --with-browser=/usr/bin/lynx \
+                --with-vgrind=/usr/bin/vgrind \
+                --with-grap=/usr/bin/grap ${_confargs[@]}
+}
+
+build() {
+    cd ${pkgname}-${pkgver}
+    make
+}
+
+check() {
+    cd ${pkgname}-${pkgver}
+    make check
+}
+
+package() {
+    cd ${pkgname}-${pkgver}
+    make DESTDIR=${pkgdir} install
+
+    # part of groff pkg
+    rm -f ${pkgdir}/usr/bin/zsoelim
+
+    # script from LFS to convert manpages
+    install -D -m755 ${srcdir}/convert-mans  ${pkgdir}/usr/bin/convert-mans
+
+    # install man-db update timer
+    install -D -m644 ${srcdir}/man-db.timer ${pkgdir}/lib/systemd/system/man-db.timer
+    install -D -m644 ${srcdir}/man-db.service ${pkgdir}/lib/systemd/system/man-db.service
+    install -d -m755 ${pkgdir}/lib/systemd/system/multi-user.target.wants
+    ln -s ../man-db.timer ${pkgdir}/lib/systemd/system/multi-user.target.wants/man-db.timer
+}
+
+md5sums=('ec0b23c8314a1654c4d059b2c18ce43d'
+         'SKIP'
+         '2b7662a7d5b33fe91f9f3e034361a2f6'
+         '8aaf7b49ae5d157d47d66489656d8b3a'
+         '4f9bc83456a9ba46b4c73ca683062d77')

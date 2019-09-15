@@ -12,12 +12,6 @@ depends=('readline')
 source=(https://github.com/gavinhoward/$pkgname/archive/$pkgver/$pkgname-$pkgver.tar.gz)
 sha256sums=('96b01cf03b356a6472c7759e232bdfd24b07c190cc0e06dfae0ce00114bfd9bf')
 
-if [[ "$(pacman -Ss ^ed$ 2>/dev/null)" ]];then
-    depends+=( 'ed')
-else
-    optdepends+=( 'ed')
-fi
-
 prepare(){
     cd "${pkgname}-${pkgver}"
     PREFIX=/usr CC=gcc CFLAGS="${CFLAGS} -std=c99" ./configure.sh -G -O3

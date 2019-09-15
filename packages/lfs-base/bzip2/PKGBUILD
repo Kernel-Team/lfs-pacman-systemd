@@ -12,6 +12,7 @@ source=(http://anduin.linuxfromscratch.org/LFS/${pkgbase}-${pkgver}.tar.gz
 
 if [[ "$(pacman -Ss ^sh$ 2>/dev/null)" ]];then
     common_depends+=( 'sh')
+    pkgrel=$((pkgrel+1))
 else
     common_optdepends+=( 'sh')
 fi

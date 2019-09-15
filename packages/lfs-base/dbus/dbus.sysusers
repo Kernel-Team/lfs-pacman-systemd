@@ -1,0 +1,6 @@
+# sysusers.d snippet for creating the D-Bus system user automatically
+# at boot on systemd-based systems that ship with an unpopulated
+# /etc. See sysusers.d(5) for details.
+# http://www.linuxfromscratch.org/blfs/view/systemd/postlfs/users.html
+
+u dbus 81 "System Message Bus"

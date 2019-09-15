@@ -105,6 +105,7 @@ package() {
 
     # Hack to avoid building again
     sed -i 's/^all:.*$/all: build_all/' Makefile
+    chmod -v 755 Makefile
 
     make DESTDIR="${pkgdir}" EXTRA_CFLAGS="$CFLAGS" install
 

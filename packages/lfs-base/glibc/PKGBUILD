@@ -23,6 +23,7 @@ validpgpkeys=(7273542B39962DF7B299931416792B4EA25340F8) # Carlos O'Donell
 for _d in "${_deps[@]}";do
     if [[ "$(pacman -Ss ^${_d}$ 2>/dev/null)" ]];then
         depends+=( "${_d}")
+        pkgrel=$((pkgrel+1))
     else
         case $_d in
             'gd')
@@ -36,6 +37,11 @@ for _d in "${_deps[@]}";do
 done
 
 prepare(){
+    if [[ ! -d /usr/lib/gcc ]] && [[ ! -L /usr/lib/gcc ]];then
+        msg2 "/usr/lib/gcc doesn't exist! exiting..."
+        return 1
+    fi
+
     mkdir -p glibc-build lib32-glibc-build libx32-glibc-build
 
     [[ -d glibc-$pkgver ]] && ln -s glibc-$pkgver glibc 
@@ -55,6 +61,7 @@ prepare(){
         --enable-static-pie
         --disable-profile
         --disable-werror
+        --enable-cet
     )
 
     cd "$srcdir/glibc-build"
@@ -191,6 +198,7 @@ package_glibc(){
     # Shipped in tzdata
     rm -f "$pkgdir"/usr/bin/tzselect
     rm -f "$pkgdir"/usr/sbin/zic
+    rm -f "$pkgdir"/usr/bin/zdump
     
     install -dm755 "$pkgdir/etc"
 

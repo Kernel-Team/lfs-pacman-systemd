@@ -17,6 +17,7 @@ validpgpkeys=('6B99CE97F17F48C27F722D71023A4420C7EC6914')
 
 if [[ "$(pacman -Ss ^glib2$ 2>/dev/null)" ]];then
     depends+=( 'glib2')
+    pkgrel=$((pkgrel+1))
 else
     _confargs=('--with-internal-glib')
     optdepends+=( 'glib2')

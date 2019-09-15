@@ -1,0 +1,47 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=procps-ng
+pkgver=3.3.15
+pkgrel=1
+pkgdesc='Utilities for monitoring your system and its processes'
+url='https://gitlab.com/procps-ng/procps'
+license=(GPL LGPL)
+arch=(x86_64)
+depends=(ncurses libsystemd)
+makedepends=(systemd)
+conflicts=(procps sysvinit-tools)
+provides=(procps sysvinit-tools)
+replaces=(procps sysvinit-tools)
+install=${pkgname}.install
+source=(https://downloads.sourceforge.net/project/$pkgname/Production/${pkgname}-${pkgver}.tar.xz)
+groups=('lfs-base')
+
+prepare() {
+    cd $pkgname-$pkgver
+    sed 's:<ncursesw/:<:g' -i watch.c
+
+    ./configure \
+        --prefix=/usr \
+        --exec-prefix= \
+        --sysconfdir=/etc \
+        --libdir=/usr/lib \
+        --docdir=/usr/share/doc/${pkgname}-${pkgver} \
+        --disable-static \
+        --disable-kill \
+        --with-systemd
+}
+
+build() {
+    cd $pkgname-$pkgver
+    make
+}
+
+package() {
+    cd $pkgname-$pkgver
+    make DESTDIR="$pkgdir" install
+
+    install -v -dm755 ${pkgdir}/lib
+    mv -v ${pkgdir}/usr/lib/libprocps.so.* ${pkgdir}/lib
+    ln -sfv ../../lib/$(readlink ${pkgdir}/usr/lib/libprocps.so) ${pkgdir}/usr/lib/libprocps.so
+}
+sha256sums=('10bd744ffcb3de2d591d2f6acf1a54a7ba070fdcc432a855931a5057149f0465')

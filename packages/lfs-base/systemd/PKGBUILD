@@ -1,0 +1,265 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgbase=systemd
+pkgname=('systemd' 'libsystemd' 'systemd-sysvcompat')
+pkgver=241
+pkgrel=1
+arch=('x86_64')
+url="https://www.github.com/systemd/systemd"
+_deps=( 'cryptsetup' 'docbook-xsl' 'gperf' 'lz4' 'xz' 'linux-pam' 'iptables' 'libidn' 'libidn2' 'libgcrypt'
+        'libmicrohttpd' 'libxslt' 'util-linux' 'python-lxml' 'quota-tools' 'gnu-efi-libs' 'libseccomp'
+        'pcre2' 'curl' 'qrencode' 'hwids' 'dbus' 'kbd' 'git' 'bash-completion' 'libxkbcommon')
+depends=('acl'
+         'libelf'
+         'intltool'
+         'kmod'
+         'libcap'
+         'linux-api-headers'
+         'shadow'
+         'meson'
+         'libelf'
+         'xz'
+        )
+options=('strip')
+source=(http://anduin.linuxfromscratch.org/LFS/systemd-man-pages-$pkgver.tar.xz
+        http://www.linuxfromscratch.org/patches/lfs/9.0-rc1/systemd-$pkgver-networkd_and_rdrand_fixes-1.patch
+        https://github.com/systemd/systemd/archive/v${pkgver}/systemd-${pkgver}.tar.gz
+        #http://www.linuxfromscratch.org/patches/lfs/8.3/systemd-239-glibc_statx_fix-1.patch
+        #https://github.com/systemd/systemd/commit/8f6b442a78d0b485f044742ad90b2e8271b4e68e.patch
+        'systemd-user.pam'
+        'systemd-hook'
+        'systemd-binfmt.hook'
+        'systemd-catalog.hook'
+        'systemd-daemon-reload.hook'
+        'systemd-hwdb.hook'
+        'systemd-sysctl.hook'
+        'systemd-sysusers.hook'
+        'systemd-tmpfiles.hook'
+        'systemd-udev-reload.hook'
+        'systemd-update.hook'
+        'systemd-user-sessions'
+       )
+groups=('lfs-base')
+noextract=(systemd-man-pages-${pkgver}.tar.xz)
+
+for _d in ${_deps[@]};do
+    if [[ -n "$(pacman -Ss ^${_d}$ 2>/dev/null)" ]];then
+        depends+=( "${_d}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_d}")
+    fi
+done
+
+_timeservers=({0..3}.pool.ntp.org)
+_nameservers=(
+    # We use these public name services, ordered by their
+    # privacy policy (hopefully):
+    #  * Cloudflare (https://1.1.1.1/)
+    #  * Quad9 without filtering (https://www.quad9.net/)
+    #  * Google (https://developers.google.com/speed/public-dns/)
+    1.1.1.1
+    9.9.9.10
+    8.8.8.8
+    2606:4700:4700::1111
+    2620:fe::10
+    2001:4860:4860::8888
+)
+
+prepare() {
+    cd systemd-$pkgver
+
+    # patch to fix issues with systemd-networkd on Linux 5.2+ kernels, as well as with AMD Ryzen CPUs
+    patch -Np1 -i ../systemd-241-networkd_and_rdrand_fixes-1.patch
+
+    # Set up the man pages
+    tar -xf ../systemd-man-pages-${pkgver}.tar.xz
+
+    # Remove tests that cannot be built in chroot
+    #sed '171,$ d' -i src/resolve/meson.build
+
+    # Remove an unneeded group
+    sed -i 's/GROUP="render", //' rules/50-udev-default.rules.in
+
+    # Apply a patch to fix a build failure with glibc-2.28
+    # patch -Np1 -i ../systemd-239-glibc_statx_fix-1.patch
+    #patch -Np1 -i ../8f6b442a78d0b485f044742ad90b2e8271b4e68e.patch
+
+    # check for symlink to work around missing xsltproc
+    if [[ ! -f /usr/bin/xsltproc ]] || [[ ! -L /usr/bin/xsltproc ]];then
+        msg2 "/usr/bin/xsltproc not exist, exiting..."
+        return 1
+    fi
+
+    meson_options=(
+        -Dblkid=true
+        -Dbuildtype=release
+        -Ddefault-dnssec=no
+        -Dfirstboot=false
+        -Dinstall-tests=false
+        -Dkmod-path=/bin/kmod
+        -Dldconfig=false
+        -Dmount-path=/bin/mount
+        -Drootprefix=
+        -Drootlibdir=/lib
+        -Dsplit-usr=true
+        -Dsulogin-path=/sbin/sulogin
+        -Dsysusers=false
+        -Dumount-path=/bin/umount
+        -Db_lto=false
+        -Dntp-servers="${_timeservers[*]}"
+        -Ddns-servers="${_nameservers[*]}"
+        -Drpmmacrosdir=no
+        -Dfallback-hostname='linuxfromscratch'
+    )
+
+    if [[ "$(pacman -Qq docbook-xsl 2>/dev/null)" ]];then
+        meson_options+=( '-Dman=true')
+    else
+        meson_options+=( '-Dman=false')
+    fi
+    
+    if [[ "$(pacman -Qq lz4 2>/dev/null)" ]];then
+        meson_options+=( '-Dlz4=true')
+    fi
+    if [[ "$(pacman -Qq libidn2 2>/dev/null)" ]];then
+        meson_options+=( '-Dlibidn2=true')
+    fi
+
+    mkdir -pv build && cd $_
+    PKG_CONFIG_PATH="/usr/lib/pkgconfig:/tools/lib/pkgconfig" \
+                   LANG=en_US.UTF-8 CFLAGS+=" -Wno-format-overflow" \
+                   meson --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
+                   "${meson_options[@]}" ..
+}
+
+build(){
+    LANG=en_US.UTF-8 ninja -C systemd-$pkgver/build
+    
+}
+
+check(){
+    cd systemd-$pkgver/build
+    meson test || true
+}
+
+package_systemd() {
+    pkgdesc="system and service manager"
+    license=('GPL2' 'LGPL2.1')
+    depends=('acl' 'bash' 'kmod' 'libcap' 'libsystemd' 'libelf'
+            )
+    provides=('nss-myhostname' "systemd-tools=$pkgver" "udev=$pkgver")
+    replaces=('nss-myhostname' 'systemd-tools' 'udev')
+    conflicts=('nss-myhostname' 'systemd-tools' 'udev')
+    optdepends=('libmicrohttpd: remote journald capabilities'
+                'quota-tools: kernel-level quota management'
+                'systemd-sysvcompat: symlink package to provide sysvinit binaries'
+                'polkit: allow administration as unprivileged user'
+                'curl: machinectl pull-tar and pull-raw')
+    backup=(etc/pam.d/systemd-user
+            etc/systemd/coredump.conf
+            etc/systemd/journald.conf
+            etc/systemd/journal-remote.conf
+            etc/systemd/journal-upload.conf
+            etc/systemd/logind.conf
+            etc/systemd/system.conf
+            etc/systemd/timesyncd.conf
+            etc/systemd/resolved.conf
+            etc/systemd/user.conf
+            etc/udev/udev.conf)
+    install=systemd.install
+
+    LANG=en_US.UTF-8 DESTDIR=${pkgdir} ninja -C systemd-$pkgver/build install
+
+    # don't write units to /etc by default. some of these will be re-enabled on
+    # post_install.
+    rm -rv "$pkgdir"/etc/systemd/system/*
+    
+    # we'll create this on installation
+    [[ -d "$pkgdir"/var/log/journal/remote ]] && rm -rv "$pkgdir"/var/log/journal/remote
+
+    # runtime libraries shipped with libsystemd
+    install -v -dm755 libsystemd
+    mv -v "$pkgdir"/lib/lib{nss,systemd,udev}*.so* libsystemd
+
+    # manpages shipped with systemd-sysvcompat
+    [[ -d "$pkgdir"/usr/share/man/man8 ]] && rm -v "$pkgdir"/usr/share/man/man8/{halt,poweroff,reboot,runlevel,shutdown,telinit}.8
+
+    # executable (symlinks) shipped with systemd-sysvcompat
+    rm -v "$pkgdir"/sbin/{halt,init,poweroff,reboot,runlevel,shutdown,telinit}
+
+    # avoid a potential conflict with [core]/filesystem
+    rm -v "$pkgdir"/usr/share/factory/etc/nsswitch.conf
+    sed -i '/^C \/etc\/nsswitch\.conf/d' "$pkgdir"/usr/lib/tmpfiles.d/etc.conf
+    chmod 644 "$pkgdir"/usr/lib/tmpfiles.d/etc.conf
+
+    # add back tmpfiles.d/legacy.conf, normally omitted without sysv-compat
+    install -v -m644 systemd-$pkgver/tmpfiles.d/legacy.conf "$pkgdir"/usr/lib/tmpfiles.d
+
+    # ship default policy to leave services disabled
+    echo 'disable *' >"$pkgdir"/lib/systemd/system-preset/99-default.preset
+
+    # ensure proper permissions for /var/log/journal
+    # The permissions are stored with named group by tar, so this works with
+    # users and groups populated by systemd-sysusers. This is only to prevent a
+    # warning from pacman as permissions are set by systemd-tmpfiles anyway.
+    #install -v -d -o root -g systemd-journal -m 2755 "$pkgdir"/var/log/journal
+
+    # match directory owner/group and mode from [extra]/polkit
+    # install -v -d -o root -g 102 -m 750 "$pkgdir"/usr/share/polkit-1/rules.d
+
+    # pacman hooks
+    install -Dm755 systemd-hook "$pkgdir"/usr/local/share/libalpm/scripts/systemd-hook
+    install -Dm644 -t "$pkgdir"/usr/local/share/libalpm/hooks *.hook
+
+    # overwrite the systemd-user PAM configuration with our own
+    install -Dm644 systemd-user.pam "$pkgdir"/etc/pam.d/systemd-user
+
+    # script to allow unprivileged user logins without systemd-logind
+    #install -Dm644 systemd-user-sessions "$pkgdir"/lib/systemd/systemd-user-sessions
+}
+
+package_libsystemd() {
+    pkgdesc="systemd client libraries"
+    license=('GPL2')
+    provides=('libsystemd.so' 'libudev.so')
+
+    install -v -dm755 "$pkgdir"/usr/{lib,share/pkgconfig}
+    install -v -dm755 "$pkgdir"/lib/
+    mv -v libsystemd "$pkgdir"/lib
+    mv -v "$pkgdir"/lib/libsystemd/* "$pkgdir"/lib/
+    rm -rv "$pkgdir"/lib/libsystemd
+    install systemd-$pkgver/build/src/libsystemd/libsystemd.pc ${pkgdir}/usr/share/pkgconfig/
+}
+
+package_systemd-sysvcompat() {
+    pkgdesc="sysvinit compat for systemd"
+    license=('GPL2')
+    conflicts=('sysvinit')
+    depends=('systemd')
+
+    [[ -d "$pkgdir"/usr/share/man ]] && install -Dm644 -t "$pkgdir"/usr/share/man/man8 \
+                                                build/man/{telinit,halt,reboot,poweroff,runlevel,shutdown}.8
+
+    install -dm755 "$pkgdir"/sbin
+    ln -s ../lib/systemd/systemd "$pkgdir"/sbin/init
+    for tool in runlevel reboot shutdown poweroff halt telinit; do
+        ln -s systemctl "$pkgdir"/sbin/$tool
+    done
+}
+
+md5sums=('6942e1a9032e19da6639f9705241d119'
+         'bb26f26d7c3a17d1888ab3171366906b'
+         'c5953c24c850b44fcf714326e567dc37'
+         'b93ecc3e0a95aebe63c69188840e29fd'
+         '80fd2a6ec5ade81ebe4ea7ecce0f9b1b'
+         '981d3730f7d14ac9459aba2753ce6a97'
+         '7982d669d7054eb8d8e53f8524ac1787'
+         'ce4c85b7eba8d857ac994b9e6f56c614'
+         '3da33b055e52e6d34361b43b66b70f2e'
+         'e2eb21708d789c44a0c21d47e2aa6d88'
+         'f1f5ba23c19de5789eae870bbb281f62'
+         'ffaf428ee9e0768860eee559c6d3f466'
+         '55413a4f04445c0aaad203bc609fb22e'
+         'e45e1b18f66a6c8354f21135b2168272'
+         '6f7f8dec3702ff6a994b16ecc6e2af5c')

@@ -1,0 +1,52 @@
+#-*-mode:sh-*-
+# Maintainer: %s <%s>
+pkgname=check
+pkgver=0.12.0
+pkgrel=1
+pkgdesc="A unit testing framework for C"
+url="https://libcheck.github.io/check/"
+arch=(x86_64)
+license=(LGPL)
+depends=()
+makedepends=()
+groups=('lfs-base')
+source=("https://github.com/libcheck/check/releases/download/0.12.0/check-$pkgver.tar.gz")
+md5sums=('31b17c6075820a434119592941186f70')
+
+if [[ -n "$(pacman -Qq awk 2>/dev/null)" ]];then
+    depends+=( 'awk')
+    pkgrel=$((pkgrel+1))
+fi
+if [[ -n "$(pacman -Qq git 2>/dev/null)" ]];then
+    makedepends+=( 'git')
+fi
+
+prepare() {
+    cd $pkgname-$pkgver
+    ./configure --prefix=/usr
+}
+
+build() {
+    cd $pkgname-$pkgver
+    make
+}
+
+check() {
+    cd $pkgname-$pkgver
+    # Extremely long
+    #make -k check
+}
+
+package() {
+    cd $pkgname-$pkgver
+    make DESTDIR="$pkgdir" install
+
+    # get rid of the package's info directory
+    rm "$pkgdir/usr/share/info/dir"
+
+    # svn log file is too big
+    rm "$pkgdir"/usr/share/doc/check/*ChangeLog*
+
+    sed -i '1 s/tools/usr/' "$pkgdir"/usr/bin/checkmk
+    chmod 755 "$pkgdir"/usr/bin/checkmk
+}
