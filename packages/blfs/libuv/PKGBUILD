@@ -1,0 +1,71 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=libuv
+pkgver=1.32.0
+pkgrel=1
+pkgdesc="Multi-platform support library with a focus on asynchronous I/O"
+arch=('x86_64')
+url="https://github.com/libuv/libuv"
+license=('custom')
+_deps=('libnsl')
+depends=('glibc')
+_makedeps=('python-sphinx')
+makedepends=()
+source=("https://github.com/libuv/libuv/archive/v$pkgver/$pkgname-$pkgver.tar.gz")
+groups=('blfs' 'general-libraries')
+
+for _d in "${_deps[@]}";do
+    if [[ "$(pacman -Ss "^${_d}$" 2>/dev/null)" ]];then
+        depends+=( "${_d}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_d}")
+    fi
+done
+for _m in "${_makedeps[@]}";do
+    if [[ "$(pacman -Ss "^${_m}$" 2>/dev/null)" ]];then
+        makedepends+=( "${_m}")
+    else
+        optdepends+=( "${_m}")
+    fi
+done
+
+prepare(){
+    cd $pkgname-$pkgver
+    ./autogen.sh
+    ./configure --prefix=/usr --disable-static
+}
+
+build() {
+    cd $pkgname-$pkgver
+    make
+    if [[ -z "$(pacman -Qq python-sphinx 2>&1 >/dev/null)" ]];then
+        make man -C docs
+    fi
+}
+
+check() {
+    cd $pkgname-$pkgver
+    make check || true
+}
+
+package() {
+    cd $pkgname-$pkgver
+
+    make DESTDIR="$pkgdir" install
+
+    install -Dm644 LICENSE \
+	    "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+    install -Dm644 AUTHORS \
+	    "$pkgdir"/usr/share/doc/$pkgname/AUTHORS
+    install -Dm644 README.md \
+	    "$pkgdir"/usr/share/doc/$pkgname/README.md
+    install -Dm644 ChangeLog \
+	    "$pkgdir"/usr/share/doc/$pkgname/ChangeLog
+    if [[ -z "$(pacman -Qq python-sphinx 2>&1 >/dev/null)" ]];then
+        install -Dm644 docs/build/man/libuv.1 \
+	        "$pkgdir"/usr/share/man/man1/libuv.1
+    fi
+}
+
+sha512sums=('3e043a56fd09fdaf3c89f81b3dff70a385ba8a59ec065447c95199a0e45da323b8545fb13b50139c557541357450103a88297fdc921832de661f3e2700173b96')
