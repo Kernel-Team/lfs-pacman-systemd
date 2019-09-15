@@ -24,7 +24,7 @@ optdepends=('tk: for IDLE'
             'python2-setuptools'
             'python2-pip')
 conflicts=('python<3')
-groups=('blfs')
+groups=('blfs' 'programming')
 source=("https://www.python.org/ftp/python/${pkgver%rc?}/Python-${pkgver}.tar.xz"{,.asc})
 validpgpkeys=('C01E1CAD5EA2C4F0B8E3571504C367C218ADD4FF')  # Benjamin Peterson
 
@@ -103,6 +103,7 @@ package() {
 
     # Hack to avoid building again
     sed -i 's/^all:.*$/all: build_all/' Makefile
+    chmod 644 Makefile
 
     make DESTDIR="${pkgdir}" altinstall maninstall
 
@@ -131,6 +132,7 @@ package() {
 
     # clean-up reference to build directory
     sed -i "s#${srcdir}/Python-${pkgver}:##" "${pkgdir}"/usr/lib/python${_pybasever}/config/Makefile
+    chmod 644 "${pkgdir}"/usr/lib/python${_pybasever}/config/Makefile
 }
 
 md5sums=('30157d85a2c0479c09ea2cbe61f2aaf5'
