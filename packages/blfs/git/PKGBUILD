@@ -1,0 +1,213 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=git
+pkgver=2.23.0
+pkgrel=1
+pkgdesc="the fast distributed version control system"
+arch=(x86_64)
+url="http://git-scm.com/"
+license=('GPL2')
+depends=('perl>=5.14.0'
+         # 'perl-mailtools'
+         'openssl'
+         'grep'
+         'shadow'
+        )
+makedepends=('python2')
+optdepends=('tk: gitk and git gui'
+            'perl-libwww: git svn'
+            'perl-term-readkey: git svn'
+            'perl-mime-tools: git send-email'
+            'perl-net-smtp-ssl: git send-email TLS support'
+            'perl-authen-sasl: git send-email TLS support'
+            'perl-mediawiki-api: git mediawiki support'
+            'perl-datetime-format-iso8601: git mediawiki support'
+            'perl-lwp-protocol-https: git mediawiki https support'
+            'perl-cgi: gitweb (web interface) support'
+            'python2: various helper scripts'
+            'subversion: git svn'
+            'gnome-keyring: GNOME keyring credential helper')
+install=git.install
+validpgpkeys=('96E07AF25771955980DAD10020D04E5A713660A7') # Junio C Hamano
+source=("https://www.kernel.org/pub/software/scm/git/git-$pkgver.tar."{xz,sign}
+        'git-daemon@.service'
+        'git-daemon.socket'
+        'git-sysusers.conf'
+       )
+groups=('blfs' 'programming')
+
+if [[ ! "$(pacman -Qq asciidoc 2>/dev/null)" ]];then
+    _NO_ASCIIDOC=1
+    if [[ ! "$(pacman -Qq xmlto 2>/dev/null)" ]];then
+        _NO_XMLTO=1
+        source+=( "https://www.kernel.org/pub/software/scm/git/git-manpages-${pkgver}.tar.xz")
+        noextract+=( "https://www.kernel.org/pub/software/scm/git/git-manpages-${pkgver}.tar.xz")
+        md5sums+=( 'f1d5dfc1459c9f2885f790c5af7473d1')
+    fi
+    source+=( "https://www.kernel.org/pub/software/scm/git/git-htmldocs-${pkgver}.tar.xz")
+    noextract+=( "https://www.kernel.org/pub/software/scm/git/git-htmldocs-${pkgver}.tar.xz")
+    md5sums+=( '63cba043395263459db2267ac0f424a8')
+fi
+
+_confargs=('--prefix=/usr' '--with-gitconfig=/etc/gitconfig' '--with-openssl')
+
+if [[ "$(pacman -Ss ^tk$ 2>/dev/null)" ]];then
+    _confargs+=( '--with-tcltk')
+    makedepends+=( 'tk')
+fi
+if [[ "$(pacman -Ss ^expat$ 2>/dev/null)" ]];then
+    _confargs+=( '--with-expat')
+    depends+=( 'expat')
+    pkgrel=$((pkgrel+1))
+else
+    optdepends+=( 'expat')
+fi
+if [[ "$(pacman -Ss ^curl$ 2>/dev/null)" ]];then
+    _confargs+=( '--with-curl')
+    depends+=( 'curl')
+    pkgrel=$((pkgrel+1))
+else
+    optdepends+=( 'curl')
+fi
+if [[ "$(pacman -Ss ^pcre2$ 2>/dev/null)" ]];then
+    _confargs+=( '--with-libpcre2')
+    depends+=( 'pcre2')
+    pkgrel=$((pkgrel+1))
+else
+    optdepends+=( 'pcre2')
+fi
+if [[ "$(pacman -Ss ^pcre$ 2>/dev/null)" ]] &&
+       [[ ! "$(pacman -Qq pcre2 2>/dev/null)" ]];then
+    _confargs+=( '--with-libpcre1')
+    depends+=( 'pcre')
+    pkgrel=$((pkgrel+1))
+fi
+if [[ "$(pacman -Ss ^perl-error$ 2>/dev/null)" ]];then
+    depends+=( 'perl-error')
+    pkgrel=$((pkgrel+1))
+else
+    optdepends+=( 'perl-error')
+fi
+if [[ "$(pacman -Ss ^perl-mailtools$ 2>/dev/null)" ]];then
+    depends+=( 'perl-mailtools')
+    pkgrel=$((pkgrel+1))
+fi
+if [[ "$(pacman -Ss ^libgnome-keyring$ 2>/dev/null)" ]];then
+    makedepends+=( 'libgnome-keyring')
+    _GNOME_KEYRING=1
+    pkgrel=$((pkgrel+1))
+fi
+if [[ "$(pacman -Ss ^libsecret$ 2>/dev/null)" ]];then
+    makedepends+=( 'libsecret')
+    _LIBSECRET=1
+else
+    optdepends+=( 'libsecret')
+fi
+
+make_paths=(
+    perllibdir="$(/usr/bin/perl -MConfig -wle 'print $Config{installvendorlib}')"
+)
+
+prepare(){
+    cd "$srcdir/$pkgname-$pkgver"
+
+    ./configure ${_confargs[@]}
+}
+
+build(){
+    cd "$srcdir/$pkgname-$pkgver"
+    make
+    if [[ "${_EMACS}" == "1" ]];then
+        make -C contrib/emacs "${make_paths[@]}"
+    fi
+    if [[ "${_LIBSECRET}" == "1" ]];then
+        make -C contrib/credential/libsecret
+    fi
+    if [[ "${_GNOME_KEYRING}" == "1" ]];then
+        make -C contrib/credential/gnome-keyring
+    fi
+    if [[ -z "${_NO_ASCIIDOC}" ]];then
+        make html
+        if [[ -z "${_NO_XMLTO}" ]];then
+            make man
+        fi
+    fi
+}
+
+package(){
+    cd "$srcdir/$pkgname-$pkgver"
+    make DESTDIR="$pkgdir" install
+
+    install -v -dm755 "$pkgdir"/lib
+    
+    if [[ -z "${_NO_ASCIIDOC}" ]];then
+        make htmldir=/usr/share/doc/${pkgname}-${pkgver} DESTDIR="$pkgdir" install-html
+        if [[ -z "${_NO_XMLTO}" ]];then
+            make DESTDIR="$pkgdir" install-man
+        fi
+    fi
+    
+    if [[ "${_NO_XMLTO}" == "1" ]];then
+        if [[ "${_NO_ASCIIDOC}" == "1" ]];then
+            install -v -dm755 "$pkgdir"/usr/share/doc/${pkgname}-${pkgver}
+            tar -xf ../git-htmldocs-${pkgver}.tar.xz -C \
+                "$pkgdir"/usr/share/doc/${pkgname}-${pkgver} \
+                --no-same-owner --no-overwrite-dir
+        fi
+        install -v -dm755 "$pkgdir"/usr/share/man/
+        tar -xf ../git-manpages-${pkgver}.tar.xz \
+            -C "$pkgdir"/usr/share/man --no-same-owner --no-overwrite-dir
+    fi
+
+    install -v -dm755 "$pkgdir"/usr/share/doc/${pkgname}-${pkgver}/man-pages/{html,text}
+    mv -v "$pkgdir"/usr/share/doc/${pkgname}-${pkgver}/{git*.txt,man-pages/text}
+    mv -v "$pkgdir"/usr/share/doc/${pkgname}-${pkgver}/{git*.,index.,man-pages/}html
+
+    install -v -dm755 "$pkgdir"/usr/share/doc/${pkgname}-${pkgver}/technical/{html,text}
+    mv -v "$pkgdir"/usr/share/doc/${pkgname}-${pkgver}/technical/{*.txt,text}
+    mv -v "$pkgdir"/usr/share/doc/${pkgname}-${pkgver}/technical/{*.,}html
+
+    install -v -dm755 "$pkgdir"/usr/share/doc/${pkgname}-${pkgver}/howto/{html,text}
+    mv -v "$pkgdir"/usr/share/doc/${pkgname}-${pkgver}/howto/{*.txt,text}
+    mv -v "$pkgdir"/usr/share/doc/${pkgname}-${pkgver}/howto/{*.,}html
+
+    sed -i '/^<a href=/s|howto/|&html/|' "$pkgdir"/usr/share/doc/${pkgname}-${pkgver}/howto-index.html
+    sed -i '/^\* link:/s|howto/|&html/|' "$pkgdir"/usr/share/doc/${pkgname}-${pkgver}/howto-index.txt
+
+    # bash completion
+    install -v -dm755 "$pkgdir"/usr/share/bash-completion/completions/
+    install -m 0644 ./contrib/completion/git-completion.bash "$pkgdir"/usr/share/bash-completion/completions/git
+
+    # fancy git prompt
+    install -v -dm755 "$pkgdir"/usr/share/git/
+    install -m 0644 ./contrib/completion/git-prompt.sh "$pkgdir"/usr/share/git/git-prompt.sh
+
+    # gnome credentials helper
+    if [[ "${_GNOME_KEYRING}" == "1" ]];then
+        install -m 0755 contrib/credential/gnome-keyring/git-credential-gnome-keyring \
+                "$pkgdir"/usr/libexec/git-core/git-credential-gnome-keyring
+        make -C contrib/credential/gnome-keyring clean
+    fi
+
+    # libsecret credentials helper
+    if [[ "${_LIBSECRET}" == "1" ]];then
+        install -m 0755 contrib/credential/libsecret/git-credential-libsecret \
+                "$pkgdir"/usr/libexec/git-core/git-credential-libsecret
+        make -C contrib/credential/libsecret clean
+    fi
+
+    # git-daemon via systemd socket activation
+    install -D -m 0644 "$srcdir"/git-daemon@.service "$pkgdir"/lib/systemd/system/git-daemon@.service
+    install -D -m 0644 "$srcdir"/git-daemon.socket "$pkgdir"/lib/systemd/system/git-daemon.socket
+
+    # sysusers file
+    install -D -m 0644 "$srcdir"/git-sysusers.conf "$pkgdir"/usr/lib/sysusers.d/git.conf
+}
+
+md5sums=('93ee0f867f81a39e0ef29eabfb1d2c5b'
+         'SKIP'
+         'e5d3c934a5df0871bda3a030be0f956d'
+         'f67869315c2cc112e076f0c73f248002'
+         '3ffc2a73774ccdddbddd9163b838b0b5'
+         'be7f6f7ae68540c2449be6b3ac2d88c8'
+         '85ff5d1dbf231fe5f554ecd55d88b188')

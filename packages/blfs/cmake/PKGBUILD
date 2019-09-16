@@ -1,0 +1,99 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=cmake
+pkgver=3.15.3
+pkgrel=1
+pkgdesc='A cross-platform open-source make system'
+arch=('x86_64')
+url="http://www.cmake.org/"
+license=('custom')
+depends=('libuv')
+makedepends=()
+optdepends=('qt5-base: cmake-gui'
+            'libxkbcommon-x11: cmake-gui')
+source=("https://www.cmake.org/files/v${pkgver%.*}/${pkgname}-${pkgver}.tar.gz")
+sha512sums=('a91301bfb51bdf6a6c6ea71a26f05b6017eb375a4fc9c14934a83f2231d7af758bc67d8d9656111d1de56ec3df41dbcd61cb3cf50471bc0901f5bcccdf5267dc')
+groups=('blfs' 'programming')
+_confargs=()
+
+if [[ "$(pacman -Qq curl 2>/dev/null)" ]];then
+    depends+=( 'curl')
+    pkgrel=$((pkgrel+1))
+else
+    _confargs+=( '--no-system-curl')
+fi
+if [[ "$(pacman -Qq libarchive 2>/dev/null)" ]];then
+    depends+=( 'libarchive')
+    pkgrel=$((pkgrel+1))
+else
+    _confargs+=( '--no-system-libarchive')
+fi
+if [[ "$(pacman -Qq shared-mime-info 2>/dev/null)" ]];then
+    depends+=( 'shared-mime-info')
+    pkgrel=$((pkgrel+1))
+fi
+if [[ "$(pacman -Qq rhash 2>/dev/null)" ]];then
+    depends+=( 'rhash')
+    pkgrel=$((pkgrel+1))
+else
+    _confargs+=( '--no-system-librhash')
+fi
+if [[ "$(pacman -Qq jsoncpp 2>/dev/null)" ]];then
+    depends+=( 'jsoncpp')
+    pkgrel=$((pkgrel+1))
+else
+    _confargs+=( '--no-system-jsoncpp')
+fi
+if [[ "$(pacman -Qq qt5-base 2>/dev/null)" ]];then
+    makedepends+=( 'qt5-base')
+    _confargs+=( '--qt-gui')
+fi
+if [[ "$(pacman -Qq python-sphinx 2>/dev/null)" ]];then
+    makedepends+=( 'python-sphinx')
+    _confargs+=( '--sphinx-man')
+fi
+if [[ "$(pacman -Qq emacs 2>/dev/null)" ]];then
+    makedepends+=( 'emacs')
+    _EMACS=1
+fi
+
+prepare(){
+    cd ${pkgname}-${pkgver}
+    sed -i '/"lib64"/s/64//' Modules/GNUInstallDirs.cmake
+    ./bootstrap --prefix=/usr \
+                --mandir=/share/man \
+                --docdir=/share/doc/${pkgname}-${pkgver} \
+                --system-libs \
+                --parallel=$(/usr/bin/getconf _NPROCESSORS_ONLN) \
+                ${_confargs[@]}
+}
+
+build() {
+    cd ${pkgname}-${pkgver}
+    make
+}
+
+package() {
+    cd ${pkgname}-${pkgver}
+    make DESTDIR="${pkgdir}" install
+
+    vimpath="${pkgdir}/usr/share/vim/vimfiles"
+    install -d "${vimpath}"/{help,indent,syntax}
+    ln -s /usr/share/cmake-${pkgver%.*}/editors/vim/indent/cmake.vim \
+       "${vimpath}"/indent/
+    ln -s /usr/share/cmake-${pkgver%.*}/editors/vim/syntax/cmake.vim \
+       "${vimpath}"/syntax/
+
+    if [[ "${_EMACS}" == "1" ]];then
+        install -d "${pkgdir}"/usr/share/emacs/site-lisp/
+        emacs -batch -f batch-byte-compile \
+              "${pkgdir}"/usr/share/cmake-${pkgver%.*}/editors/emacs/cmake-mode.el
+        ln -s /usr/share/cmake-${pkgver%.*}/editors/emacs/cmake-mode.el \
+           "${pkgdir}"/usr/share/emacs/site-lisp/
+    fi
+    
+    install -Dm644 Copyright.txt \
+            "${pkgdir}"/usr/share/licenses/${pkgname}/LICENSE
+}
+
+sha512sums=('7d0abf2f7c661c6b555a7e93a2fce5ab5610c653b0aa4949bed6e97bfbe6523fd0665f67115d3944d3729cbe07ae3aaf780ee673b06dd80f90018cec8a999658')

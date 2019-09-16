@@ -1,0 +1,53 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=libxslt
+pkgver=1.1.33+64+g53b30c23
+pkgrel=1
+pkgdesc="XML stylesheet transformation library"
+url="http://xmlsoft.org/XSLT/"
+arch=(x86_64)
+license=(custom)
+depends=(libxml2 libgcrypt)
+makedepends=(python2)
+checkdepends=(docbook-xml python)
+source=("git+https://gitlab.gnome.org/GNOME/libxslt.git")
+#source=("ftp://xmlsoft.org/libxslt/${pkgname}-${pkgver}.tar.gz")
+sha256sums=('SKIP')
+groups=('blfs' 'general-libraries')
+
+pkgver() {
+    cd $pkgname
+    git describe --tags | sed 's/^v//;s/-/+/g'
+}
+
+prepare() {
+    cd $pkgname
+
+    sed -e 's|/usr/bin/python -u|/usr/bin/python2 -u|g' \
+        -e 's|/usr/bin/python$|/usr/bin/python2|g' \
+        -i python/tests/*.py
+
+    # increases the recursion limit in libxslt. This is needed by some packages for their documentation
+    sed -i s/3000/5000/ libxslt/transform.c doc/xsltproc.{1,xml}
+
+    NOCONFIGURE=1 ./autogen.sh
+    ./configure --prefix=/usr --with-python=/usr/bin/python2
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+}
+
+build() {
+    cd $pkgname
+    make
+}
+
+check() {
+    cd $pkgname
+    make check || true
+}
+
+package() {
+    cd $pkgname
+    make DESTDIR="$pkgdir" install
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    find "$pkgdir" -name '*.a' -print -delete
+}
