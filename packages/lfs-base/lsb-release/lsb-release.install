@@ -1,0 +1,13 @@
+#!/bin/sh
+post_install() {
+    echo "20181112-systemd-pacman" >> /etc/lfs-release
+}
+
+post_upgrade() {
+    sed -e "/20181112-systemd-pacman/d" -i /etc/lfs-release
+    echo "20181112-systemd-pacman" >> /etc/lfs-release
+}
+
+pre_remove() {
+    sed -e "/20181112-systemd-pacman/d" -i /etc/lfs-release
+}
