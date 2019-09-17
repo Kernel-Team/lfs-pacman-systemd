@@ -1,0 +1,63 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=linux-pam
+pkgver=1.3.1
+pkgrel=1
+pkgdesc="PAM (Pluggable Authentication Modules) library"
+arch=('x86_64')
+license=('GPL2')
+url="http://linux-pam.org"
+_deps=('prelude-lml' 'w3m')
+depends=('glibc' 'cracklib' 'libtirpc' 'pambase')
+makedepends=('flex' 'docbook-xml>=4.4' 'docbook-xsl')
+backup=(etc/security/{access.conf,group.conf,limits.conf,namespace.conf,namespace.init,pam_env.conf,time.conf} etc/default/passwd etc/environment)
+source=(https://github.com/linux-pam/linux-pam/releases/download/v$pkgver/Linux-PAM-$pkgver.tar.xz
+        https://github.com/linux-pam/linux-pam/releases/download/v$pkgver/Linux-PAM-$pkgver.tar.xz.asc
+        https://github.com/linux-pam/linux-pam/releases/download/v$pkgver/Linux-PAM-$pkgver-docs.tar.xz)
+validpgpkeys=(
+    '8C6BFD92EE0F42EDF91A6A736D1A7F052E5924BB') # Thorsten Kukuk
+options=('!emptydirs')
+groups=('blfs' 'security')
+noextract=("Linux-PAM-$pkgver-docs.tar.xz")
+
+for _d in "${_deps[@]}";do
+    if [[ "$(pacman -Qq "${_d}" 2>/dev/null)" ]];then
+        depends+=( "${_d}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_d}")
+    fi
+done
+
+prepare(){
+    cd $srcdir/Linux-PAM-$pkgver
+    if [[ ! $(pacman -Qq w3m 2>/dev/null) ]];then
+        tar -xf ../Linux-PAM-$pkgver-docs.tar.xz --strip-components=1
+        _confargs=("--disable-regenerate-docu")
+    fi
+    ./configure --prefix=/usr --sysconfdir=/etc \
+                --libdir=/usr/lib --enable-securedir=/lib/security \
+                --docdir=/usr/share/doc/Linux-PAM-${pkgver} \
+                ${_confargs[@]}
+}
+
+build() {
+    cd $srcdir/Linux-PAM-$pkgver
+    make
+}
+
+package() {
+    cd $srcdir/Linux-PAM-$pkgver
+    make DESTDIR=$pkgdir  install
+
+    # set unix_chkpwd uid
+    chmod +s $pkgdir/sbin/unix_chkpwd
+
+    # remove doc which is not used anymore
+    # FS #40749
+    rm $pkgdir/usr/share/doc/Linux-PAM-${pkgver}/sag-pam_userdb.html
+}
+
+md5sums=('558ff53b0fc0563ca97f79e911822165'
+         'SKIP'
+         '1885fae049acd1b699a5459d7c4a0130')

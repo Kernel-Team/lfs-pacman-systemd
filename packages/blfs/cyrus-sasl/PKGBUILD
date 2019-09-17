@@ -1,0 +1,87 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=cyrus-sasl
+pkgver=2.1.27
+pkgrel=1
+pkgdesc="Cyrus Simple Authentication Service Layer (SASL) library"
+arch=('x86_64')
+url="http://cyrusimap.web.cmu.edu/"
+license=('custom')
+options=('!makeflags')
+makedepends=('openssl')
+provides=('libsasl')
+source=(https://www.cyrusimap.org/releases/cyrus-sasl-${pkgver}.tar.gz
+       )
+groups=('blfs' 'security')
+_confargs=('--prefix=/usr' '--mandir=/usr/share/man' '--sysconfdir=/etc' '--infodir=/usr/share/info' '--disable-static'
+           '--enable-shared' '--enable-alwaystrue' '--enable-checkapop' '--enable-cram' '--enable-digest' '--disable-otp'
+           '--disable-srp' '--disable-srp-setpass' '--disable-krb4' '--enable-plain' '--enable-anon' '--enable-login'
+           '--enable-ntlm' '--disable-passdss' '--disable-macos-framework' '--with-configdir=/etc/sasl2:/etc/sasl:/usr/lib/sasl2'
+           '--with-devrandom=/dev/urandom' '--with-saslauthd=/var/run/saslauthd' '--with-dbpath=/var/lib/sasl/sasldb2'
+           '--enable-auth-sasldb')
+if [[ "$(pacman -Qq krb5 2>/dev/null)" ]];then
+    _confargs+=( '--enable-gssapi')
+    makedepends+=( 'krb5')
+    pkgrel=$((pkgrel+1))
+fi
+if [[ "$(pacman -Qq linux-pam 2>/dev/null)" ]];then
+    _confargs+=( '--with-pam')
+    makedepends+=( 'linux-pam')
+    pkgrel=$((pkgrel+1))
+fi
+if [[ "$(pacman -Qq libldap 2>/dev/null)" ]];then
+    _confargs+=( '--enable-ldapdb' '--with-ldap')
+    makedepends+=( 'libldap')
+    pkgrel=$((pkgrel+1))
+fi
+if [[ "$(pacman -Qq sqlite 2>/dev/null)" ]];then
+    _confargs+=( '--with-sqlite3=/usr/lib')
+    makedepends+=( 'sqlite')
+    pkgrel=$((pkgrel+1))
+fi
+if [[ "$(pacman -Qq gdbm 2>/dev/null)" ]];then
+    _confargs+=( '--with-dblib=gdbm')
+    makedepends+=( 'gdbm')
+    pkgrel=$((pkgrel+1))
+fi
+if [[ "$(pacman -Qq postgresql-libs 2>/dev/null)" ]];then
+    _confargs+=( '--with-pgsql=/usr/lib')
+    makedepends+=( 'postgresql-libs')
+    pkgrel=$((pkgrel+1))
+fi
+if [[ "$(pacman -Qq libmariadbclient 2>/dev/null)" ]];then
+    _confargs+=( '--enable-sql' '--with-mysql=/usr')
+    makedepends+=( 'libmariadbclient')
+    pkgrel=$((pkgrel+1))
+fi
+
+prepare() {
+    cd cyrus-sasl-$pkgver
+    export CFLAGS="$CFLAGS -fPIC"
+
+    ./configure ${_confargs[@]}
+}
+
+build(){
+    cd cyrus-sasl-$pkgver
+    make
+}
+
+package(){
+    pkgdesc="Cyrus Simple Authentication Service Layer (SASL) Library"
+    depends=('openssl')
+    conflicts=('cyrus-sasl-plugins')
+
+    cd cyrus-sasl-$pkgver
+    make DESTDIR="$pkgdir" install
+
+    rm -f "${pkgdir}"/usr/lib/sasl2/libsql.so*
+    rm -f "${pkgdir}"/usr/lib/sasl2/libgssapiv2.so*
+    rm -f "${pkgdir}"/usr/lib/sasl2/libldapdb.so*
+    rm -f "${pkgdir}"/usr/lib/sasl2/libgs2.so*
+    install -m755 -d "${pkgdir}/usr/share/licenses/libsasl"
+    install -m644 COPYING "${pkgdir}/usr/share/licenses/libsasl/"
+    
+}
+
+md5sums=('a33820c66e0622222c5aefafa1581083')

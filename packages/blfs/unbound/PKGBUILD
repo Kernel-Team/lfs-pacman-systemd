@@ -1,0 +1,79 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=unbound
+pkgver=1.9.3
+pkgrel=1
+pkgdesc='Validating, recursive, and caching DNS resolver'
+url='https://unbound.net/'
+license=('custom:BSD')
+arch=('x86_64')
+makedepends=('expat')
+optdepends=('expat: unbound-anchor')
+_deps=('dnssec-anchors' 'ldns')
+depends=('fstrm' 'openssl' 'libsodium' 'protobuf-c' 'libevent')
+backup=('etc/unbound/unbound.conf')
+validpgpkeys=('EDFAA3F2CA4E6EB05681AF8E9F6F1C2D7E045F8D')
+source=("https://unbound.net/downloads/${pkgname}-${pkgver}.tar.gz"{,.asc}
+        'sysusers.d'
+        'tmpfiles.d'
+        'service'
+        'hook'
+        'conf')
+groups=('blfs' 'other-server-softwares')
+
+for _d in "${_deps[@]}";do
+    if [[ "$(pacman -Qq "${_d}" 2>/dev/null)" ]];then
+        depends+=( "${_d}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_d}")
+    fi
+done
+
+prepare(){
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    ./configure \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --sbindir=/usr/bin \
+        --disable-rpath \
+        --enable-dnscrypt \
+        --enable-dnstap \
+        --enable-pie \
+        --enable-relro-now \
+        --enable-subnet \
+        --enable-tfo-client \
+        --enable-tfo-server \
+        --with-conf-file=/etc/unbound/unbound.conf \
+        --with-pidfile=/run/unbound.pid \
+        --with-rootkey-file=/etc/trusted-key.key \
+        --with-libevent
+}
+
+build() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    make
+}
+
+package() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    make DESTDIR="${pkgdir}" install
+    install -Dm644 doc/example.conf.in "${pkgdir}/etc/unbound/unbound.conf.example"
+    install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+    install -Dm644 ../sysusers.d "${pkgdir}/usr/lib/sysusers.d/unbound.conf"
+    install -Dm644 ../service "${pkgdir}/lib/systemd/system/unbound.service"
+    install -Dm644 ../conf "${pkgdir}/etc/unbound/unbound.conf"
+
+    # Trust anchor file available from within unbound's chroot.
+    install -Dm644 ../tmpfiles.d "${pkgdir}/usr/lib/tmpfiles.d/unbound.conf"
+    install -Dm644 ../hook "${pkgdir}/usr/share/libalpm/hooks/unbound-key.hook"
+}
+
+md5sums=('fe1af630616d7d88d621e300fb87e5d5'
+         'SKIP'
+         '5547a48d39db4cf75bdeb08c1b2b1e94'
+         '49f5e7686c4c123cd4ae9b6aff06efda'
+         '1386e4c1012f1188f5af67c7778ca38f'
+         '57007bbbba58cde407677f396332e776'
+         '9c46c092051c425bda28a3e0ab942eeb')

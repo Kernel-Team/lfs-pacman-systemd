@@ -1,0 +1,47 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+_pkgname=libX11
+pkgname=libx11
+pkgver=1.6.8.r16.gedc7680e
+pkgrel=1
+pkgdesc="X11 client-side library"
+arch=(x86_64)
+url="https://xorg.freedesktop.org/"
+depends=('libxcb' 'xproto' 'kbproto')
+makedepends=('xorg-util-macros' 'xextproto' 'xtrans' 'inputproto')
+license=('custom')
+source=(xorg/lib/libX11::git://anongit.freedesktop.org/git/xorg/lib/libX11)
+sha256sums=('SKIP')
+validpgpkeys=('4A193C06D35E7C670FA4EF0BA2FB9E081F2D130E')
+validpgpkeys+=('C41C985FDCF1E5364576638B687393EE37D128F8') # Matthieu Herrb <matthieu.herrb@laas.fr>
+validpgpkeys+=('3BB639E56F861FA2E86505690FDD682D974CA72A') # Matt Turner <mattst88@gmail.com>
+groups=('blfs' 'xorg')
+
+pkgver() {
+    cd "$_pkgname"
+    git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g' | sed "s/${_pkgname}.//g"
+}
+
+prepare(){
+    cd "${srcdir}/${_pkgname}"
+    NOCONFIGURE=1 ./autogen.sh
+    ./configure --prefix=/usr --disable-static --disable-xf86bigfont
+}
+
+build() {
+    cd "${srcdir}/${_pkgname}"
+    make
+}
+
+check() {
+    cd "${srcdir}/${_pkgname}"
+    make check
+}
+
+package() {
+    cd "${srcdir}/${_pkgname}"
+    make DESTDIR="${pkgdir}" install
+
+    install -d -m755 "${pkgdir}/usr/share/licenses/${pkgname}"
+    install -m644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/"
+}

@@ -1,0 +1,49 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=pambase
+pkgver=20191016
+pkgrel=1
+pkgdesc="Base PAM configuration for services"
+arch=('any')
+url="http://www.linuxfromscratch.org"
+license=('GPL')
+source=('system-account'
+        'system-auth'
+        'system-session'
+        'system-local-login'
+        'system-login'
+        'system-remote-login'
+        'system-services'
+        'other')
+depends=()
+md5sums=('aba019fdf6710e5045e1543b6e21d9b9'
+         'b1198d9ae416bd204e53a7aeb5a7842a'
+         'a2e4fbf5aab24c47b5c1a4a90f8e43f0'
+         '477237985820117a0e6e1b13a86eb599'
+         'c5e705527feefee38469d3b581a7449a'
+         '477237985820117a0e6e1b13a86eb599'
+         '6969307eef026979703a6eba33c2e3eb'
+         '8c37ec4dba9c45b3540f990a6c1922c1'
+        )
+
+if [[ "$(pacman -Qq cracklib 2>/dev/null)" ]];then
+    _USE_CRACKLIB=1
+    source+=( 'cracklib-system-password')
+    depends+=( 'cracklib')
+    pkgrel=$((pkgrel+1))
+    md5sums+=( 'f7df7e3a1843cfcd9aff52ed3da05d51')
+else
+    source+=( 'system-password')
+    md5sums+=( '8a82e837907ae2cd3334800823fc2382')
+fi
+
+package() {
+    install -dm755 "$pkgdir/etc/pam.d"
+    install -m644 -t "$pkgdir/etc/pam.d" "${source[@]}"
+
+    if [[ "${_USE_CRACKLIB}" == "1" ]];then
+        mv "$pkgdir"/etc/pam.d/cracklib-system-password "$pkgdir"/etc/pam.d/system-password
+    fi
+}
+
+# vim:set ts=2 sw=2 et:

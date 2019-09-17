@@ -1,0 +1,95 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=openssh
+pkgver=8.0p1
+pkgrel=1
+pkgdesc='Premier connectivity tool for remote login with the SSH protocol'
+url='https://www.openssh.com/portable.html'
+license=('custom:BSD')
+arch=('x86_64')
+makedepends=('linux-headers')
+depends=('krb5' 'openssl' 'libedit' 'ldns')
+optdepends=('xorg-xauth: X11 forwarding'
+            'x11-ssh-askpass: input passphrase in X')
+validpgpkeys=('59C2118ED206D927E667EBE3D3E5F56B6D920D30')
+source=("https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/${pkgname}-${pkgver}.tar.gz"{,.asc}
+        'sshdgenkeys.service'
+        'sshd@.service'
+        'sshd.service'
+        'sshd.socket'
+        'sshd.conf'
+        'sshd.pam')
+groups=('blfs' 'security')
+backup=('etc/ssh/ssh_config' 'etc/ssh/sshd_config' 'etc/pam.d/sshd')
+
+prepare(){
+    cd "${srcdir}/${pkgname}-${pkgver}"
+
+    ./configure \
+        --prefix=/usr \
+        --sbindir=/usr/bin \
+        --libexecdir=/usr/lib/ssh \
+        --sysconfdir=/etc/ssh \
+        --with-ldns \
+        --with-libedit \
+        --with-ssl-engine \
+        --with-pam \
+        --with-privsep-user=nobody \
+        --with-kerberos5=/usr \
+        --with-xauth=/usr/bin/xauth \
+        --with-md5-passwords \
+        --with-pid-dir=/run \
+        --with-default-path='/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin'
+}
+
+build() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    make
+}
+
+check() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+
+    # Tests require openssh to be already installed system-wide,
+    # also connectivity tests will fail under makechrootpkg since
+    # it runs as nobody which has /bin/false as login shell.
+
+    if [[ -e /usr/bin/scp && ! -e /.arch-chroot ]]; then
+        make tests
+    fi
+}
+
+package() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+
+    make DESTDIR="${pkgdir}" install
+
+    ln -sf ssh.1.gz "${pkgdir}"/usr/share/man/man1/slogin.1.gz
+    install -Dm644 LICENCE "${pkgdir}/usr/share/licenses/${pkgname}/LICENCE"
+
+    install -Dm644 ../sshdgenkeys.service "${pkgdir}"/usr/lib/systemd/system/sshdgenkeys.service
+    install -Dm644 ../sshd@.service "${pkgdir}"/usr/lib/systemd/system/sshd@.service
+    install -Dm644 ../sshd.service "${pkgdir}"/usr/lib/systemd/system/sshd.service
+    install -Dm644 ../sshd.socket "${pkgdir}"/usr/lib/systemd/system/sshd.socket
+    install -Dm644 ../sshd.conf "${pkgdir}"/usr/lib/tmpfiles.d/sshd.conf
+    install -Dm644 ../sshd.pam "${pkgdir}"/etc/pam.d/sshd
+
+    install -Dm755 contrib/findssl.sh "${pkgdir}"/usr/bin/findssl.sh
+    install -Dm755 contrib/ssh-copy-id "${pkgdir}"/usr/bin/ssh-copy-id
+    install -Dm644 contrib/ssh-copy-id.1 "${pkgdir}"/usr/share/man/man1/ssh-copy-id.1
+
+    sed \
+        -e '/^#ChallengeResponseAuthentication yes$/c ChallengeResponseAuthentication no' \
+        -e '/^#PrintMotd yes$/c PrintMotd no # pam does that' \
+        -e '/^#UsePAM no$/c UsePAM yes' \
+        -i "${pkgdir}"/etc/ssh/sshd_config
+}
+
+md5sums=('bf050f002fe510e1daecd39044e1122d'
+         'SKIP'
+         'f7c35eab2ca1ea6352da19eb2e1f6b6b'
+         '51284b11c80c2022c64015084eaf77d2'
+         '36db016390876526e5361f7c1d0ae169'
+         '76f52c66fb3193f301fe0a666e047ab1'
+         '0dc7eaae0fcaf48a5a0f11c618e503c9'
+         '9d71ea52cd15e9d7c172b7b71cb03bc0')

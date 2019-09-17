@@ -1,0 +1,29 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=which
+pkgver=2.21
+pkgrel=1
+pkgdesc='A utility to show the full path of commands'
+arch=('x86_64')
+url='https://savannah.gnu.org/projects/which/'
+license=('GPL3')
+depends=('glibc' 'bash')
+source=("https://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.gz")
+md5sums=('097ff1a324ae02e0a3b0369f07a7544a')
+groups=('blfs' 'system-utilities')
+
+prepare(){
+    cd $pkgname-$pkgver
+    ./configure --prefix=/usr
+}
+
+build() {
+    cd $pkgname-$pkgver
+    make
+}
+
+package() {
+    cd $pkgname-$pkgver
+    make DESTDIR="$pkgdir" install
+}
+

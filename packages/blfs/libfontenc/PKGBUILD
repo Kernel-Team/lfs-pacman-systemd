@@ -1,0 +1,37 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=libfontenc
+pkgver=1.1.4.r0.g2baea13
+pkgrel=1
+pkgdesc="X11 font encoding library"
+arch=('x86_64')
+url="https://xorg.freedesktop.org/"
+license=('custom')
+depends=('zlib')
+makedepends=('pkgconfig' 'xorgproto' 'xorg-font-util')
+source=(xorg/lib/libfontenc::git://anongit.freedesktop.org/git/xorg/lib/libfontenc)
+sha256sums=('SKIP')
+validpgpkeys=('4A193C06D35E7C670FA4EF0BA2FB9E081F2D130E') #Alan Coopersmith <alan.coopersmith@oracle.com>
+
+pkgver() {
+    cd "$pkgname"
+    git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g' | sed "s/$pkgname.//g"
+}
+
+prepare(){
+    cd $pkgname
+    NOCONFIGURE=1 ./autogen.sh
+    ./configure --prefix=/usr --sysconfdir=/etc \
+                --localstatedir=/var --disable-static \
+                --with-encodingsdir=/usr/share/fonts/encodings      
+}
+build() {
+    cd ${pkgname}
+    make
+}
+
+package() {
+    cd ${pkgname}
+    make DESTDIR="${pkgdir}" install
+    install -Dm644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+}

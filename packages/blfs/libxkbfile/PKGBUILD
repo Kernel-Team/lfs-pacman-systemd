@@ -1,0 +1,39 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=libxkbfile
+pkgver=1.1.0.r2.g6c4de33
+pkgrel=1
+pkgdesc="X11 keyboard file manipulation library"
+arch=('x86_64')
+license=('custom')
+url="https://xorg.freedesktop.org/"
+depends=('libx11')
+makedepends=('xorg-util-macros')
+source=(xorg/lib/libxkbfile::git://anongit.freedesktop.org/git/xorg/lib/libxkbfile)
+sha512sums=('SKIP')
+validpgpkeys=('4A193C06D35E7C670FA4EF0BA2FB9E081F2D130E') #Alan Coopersmith <alan.coopersmith@oracle.com>
+groups=('blfs' 'xorg')
+
+pkgver() {
+    cd "$pkgname"
+    git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g' | sed "s/$pkgname.//g"
+}
+
+prepare(){
+    cd "$pkgname"
+    NOCONFIGURE=1 ./autogen.sh
+    ./configure --prefix=/usr --sysconfdir=/etc --disable-static
+}
+
+build() {
+    cd "$pkgname"
+    make
+}
+
+package() {
+    cd "$pkgname"
+    make DESTDIR="${pkgdir}" install
+
+    install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+    install -m644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/"
+}

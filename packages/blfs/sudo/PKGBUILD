@@ -1,0 +1,71 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=sudo
+_sudover=1.8.27
+pkgver=${_sudover/p/.p}
+pkgrel=1
+pkgdesc="Give certain users the ability to run some commands as root"
+arch=('x86_64')
+url="https://www.sudo.ws/sudo/"
+license=('custom')
+depends=('glibc')
+backup=('etc/sudoers' 'etc/pam.d/sudo')
+install=$pkgname.install
+source=(https://www.sudo.ws/sudo/dist/$pkgname-$_sudover.tar.gz{,.sig}
+        sudo.pam)
+validpgpkeys=('59D1E9CCBA2B376704FDD35BA9F4C021CEA470FB')
+groups=('blfs' 'security')
+
+_confargs=('--prefix=/usr' '--libexecdir=/usr/lib' '--with-secure-path' '--with-all-insults' '--with-env-editor'
+           '--docdir=/usr/share/doc/${pkgname}-${pkgver}' '--enable-tmpfiles.d')
+if [[ "$(pacman -Qq libgcrypt 2>/dev/null)" ]];then
+    depends+=( 'libgcrypt')
+    _confargs+=( '--enable-gcrypt')
+    pkgrel=$((pkgrel+1))
+fi
+if [[ "$(pacman -Qq linux-pam 2>/dev/null)" ]];then
+    depends+=( 'linux-pam')
+    _confargs+=( '--with-pam')
+    pkgrel=$((pkgrel+1))
+fi
+if [[ "$(pacman -Qq libldap 2>/dev/null)" ]];then
+    depends+=( 'libldap')
+    _confargs+=( '--with-sssd' '--with-ldap' '--with-ldap-conf-file=/etc/openldap/ldap.conf')
+    pkgrel=$((pkgrel+1))
+fi
+
+prepare() {
+    cd "$srcdir/$pkgname-$_sudover"
+
+    ./configure ${_confargs[@]} --with-passprompt="[sudo] password for %p: "
+}
+
+build() {
+    cd "$srcdir/$pkgname-$_sudover"
+    make
+}
+
+check() {
+    cd "$srcdir/$pkgname-$_sudover"
+    env LC_ALL=C make check 2>&1 | tee ../make-check.log
+}
+
+package() {
+    cd "$srcdir/$pkgname-$_sudover"
+    make DESTDIR="$pkgdir" install
+
+    # Remove sudoers.dist; not needed since pacman manages updates to sudoers
+    rm "$pkgdir/etc/sudoers.dist"
+
+    # Remove /run/sudo directory; we create it using systemd-tmpfiles
+    rmdir "$pkgdir/run/sudo"
+    rmdir "$pkgdir/run"
+
+    install -Dm644 "$srcdir/sudo.pam" "$pkgdir/etc/pam.d/sudo"
+
+    install -Dm644 doc/LICENSE "$pkgdir/usr/share/licenses/sudo/LICENSE"
+}
+
+md5sums=('b5c184b13b6b5de32af630af2fd013fd'
+         'SKIP'
+         '39e65caf258a38aebfe847a89ac5822f')

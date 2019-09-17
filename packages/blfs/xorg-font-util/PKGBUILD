@@ -1,0 +1,51 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+_pkgname=util
+pkgname=xorg-font-util
+pkgver=1.3.2.r0.gd45011b
+pkgrel=1
+pkgdesc='X.Org font utilities'
+url='https://xorg.freedesktop.org/'
+arch=('x86_64')
+license=('custom')
+makedepends=('xorg-util-macros')
+validpgpkeys=('4A193C06D35E7C670FA4EF0BA2FB9E081F2D130E')
+source=(xorg/font/util::git://anongit.freedesktop.org/git/xorg/font/util)
+sha256sums=('SKIP')
+replaces=('font-util')
+provides=('font-util')
+conflicts=('font-util')
+groups=('blfs' 'xorg')
+
+pkgver() {
+    cd "$_pkgname"
+    git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g' | sed 's/font.util.//g'
+}
+
+prepare(){
+    cd $_pkgname
+    NOCONFIGURE=1 ./autogen.sh
+    ./configure \
+        --prefix=/usr \
+        --mandir=/usr/share/man \
+        --with-mapdir=/usr/share/fonts/util \
+        --with-fontrootdir=/usr/share/fonts
+}
+
+build() {
+    cd "${_pkgname}"
+
+    ./configure \
+        --prefix=/usr \
+        --mandir=/usr/share/man \
+        --with-mapdir=/usr/share/fonts/util \
+        --with-fontrootdir=/usr/share/fonts \
+
+        make
+}
+
+package() {
+    cd "${_pkgname}"
+    make DESTDIR="${pkgdir}" install
+    install -Dm644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+}

@@ -1,0 +1,134 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgbase=openldap
+pkgname=('libldap')
+pkgver=2.4.48
+pkgrel=1
+arch=('x86_64')
+url="https://www.openldap.org/"
+license=('custom')
+makedepends=('libltdl'  'e2fsprogs' 'util-linux' 'chrpath' 'unixodbc')
+options=('!makeflags' 'emptydirs')
+backup=('etc/openldap/slapd.conf' 'etc/openldap/slapd.ldif' 'etc/openldap/ldap.conf')
+source=(https://www.openldap.org/software/download/OpenLDAP/openldap-release/${pkgbase}-${pkgver}.tgz
+        slapd.service openldap.tmpfiles openldap.sysusers openldap-ntlm.patch
+        http://www.linuxfromscratch.org/patches/blfs/svn/${pkgbase}-${pkgver}-consolidated-1.patch
+       )
+
+_confargs=('--prefix=/usr' '--sysconfdir=/etc' '--localstatedir=/var/lib/openldap' '--enable-dynamic' '--enable-syslog' '--enable-ipv6'
+           '--enable-local' '--enable-crypt' '--enable-modules' '--enable-backends' '--disable-ndb' '--enable-overlays=mod' '--with-threads'
+           '--disable-bdb' '--disable-hdb')
+groups=('blfs' 'other-server-sofware')
+
+if [[ "$(pacman -Q cyrus-sasl 2>/dev/null)" ]];then
+    makedepends+=( 'cyrus-sasl')
+    _confargs+=( '--enable-spasswd' '--with-cyrus-sasl')
+    pkgrel=$((pkgrel+1))
+fi
+
+if [[ "$(pacman -Q libldap 2>/dev/null)" ]];then
+    pkgname+=( 'openldap')
+    pkgrel=$((pkgrel+1))
+fi
+
+prepare() {
+    cd ${pkgbase}-${pkgver}
+    #patch -p1 -i "${srcdir}"/openldap-ntlm.patch
+    patch -Np1 -i "${srcdir}"/${pkgbase}-${pkgver}-consolidated-1.patch
+    sed -i 's|-m 644 $(LIBRARY)|-m 755 $(LIBRARY)|' libraries/{liblber,libldap,libldap_r}/Makefile.in
+    sed -i 's|#define LDAPI_SOCK LDAP_RUNDIR LDAP_DIRSEP "run" LDAP_DIRSEP "ldapi"|#define LDAPI_SOCK LDAP_DIRSEP "run" LDAP_DIRSEP "openldap" LDAP_DIRSEP "ldapi"|' include/ldap_defaults.h
+    sed -i 's|%LOCALSTATEDIR%/run|/run/openldap|' servers/slapd/slapd.{conf,ldif}
+    sed -i 's|-$(MKDIR) $(DESTDIR)$(localstatedir)/run|-$(MKDIR) $(DESTDIR)/run/openldap|' servers/slapd/Makefile.in
+
+    autoconf
+    ./configure ${_confargs[@]}
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+
+}
+
+build() {
+    cd ${pkgbase}-${pkgver}
+    #make depend
+    make
+    
+    make -C contrib/slapd-modules/nssov OPT="$CFLAGS $CPPFLAGS" prefix=/usr libexecdir=/usr/libexec sysconfdir=/etc/openldap
+    make -C contrib/slapd-modules/autogroup OPT="$CFLAGS $CPPFLAGS" prefix=/usr libexecdir=/usr/libexec sysconfdir=/etc/openldap
+    make -C contrib/slapd-modules/lastbind OPT="$CFLAGS $CPPFLAGS" prefix=/usr libexecdir=/usr/libexec sysconfdir=/etc/openldap
+    make -C contrib/slapd-modules/passwd/sha2 OPT="$CFLAGS $CPPFLAGS" prefix=/usr libexecdir=/usr/libexec sysconfdir=/etc/openldap
+}
+
+check() {
+    cd ${pkgbase}-${pkgver}
+    #  make test
+}
+
+package_libldap() {
+    pkgdesc="Lightweight Directory Access Protocol (LDAP) client libraries"
+    depends=('e2fsprogs')
+    backup=('etc/openldap/ldap.conf')
+
+    cd ${pkgbase}-${pkgver}
+    for dir in include libraries doc/man/man3 ; do
+        pushd ${dir}
+        make DESTDIR="${pkgdir}" install
+        popd
+    done
+    install -Dm644 doc/man/man5/ldap.conf.5.tmp "${pkgdir}"/usr/share/man/man5/ldap.conf.5
+
+    # get rid of duplicate default conf files
+    rm "${pkgdir}"/etc/openldap/*.default
+
+    #install -v -dm755 "${pkgdir}"/usr/libexec
+    ln -sf liblber.so "${pkgdir}"/usr/lib/liblber.so.2
+    ln -sf libldap.so "${pkgdir}"/usr/lib/libldap.so.2
+
+    install -Dm644 LICENSE "${pkgdir}"/usr/share/licenses/${pkgname}/LICENSE
+}
+
+package_openldap() {
+    pkgdesc="Lightweight Directory Access Protocol (LDAP) client and server"
+    depends=("libldap>=${pkgver}" 'libltdl' 'unixodbc')
+    backup=('etc/openldap/slapd.conf' 'etc/openldap/slapd.ldif')
+
+    cd ${pkgbase}-${pkgver}
+    for dir in clients servers doc/man/man{1,5,8}; do
+        pushd ${dir}
+        make DESTDIR="${pkgdir}" install
+        popd
+    done
+
+    make -C contrib/slapd-modules/autogroup prefix=/usr libexecdir=/usr/libexec sysconfdir=/etc/openldap DESTDIR="$pkgdir" install
+    make -C contrib/slapd-modules/lastbind prefix=/usr libexecdir=/usr/libexec sysconfdir=/etc/openldap DESTDIR="$pkgdir" install
+    make -C contrib/slapd-modules/passwd/sha2 prefix=/usr libexecdir=/usr/libexec sysconfdir=/etc/openldap DESTDIR="$pkgdir" install
+    make -C contrib/slapd-modules/nssov prefix=/usr libexecdir=/usr/libexec sysconfdir=/etc/openldap DESTDIR="$pkgdir" install
+    install -m644 contrib/slapd-modules/nssov/slapo-nssov.5 "${pkgdir}"/usr/share/man/man5/slapo-nssov.5
+    install -m644 contrib/slapd-modules/autogroup/slapo-autogroup.5 "${pkgdir}"/usr/share/man/man5/slapo-autogroup.5
+    install -m644 contrib/slapd-modules/lastbind/slapo-lastbind.5 "${pkgdir}"/usr/share/man/man5/slapo-lastbind.5
+
+    rm "${pkgdir}"/usr/share/man/man5/ldap.conf.5
+    rm -r "${pkgdir}"/run
+
+    # get rid of duplicate default conf files
+    rm "${pkgdir}"/etc/openldap/*.default
+
+    ln -s ../lib/slapd "${pkgdir}"/usr/bin/slapd
+
+    chown root:439 "${pkgdir}"/etc/openldap/slapd.{conf,ldif}
+    chmod 640 "${pkgdir}"/etc/openldap/slapd.{conf,ldif}
+
+    install -dm700 -o 439 -g 439 "${pkgdir}"/var/lib/openldap
+    chown -R 439:439 "${pkgdir}"/var/lib/openldap
+
+    install -dm700 -o 439 -g 439 "${pkgdir}"/etc/openldap/slapd.d
+    install -Dm644 "${srcdir}"/slapd.service "${pkgdir}"/lib/systemd/system/slapd.service
+    install -Dm644 "${srcdir}"/openldap.tmpfiles "${pkgdir}"/usr/lib/tmpfiles.d/openldap.conf
+    install -Dm644 "${srcdir}"/openldap.sysusers "${pkgdir}"/usr/lib/sysusers.d/openldap.conf
+    install -Dm644 LICENSE "${pkgdir}"/usr/share/licenses/${pkgname}/LICENSE
+}
+
+md5sums=('0729a0711fe096831dedc159e0bbe73f'
+         'cdc1633572d58f0e6c7e41507d524fa2'
+         '776676c6dc583854e9729222f6659812'
+         '2d5eca5159596ac2dc12007c37ca5f30'
+         '4258ddbef923d1f29f2843bc050f8c56'
+         '04e1222766861e465ee7b50f62b7c4a3')

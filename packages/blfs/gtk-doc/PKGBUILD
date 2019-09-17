@@ -1,0 +1,68 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=gtk-doc
+pkgver=1.31+0+gc268fa5
+pkgrel=1
+pkgdesc="Documentation tool for public library API"
+url="https://www.gtk.org/gtk-doc/"
+arch=(any)
+license=(GPL FDL)
+_deps=(source-highlight glib2-docs)
+depends=(docbook-xsl docbook-xml python-lxml
+         python-pygments python-anytree glib2)
+_makedeps=(dblatex)
+makedepends=(git yelp-tools meson)
+checkdepends=(bc gtk3 python-six python-parameterized)
+optdepends=('dblatex: PDF support')
+options=(docs)
+_commit=c268fa535424d193953487c694e2a8f770d3255f  # tags/GTK_DOC_1_31^0
+source=("git+https://gitlab.gnome.org/GNOME/gtk-doc.git#commit=$_commit"
+        fix.diff)
+groups=('blfs' 'general-utilities')
+
+for _d in "${_deps[@]}";do
+    if [[ "$(pacman -Qq "${_d}" 2>/dev/null)" ]];then
+        depends+=( "${_d}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_d}")
+    fi
+done
+for _m in "${_makedeps[@]}";do
+    if [[ "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
+        makedepends+=( "${_m}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_m}")
+    fi
+done
+
+pkgver() {
+    cd "$pkgname"
+    git describe --long --tags | sed -e 's/GTK_DOC_//' -e 's/_/\./g' -e 's/-/+/g'
+}
+
+prepare() {
+    cd ${pkgname}
+    patch -Np1 -i ../fix.diff
+    cd ${srcdir}
+    meson-helper ${pkgname} build
+}
+
+build() {
+    cd ${srcdir}
+    ninja -C build
+}
+
+check() {
+    cd ${srcdir}
+    meson test -C build
+}
+
+package() {
+    cd ${srcdir}
+    DESTDIR="$pkgdir" meson install -C build
+}
+
+md5sums=('SKIP'
+         '3e27f999a15470839372a2797d450a42')

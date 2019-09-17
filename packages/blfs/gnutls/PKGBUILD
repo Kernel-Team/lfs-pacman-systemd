@@ -18,6 +18,14 @@ validpgpkeys=('0424D4EE81A0E3D119C6F835EDA21E94B565716F'
 # "Nikos Mavrogiannopoulos <nmav@gnutls.org>
 groups=('blfs' 'security')
 
+if [[ $(pacman -Qq guile 2>/dev/null) ]];then
+    depends+=( 'guile')
+    pkgrel=$((pkgrel+1))
+    _confargs=("--enable-guile --with-guile-site-dir=no")
+else
+    _confargs=("--disable-guile")
+fi
+
 prepare() {
     cd ${pkgname}-${pkgver}
     # disable libidn for security reasons:
@@ -26,8 +34,7 @@ prepare() {
     ./configure --prefix=/usr \
 	        --with-zlib \
 	        --disable-static \
-	        --without-idn \
-	        --disable-guile \
+	        --with-idn \
 	        --with-default-trust-store-pkcs11="pkcs11:"
     sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
 }

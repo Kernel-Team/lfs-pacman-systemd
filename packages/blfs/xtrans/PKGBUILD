@@ -1,0 +1,42 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+_pkgname=libxtrans
+pkgname=xtrans
+pkgver=1.4.0.r0.gc4262ef
+pkgrel=1
+pkgdesc="X transport library"
+arch=('any')
+license=('custom')
+url="https://xorg.freedesktop.org/"
+options=(!emptydirs)
+depends=('xorg-util-macros')
+source=(xorg/lib/libxtrans::git://anongit.freedesktop.org/git/xorg/lib/libxtrans)
+sha512sums=('SKIP')
+validpgpkeys=('C383B778255613DFDB409D91DB221A6900000011') #  "Keith Packard <keithp@keithp.com>"
+groups=('blfs' 'xorg')
+
+pkgver() {
+    cd "$_pkgname"
+    git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g' | sed "s/${pkgname/-/.}.//g"
+}
+
+prepare(){
+    cd "$_pkgname"
+    NOCONFIGURE=1 ./autogen.sh
+    ./configure --prefix=/usr 
+}
+
+build() {
+    cd "$_pkgname"
+    make
+}
+
+package() {
+    cd "$_pkgname"
+    make DESTDIR="${pkgdir}" install
+
+    install -Dm644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+
+    install -m755 -d "${pkgdir}/usr/lib"
+    mv "${pkgdir}/usr/share/pkgconfig" "${pkgdir}/usr/lib/pkgconfig"
+}

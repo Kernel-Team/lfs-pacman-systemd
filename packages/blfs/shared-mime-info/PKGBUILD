@@ -1,0 +1,44 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=shared-mime-info
+pkgver=1.13.1
+pkgrel=1
+pkgdesc="Freedesktop.org Shared MIME Info"
+arch=('x86_64')
+license=('GPL2')
+depends=('libxml2' 'glib2')
+makedepends=('intltool' 'pkgconfig')
+install=shared-mime-info.install
+url="https://freedesktop.org/Software/shared-mime-info"
+source=(https://gitlab.freedesktop.org/xdg/$pkgname/uploads/5349e18c86eb96eee258a5c1f19122d0/$pkgname-$pkgver.tar.xz
+        update-mime-database.hook)
+options=(!makeflags)
+groups=('blfs' 'general-utilities')
+
+prepare(){
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    # https://bugs.archlinux.org/task/38836
+    # https://bugs.freedesktop.org/show_bug.cgi?id=70366
+    export ac_cv_func_fdatasync=no
+    ./configure --prefix=/usr --disable-update-mimedb
+}
+
+build() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    make
+}
+
+check() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    make -k check
+}
+
+package() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    make DESTDIR="${pkgdir}" install
+
+    install -Dm644 "$srcdir"/update-mime-database.hook "$pkgdir"/usr/share/libalpm/hooks/update-mime-database.hook
+}
+
+sha256sums=('6ea80a5bc7b20598f3b0f9f92942fdb4322245b79d7ed3c3ee18816fcb472cae'
+            '7ecdd55ff7c4331e188cf46debbcc5660edb0e2bbeb4dd87cc5b87278c292821')

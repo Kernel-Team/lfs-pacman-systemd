@@ -1,0 +1,55 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=gpm
+pkgver=1.20.7.r29.g631aa6f
+pkgrel=1
+pkgdesc="A mouse server for the console and xterm"
+arch=('x86_64')
+url="http://www.nico.schottelius.org/software/gpm/"
+license=('GPL')
+depends=('bash' 'procps-ng')
+makedepends=('git')
+options=('!makeflags')
+source=("git+https://github.com/telmich/gpm.git#commit=${_commit}"
+        #'0001-glibc-sigemptyset.patch'
+        'gpm.sh'
+        'gpm.service')
+groups=('blfs' 'system-utilities')
+
+pkgver() {
+    cd "${srcdir}/${pkgname}"
+
+    GITTAG="$(git describe --abbrev=0 --tags 2>/dev/null)"
+    printf '%s.r%s.g%s' \
+           "${GITTAG}" \
+           "$(git rev-list --count ${GITTAG}..)" \
+           "$(git rev-parse --short HEAD)"
+}
+
+prepare(){
+    cd "${srcdir}/${pkgname}"
+    #patch -Np1 < ../0001-glibc-sigemptyset.patch
+    ./autogen.sh
+    ./configure --prefix=/usr --sysconfdir=/etc
+}
+
+build() {
+    cd "${srcdir}/${pkgname}"
+    make
+}
+
+package() {
+    cd "${srcdir}/${pkgname}"
+    make DESTDIR="${pkgdir}" install
+    install -D -m755 ../gpm.sh "${pkgdir}/etc/profile.d/gpm.sh"
+    install -D -m644 ../gpm.service "${pkgdir}/lib/systemd/system/gpm.service"
+
+    # library fixes
+    cd "${pkgdir}/usr/lib/"
+    ln -s libgpm.so.2.* libgpm.so
+    chmod 755 "${pkgdir}"/usr/lib/libgpm.so.*
+}
+
+md5sums=('SKIP'
+         'd73dd7e579192a58e5af72be206ce3c8'
+         'febb59e1f2047728b50c808cd940fdfc')

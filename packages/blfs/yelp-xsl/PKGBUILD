@@ -1,0 +1,36 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=yelp-xsl
+pkgver=3.34.0
+pkgrel=1
+pkgdesc="Document transformations from Yelp"
+url="https://gitlab.gnome.org/GNOME/yelp-xsl"
+arch=(any)
+license=(GPL)
+makedepends=(intltool libxslt libxml2 itstool git which)
+_commit=def23391ba926c4038c82c24b50976c5a7e1713b  # tags/3.34.0^0
+source=("git+https://gitlab.gnome.org/GNOME/yelp-xsl.git#commit=$_commit")
+sha256sums=('SKIP')
+groups=('blfs' 'gnome' 'gnome-libraries-desktop')
+
+pkgver() {
+    cd $pkgname
+    git describe --tags | sed 's/-/+/g'
+}
+
+prepare() {
+    cd $pkgname
+    NOCONFIGURE=1 ./autogen.sh
+    ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
+                --enable-doc
+}
+
+build() {
+    cd $pkgname
+    make
+}
+
+package() {
+    cd $pkgname
+    make DESTDIR="$pkgdir" install
+}

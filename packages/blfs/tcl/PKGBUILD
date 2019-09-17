@@ -9,6 +9,7 @@ url="http://tcl.sourceforge.net/"
 license=('custom')
 options=('staticlibs')
 source=(http://downloads.sourceforge.net/sourceforge/tcl/tcl${pkgver}-src.tar.gz)
+groups=('programming')
 
 prepare() {
     mkdir -pv build-tcl build-lib{,x}32-tcl
@@ -62,7 +63,7 @@ check() {
 package_tcl() {
     pkgdesc="The Tcl scripting language"
     depends=('zlib')
-    groups=('blfs')
+    groups+=( 'blfs')
 
     cd $srcdir/build-tcl
     make INSTALL_ROOT="${pkgdir}" install install-private-headers
@@ -96,7 +97,7 @@ package_tcl() {
 package_lib32-tcl() {
     pkgdesc="The Tcl scripting language (32-bit)"
     depends=('lib32-glibc' 'lib32-zlib' 'tcl')
-    groups=('blfs' 'blfs-multilib')
+    groups+=( 'blfs' 'blfs-multilib')
 
     cd $srcdir/build-lib32-tcl
 
@@ -133,7 +134,7 @@ package_lib32-tcl() {
 package_libx32-tcl() {
     pkgdesc="The Tcl scripting language (x32 ABI)"
     depends=('libx32-glibc' 'libx32-zlib' 'tcl')
-    groups=('blfs' 'blfs-multilib')
+    groups+=( 'blfs' 'blfs-multilib')
 
     cd $srcdir/build-libx32-tcl
 

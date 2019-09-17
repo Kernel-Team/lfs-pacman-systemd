@@ -1,0 +1,7 @@
+post_upgrade() {
+  if (( $(vercmp $2 2.7-1) < 0 )); then
+    cat <<MSG
+  Subpixel hinting is now configured in /etc/profile.d/freetype2.sh .
+MSG
+  fi
+}

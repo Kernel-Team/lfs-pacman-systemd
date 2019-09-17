@@ -1,0 +1,28 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=libyaml
+pkgver=0.2.2
+pkgrel=1
+pkgdesc="YAML 1.1 library"
+arch=('x86_64')
+url="http://pyyaml.org/wiki/LibYAML"
+license=('MIT')
+source=("http://pyyaml.org/download/libyaml/yaml-$pkgver.tar.gz")
+groups=('blfs' 'general-libraries')
+md5sums=('54bf11ccb8bc488b5b3bec931f5b70dc')
+
+prepare(){
+    cd "$srcdir/yaml-$pkgver"
+    ./configure --prefix=/usr
+}
+
+build() {
+    cd "$srcdir/yaml-$pkgver"
+    make
+}
+
+package() {
+    cd "$srcdir/yaml-$pkgver"
+    make DESTDIR="$pkgdir" install
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
