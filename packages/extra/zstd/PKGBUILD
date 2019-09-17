@@ -1,0 +1,36 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=zstd
+pkgver=1.4.2
+pkgrel=1
+pkgdesc='Zstandard - Fast real-time compression algorithm'
+arch=(x86_64)
+url='http://www.zstd.net/'
+license=(BSD GPL2)
+depends=(zlib xz lz4)
+makedepends=(gtest)
+source=(https://github.com/facebook/zstd/releases/download/v${pkgver}/zstd-${pkgver}.tar.gz)
+groups=('extra')
+
+build() {
+  cd $pkgname-$pkgver
+  make
+  make zstdmt
+  make -C contrib/pzstd
+}
+
+check() {
+  cd $pkgname-$pkgver
+  make check    
+  make -C contrib/pzstd test
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make PREFIX=/usr DESTDIR="$pkgdir/" install
+  install -Dm755 zstdmt "$pkgdir/usr/bin/zstdmt"
+  install -Dm755 contrib/pzstd/pzstd "$pkgdir/usr/bin/pzstd"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
+
+sha256sums=('12730983b521f9a604c6789140fcb94fadf9a3ca99199765e33c56eb65b643c9')

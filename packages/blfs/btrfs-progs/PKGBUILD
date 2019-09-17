@@ -1,0 +1,56 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=btrfs-progs
+pkgver=5.2.1
+pkgrel=1
+pkgdesc='Btrfs filesystem utilities'
+arch=('x86_64')
+makedepends=('git' 'asciidoc' 'xmlto' 'systemd' 'python' 'python-setuptools')
+depends=('glibc' 'libutil-linux' 'e2fsprogs' 'lzo' 'zlib' 'zstd')
+optdepends=('python: libbtrfsutil python bindings')
+url='https://btrfs.wiki.kernel.org'
+replaces=('btrfs-progs-unstable')
+conflicts=('btrfs-progs-unstable')
+provides=('btrfs-progs-unstable')
+license=('GPL2')
+validpgpkeys=('F2B41200C54EFB30380C1756C565D5F9D76D583B')
+source=("https://www.kernel.org/pub/linux/kernel/people/kdave/btrfs-progs/btrfs-progs-v$pkgver.tar."{sign,xz}
+        'btrfs-scrub@.service'
+        'btrfs-scrub@.timer')
+install=btrfs-progs.install
+options=(!staticlibs)
+groups=('blfs' 'file-systems-disk-management')
+
+prepare(){
+    cd $pkgname-v$pkgver
+    ./configure --prefix=/usr \
+                --bindir=/bin
+}
+
+build() {
+    cd $pkgname-v$pkgver
+    make
+}
+
+check() {
+    cd $pkgname-v$pkgver
+    ./btrfs filesystem show
+}
+
+package() {
+    cd $pkgname-v$pkgver
+    make DESTDIR="$pkgdir" install install_python
+
+    # install bash completion (FS#44618)
+    install -Dm644 btrfs-completion "$pkgdir/usr/share/bash-completion/completions/btrfs"
+
+    # install scrub service/timer
+    install -d $pkgdir/lib
+    install -Dm644 ${srcdir}/btrfs-scrub@.service "$pkgdir/lib/systemd/system/btrfs-scrub@.service"
+    install -Dm644 ${srcdir}/btrfs-scrub@.timer "$pkgdir/lib/systemd/system/btrfs-scrub@.timer"
+}
+
+md5sums=('SKIP'
+         '9bacd0fec4efd449a6223f1c72ab91b3'
+         '5150054b7635f848f17bf08ef22ee06b'
+         '502221c1b47a3bb2c06703d4fb90a0c2')
