@@ -8,7 +8,7 @@ arch=('x86_64')
 url="https://www.github.com/systemd/systemd"
 _deps=( 'cryptsetup' 'docbook-xsl' 'gperf' 'lz4' 'xz' 'linux-pam' 'iptables' 'libidn' 'libidn2' 'libgcrypt'
         'libmicrohttpd' 'libxslt' 'util-linux' 'python-lxml' 'quota-tools' 'gnu-efi-libs' 'libseccomp'
-        'pcre2' 'curl' 'qrencode' 'hwids' 'dbus' 'kbd' 'git' 'bash-completion' 'libxkbcommon')
+        'pcre2' 'curl' 'qrencode' 'hwids' 'dbus' 'kbd' 'git' 'bash-completion' 'libxkbcommon' 'kexec-tools')
 depends=('acl'
          'libelf'
          'intltool'
@@ -20,6 +20,7 @@ depends=('acl'
          'libelf'
          'xz'
         )
+_makedeps=()
 options=('strip')
 source=(http://anduin.linuxfromscratch.org/LFS/systemd-man-pages-$pkgver.tar.xz
         http://www.linuxfromscratch.org/patches/lfs/9.0-rc1/systemd-$pkgver-networkd_and_rdrand_fixes-1.patch
@@ -39,7 +40,7 @@ source=(http://anduin.linuxfromscratch.org/LFS/systemd-man-pages-$pkgver.tar.xz
         'systemd-update.hook'
         'systemd-user-sessions'
        )
-groups=('lfs-base')
+groups=('lfs-base' 'system-utilities')
 noextract=(systemd-man-pages-${pkgver}.tar.xz)
 
 for _d in ${_deps[@]};do
@@ -86,9 +87,11 @@ prepare() {
     #patch -Np1 -i ../8f6b442a78d0b485f044742ad90b2e8271b4e68e.patch
 
     # check for symlink to work around missing xsltproc
-    if [[ ! -f /usr/bin/xsltproc ]] || [[ ! -L /usr/bin/xsltproc ]];then
-        msg2 "/usr/bin/xsltproc not exist, exiting..."
-        return 1
+    if [[ ! $(pacman -Qq libxslt 2>/dev/null) ]];then
+        if [[ ! -f /usr/bin/xsltproc ]] || [[ ! -L /usr/bin/xsltproc ]];then
+            msg2 "/usr/bin/xsltproc not exist, exiting..."
+            return 1
+        fi
     fi
 
     meson_options=(
@@ -104,7 +107,6 @@ prepare() {
         -Drootlibdir=/lib
         -Dsplit-usr=true
         -Dsulogin-path=/sbin/sulogin
-        -Dsysusers=false
         -Dumount-path=/bin/umount
         -Db_lto=false
         -Dntp-servers="${_timeservers[*]}"
@@ -127,10 +129,11 @@ prepare() {
     fi
 
     mkdir -pv build && cd $_
-    PKG_CONFIG_PATH="/usr/lib/pkgconfig:/tools/lib/pkgconfig" \
-                   LANG=en_US.UTF-8 CFLAGS+=" -Wno-format-overflow" \
-                   meson --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
-                   "${meson_options[@]}" ..
+    # for first time compile in chroot with /tools phase
+    #PKG_CONFIG_PATH="/usr/lib/pkgconfig:/tools/lib/pkgconfig" \
+        LANG=en_US.UTF-8 CFLAGS+=" -Wno-format-overflow" \
+        meson --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
+              "${meson_options[@]}" ..
 }
 
 build(){
@@ -254,7 +257,7 @@ md5sums=('6942e1a9032e19da6639f9705241d119'
          'b93ecc3e0a95aebe63c69188840e29fd'
          '80fd2a6ec5ade81ebe4ea7ecce0f9b1b'
          '981d3730f7d14ac9459aba2753ce6a97'
-         '7982d669d7054eb8d8e53f8524ac1787'
+         '11d703a47115c3ad4530fe78ae6036d1'
          'ce4c85b7eba8d857ac994b9e6f56c614'
          '3da33b055e52e6d34361b43b66b70f2e'
          'e2eb21708d789c44a0c21d47e2aa6d88'
