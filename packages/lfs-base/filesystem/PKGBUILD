@@ -14,7 +14,7 @@ backup=('etc/nsswitch.conf' 'etc/profile.d/dircolors.sh' 'etc/skel/.profile'
         'etc/group' 'etc/shells' 'etc/hosts')
 source=('nsswitch.conf' 'dircolors.sh' 'dotprofile' 'extrapaths.sh' 'umask.sh'
         'i18n.sh' 'profile' 'fstab' 'passwd' 'group' 'shells' 'ld.so.conf'
-        'hosts')
+        'hosts' 'makepkg-helper.sh')
 groups=('lfs-base')
 
 package() {
@@ -80,7 +80,7 @@ package() {
 
     install -m644 $srcdir/dotprofile etc/skel/.profile
 
-    for f in dircolors.sh extrapaths.sh umask.sh i18n.sh;do
+    for f in dircolors.sh extrapaths.sh umask.sh i18n.sh makepkg-helper.sh;do
         install -m644 "${srcdir}"/${f} etc/profile.d/${f}
     done
 }
@@ -97,4 +97,5 @@ md5sums=('fb3976f942e00d20efb9b6f00f893a29'
          '53b4e6d69c451b7fca26f272513a76c9'
          'a78cd8d7f8240a8448edee82f503c34e'
          '681bb095a3a5e128ac1e8bdc3a38f9b2'
-         'a1315ea3e2b64d197b6efaf9c14ff778')
+         'a1315ea3e2b64d197b6efaf9c14ff778'
+         'af45e35d17a807d0bc30cdb44849935c')
