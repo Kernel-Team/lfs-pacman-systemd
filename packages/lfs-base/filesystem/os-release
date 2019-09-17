@@ -1,0 +1,4 @@
+NAME="Linux From Scratch"
+VERSION="20181112-systemd-pacman"
+ID=lfs
+PRETTY_NAME="Linux From Scratch 20181112-systemd Multilib with Pacman"

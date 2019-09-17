@@ -11,10 +11,10 @@ depends=('iana-etc')
 backup=('etc/nsswitch.conf' 'etc/profile.d/dircolors.sh' 'etc/skel/.profile'
         'etc/profile.d/extrapaths.sh' 'etc/profile.d/umask.sh'
         'etc/profile.d/i18n.sh' 'etc/profile' 'etc/fstab' 'etc/passwd'
-        'etc/group' 'etc/shells' 'etc/hosts')
+        'etc/group' 'etc/shells' 'etc/hosts' 'etc/os-release')
 source=('nsswitch.conf' 'dircolors.sh' 'dotprofile' 'extrapaths.sh' 'umask.sh'
         'i18n.sh' 'profile' 'fstab' 'passwd' 'group' 'shells' 'ld.so.conf'
-        'hosts' 'makepkg-helper.sh')
+        'hosts' 'makepkg-helper.sh' 'os-release')
 groups=('lfs-base')
 
 package() {
@@ -83,6 +83,13 @@ package() {
     for f in dircolors.sh extrapaths.sh umask.sh i18n.sh makepkg-helper.sh;do
         install -m644 "${srcdir}"/${f} etc/profile.d/${f}
     done
+
+    # /usr/lib/os-release
+    install -m644 "$srcdir"/os-release usr/lib/
+
+    if [[ -n ${PACKAGER} ]];then
+        echo "VERSION_CODENAME=\"${PACKAGER}\"" >> usr/lib/os-release
+    fi
 }
 
 md5sums=('fb3976f942e00d20efb9b6f00f893a29'
@@ -98,4 +105,5 @@ md5sums=('fb3976f942e00d20efb9b6f00f893a29'
          'a78cd8d7f8240a8448edee82f503c34e'
          '681bb095a3a5e128ac1e8bdc3a38f9b2'
          'a1315ea3e2b64d197b6efaf9c14ff778'
-         'af45e35d17a807d0bc30cdb44849935c')
+         'af45e35d17a807d0bc30cdb44849935c'
+         '4841c465036c0adee45cc44422b55ebe')
