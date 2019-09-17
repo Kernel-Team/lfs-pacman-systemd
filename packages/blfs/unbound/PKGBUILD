@@ -43,6 +43,7 @@ prepare(){
         --enable-pie \
         --enable-relro-now \
         --enable-subnet \
+        --enable-systemd \
         --enable-tfo-client \
         --enable-tfo-server \
         --with-conf-file=/etc/unbound/unbound.conf \

@@ -1,5 +1,5 @@
 #-*-mode:sh-*-
-# Maintainer: %s <%s>
+# Maintainer: alexforsale@yahoo.com
 pkgname=dnssec-anchors
 pkgver=20181003
 pkgrel=1
@@ -10,6 +10,7 @@ arch=('any')
 makedepends=('unbound')
 source=('LICENSE')
 sha256sums=('dd37e92942d5a4024f1c77df49d61ca77fc6284691814903a741785df61f78cb')
+groups=('extra')
 
 prepare() {
 	cd "${srcdir}"
