@@ -1,0 +1,44 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=w3m
+_gitcommit=a58f37c94f118105b21be6323615673cf96535ac
+pkgver=0.5.3.git20180125
+pkgrel=1
+pkgdesc='Text-based Web browser as well as pager'
+url='https://salsa.debian.org/debian/w3m'
+license=('custom')
+arch=('x86_64')
+makedepends=('git')
+optdepends=('imlib2: for graphics support')
+depends=('openssl' 'gc' 'ncurses' 'gpm')
+source=("git+https://salsa.debian.org/debian/w3m.git#commit=${_gitcommit}")
+sha256sums=('SKIP')
+groups=('extra')
+# There's also the maintainer's github repo, usually in sync with Debian's:
+# https://github.com/tats/w3m
+
+_confargs=('--prefix=/usr' '--sysconfdir=/etc' '--with-termlib=ncurses')
+if [[ "$(pacman -Qq imlib2 2>/dev/null)" ]];then
+    _confargs+=( '--with-imagelib=imlib2' '--enable-image=x11,fb')
+else
+    _confargs+=( '--enable-image=fb')
+fi
+
+prepare(){
+    cd "${srcdir}/${pkgname}"
+    ./configure ${_confargs[@]}
+}
+
+build() {
+    cd "${srcdir}/${pkgname}"
+    make
+}
+
+package() {
+    cd "${srcdir}/${pkgname}"
+    make DESTDIR="${pkgdir}" install
+
+    install -d "${pkgdir}"/usr/share/{doc,licenses}/w3m
+    install -m644 doc/* "${pkgdir}/usr/share/doc/w3m"
+    ln -s ../../doc/w3m/README "${pkgdir}/usr/share/licenses/w3m"
+}

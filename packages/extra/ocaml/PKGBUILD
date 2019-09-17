@@ -1,0 +1,86 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgbase='ocaml'
+pkgname=('ocaml' 'ocaml-compiler-libs')
+pkgver=4.08.1
+pkgrel=1
+pkgdesc="A functional language with OO extensions"
+arch=('x86_64')
+license=('LGPL2.1' 'custom: QPL-1.0')
+url="http://caml.inria.fr/"
+depends=('gdbm')
+_makedeps=('tk' 'libx11')
+makedepends=('ncurses>=5.6-7')
+optdepends=('ncurses: advanced ncurses features' 'tk: advanced tk features')
+source=(http://caml.inria.fr/distrib/ocaml-${pkgver%.*}/${pkgname}-${pkgver}.tar.xz
+        ocaml-4.08.0.patch)
+options=('!makeflags' '!emptydirs' 'staticlibs')
+_confargs=('-prefix /usr')
+groups=('extra')
+
+for _m in "${_makedeps[@]}";do
+    if [[ "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
+        depends+=( "${_m}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_m}")
+    fi
+done
+
+if [[ "$(pacman -Qq "libx11" 2>/dev/null)" ]];then
+    _confargs+=( '-x11include /usr/include')
+fi
+
+prepare(){
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    ./configure ${_confargs[@]}
+}
+
+build() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    make world.opt
+}
+
+package_ocaml() {
+    cd "${srcdir}/${pkgbase}-${pkgver}"
+    make PREFIX="${pkgdir}/usr" MANDIR="${pkgdir}/usr/share/man" install
+
+    # Save >10MB with this one, makepkg only strips debug symbols.
+    #find "${pkgdir}/usr/lib" -type f -name '*.so.*' -exec strip --strip-unneeded {} \;
+
+    # install license
+    install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+    install -m644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/"
+
+    # remove compiler libs
+    rm -rf "${pkgdir}/usr/lib/ocaml/compiler-libs"
+}
+
+package_ocaml-compiler-libs() {
+    pkgdesc="Several modules used internally by the OCaml compiler"
+    license=('custom: QPL-1.0')
+    depends=('ocaml')
+    optdepends=()
+
+    cd "${srcdir}/${pkgbase}-${pkgver}"
+    # from Makefile
+    BYTESTART=driver/main.cmo
+    TOPLEVELSTART=toplevel/topstart.cmo
+    mkdir -p "${pkgdir}/usr/lib/ocaml/compiler-libs"
+    cp utils/*.cmi utils/*.cmt utils/*.cmti utils/*.mli \
+       parsing/*.cmi parsing/*.cmt parsing/*.cmti parsing/*.mli \
+       typing/*.cmi typing/*.cmt typing/*.cmti typing/*.mli \
+       bytecomp/*.cmi bytecomp/*.cmt bytecomp/*.cmti bytecomp/*.mli \
+       driver/*.cmi driver/*.cmt driver/*.cmti driver/*.mli \
+       toplevel/*.cmi toplevel/*.cmt toplevel/*.cmti toplevel/*.mli \
+       "${pkgdir}/usr/lib/ocaml/compiler-libs"
+    cp compilerlibs/* ${BYTESTART} ${TOPLEVELSTART} \
+       "${pkgdir}/usr/lib/ocaml/compiler-libs"
+
+    # install license
+    install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+    install -m644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/"
+}
+
+md5sums=('519f095a563323cdaa68301d58bf099d'
+         '72b39c71bda9eb7f2cb17036e0e964f9')
