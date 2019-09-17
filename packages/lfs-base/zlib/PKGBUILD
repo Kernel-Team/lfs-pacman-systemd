@@ -1,5 +1,5 @@
 #-*-mode:sh-*-
-# Maintainer: %s <%s>
+# Maintainer: alexforsale@yahoo.com
 pkgbase=zlib
 pkgname=($pkgbase lib32-$pkgbase libx32-$pkgbase)
 pkgver=1.2.11
@@ -13,6 +13,7 @@ validpgpkeys=('5ED46A6721D365587791E2AA783FCD8E58BCAFBA')
 if [[ $(command -v autoreconf) ]];then
   pkgname+=( 'minizip')
   _minizip=1
+  pkgrel=$((pkgrel+1))
 fi
 
 prepare() {
@@ -104,7 +105,7 @@ package_minizip() {
   depends=('zlib')
   groups=('extra')
 
-  cd $srcdir/zlib-$pkgver/contrib/minizip
+    cd ${srcdir}/build-minizip
   make install DESTDIR=$pkgdir
   install -D -m644 ${srcdir}/zlib-${pkgver}/LICENSE ${pkgdir}/usr/share/licenses/minizip/LICENSE
 
