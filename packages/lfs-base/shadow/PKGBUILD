@@ -7,9 +7,9 @@ pkgdesc="Password and account management tool suite with support for shadow file
 arch=('x86_64')
 url='https://github.com/shadow-maint/shadow'
 license=('BSD')
-_deps=('bash' 'linux-pam' 'cracklib' 'acl')
+_deps=('bash' 'linux-pam' 'cracklib' 'acl' 'audit')
 depends=()
-groups=('lfs-base')
+groups=('lfs-base' 'security')
 _makedeps=('libxslt' 'docbook-xsl' 'gnome-doc-utils')
 makedepends=()
 options=(strip)
@@ -22,6 +22,7 @@ source=(https://github.com/shadow-maint/shadow/releases/download/${pkgver}/${pkg
         passwd
         shadow.{timer,service}
         useradd.defaults
+        LICENSE
        )
 
 for d in ${_deps[@]};do
@@ -94,6 +95,10 @@ prepare() {
         _confargs+=( '--disable-man')
     fi
 
+    if [[ "$(pacman -Qq audit 2>/dev/null)" ]];then
+        _confargs+=( '--with-audit')
+    fi
+
     ./configure \
         LIBS="-lcrypt" \
         --sysconfdir=/etc \
@@ -111,6 +116,8 @@ package() {
 
     make DESTDIR="$pkgdir" install
 
+    install -Dm644 "$srcdir/LICENSE" "$pkgdir/usr/share/licenses/shadow/LICENSE"
+
     install -v -dm755 "$pkgdir"/bin
     mv -v "$pkgdir"/usr/bin/passwd "$pkgdir"/bin
 
@@ -121,8 +128,8 @@ package() {
         # systemd timer
         install -D -m644 "$srcdir/shadow.timer" "$pkgdir/lib/systemd/system/shadow.timer"
         install -D -m644 "$srcdir/shadow.service" "$pkgdir/lib/systemd/system/shadow.service"
-        install -d -m755 "$pkgdir/usr/lib/systemd/system/timers.target.wants"
-        ln -s ../shadow.timer "$pkgdir/lib/systemd/system/timers.target.wants/shadow.timer"
+        install -d -m755 "$pkgdir/lib/systemd/system/timers.target.wants"
+        ln -sv ../shadow.timer "$pkgdir/lib/systemd/system/timers.target.wants/shadow.timer"
 
         # PAM config - custom
         install -dm755 "$pkgdir/etc/pam.d"
@@ -146,4 +153,5 @@ md5sums=('f7ce18c8dfd05f1a009266cb604d58b7'
          'a205549bec2e6990af562d02b3fc3298'
          '5bd14862ace022d6682b179c18fe30de'
          '8547f55c4d9af64839bb6bbd928bbb70'
-         'dbdecf31dbf18389bd80051f2aa372dc')
+         'dbdecf31dbf18389bd80051f2aa372dc'
+         '2cbe0684d1329e9c7f5a4c7cb01d239f')
