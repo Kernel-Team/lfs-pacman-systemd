@@ -1,0 +1,36 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgbase=python-sphinxcontrib-websupport
+pkgname=(python-sphinxcontrib-websupport python2-sphinxcontrib-websupport)
+pkgver=1.1.2
+pkgrel=1
+pkgdesc="Sphinx API for Web Apps"
+arch=('any')
+url="http://www.sphinx-doc.org/"
+license=('BSD')
+makedepends=('python' 'python-setuptools' 'python2' 'python2-setuptools')
+source=(https://pypi.org/packages/source/s/sphinxcontrib-websupport/sphinxcontrib-websupport-$pkgver.tar.gz)
+groups=('extra' 'python-extra')
+md5sums=('5f5be8f1fb8228fc15f01a6081e2f2e9')
+
+prepare() {
+    cp -a sphinxcontrib-websupport-$pkgver{,-py2}
+}
+
+build() {
+    cd "$srcdir"/sphinxcontrib-websupport-$pkgver
+    python setup.py build
+
+    cd "$srcdir"/sphinxcontrib-websupport-$pkgver-py2
+    python2 setup.py build
+}
+
+package_python-sphinxcontrib-websupport() {
+    cd "$srcdir"/sphinxcontrib-websupport-$pkgver
+    python setup.py install --root="$pkgdir" --optimize=1
+}
+
+package_python2-sphinxcontrib-websupport() {
+    cd "$srcdir"/sphinxcontrib-websupport-$pkgver-py2
+    python2 setup.py install --root="$pkgdir" --optimize=1
+}
