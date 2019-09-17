@@ -14,6 +14,7 @@ validpgpkeys=('71C2CC22B1C4602927D2F3AAA7A16B4A2527436A')   # Eric Blake
 
 if [[ "$(pacman -Ss ^bash$ 2>/dev/null)" ]];then
     depends+=( 'bash')
+    pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'bash')
 fi
