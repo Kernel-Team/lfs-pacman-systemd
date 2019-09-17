@@ -320,7 +320,7 @@ EOF
      sudo sh -c "echo $USER:x:$(id -u):$(id -g)::/home/$USER:/bin/bash >> $LFS/etc/passwd"
 
      [ ! $(grep $(id -g) $LFS/etc/group) ] &&
-     sudo sh -c "echo $USER:x:$(id -g) >> $LFS/etc/group"
+     sudo sh -c "echo $USER:x:$(id -g): >> $LFS/etc/group"
 
      # create user homedir
      sudo mkdir -pv $LFS/home/$USER
