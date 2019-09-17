@@ -15,49 +15,49 @@ source=(https://www.open-mpi.org/software/ompi/v${pkgver%.*}/downloads/${pkgname
 groups=('extra')
 
 prepare(){
-    cd ${pkgname}-${pkgver}
-    ./configure --prefix=/usr \
-                --sysconfdir=/etc/${pkgname} \
-                --enable-mpi-fortran=all \
-                --libdir=/usr/lib/${pkgname} \
-                --with-threads=posix \
-                --enable-mpi-thread-multiple \
-                --enable-smp-locks \
-                --enable-builtin-atomics \
-                --enable-mpi-cxx \
-                --with-valgrind \
-                --enable-memchecker \
-                --enable-pretty-print-stacktrace \
-                --without-slurm \
-                --with-hwloc=/usr \
-                --with-libltdl=/usr  \
-                FC=/usr/bin/gfortran \
-                LDFLAGS="${LDFLAGS} -Wl,-z,noexecstack"
+  cd ${pkgname}-${pkgver}
+  ./configure --prefix=/usr \
+              --sysconfdir=/etc/${pkgname} \
+              --enable-mpi-fortran=all \
+              --libdir=/usr/lib/${pkgname} \
+              --with-threads=posix \
+              --enable-mpi-thread-multiple \
+              --enable-smp-locks \
+              --enable-builtin-atomics \
+              --enable-mpi-cxx \
+              --with-valgrind \
+              --enable-memchecker \
+              --enable-pretty-print-stacktrace \
+              --without-slurm \
+              --with-hwloc=/usr \
+              --with-libltdl=/usr  \
+              FC=/usr/bin/gfortran \
+              LDFLAGS="${LDFLAGS} -Wl,-z,noexecstack"
 }
 
 build() {
-    cd ${pkgname}-${pkgver}
-    make
+  cd ${pkgname}-${pkgver}
+  make
 }
 
 check() {
-    cd ${pkgname}-${pkgver}
-    make check
+  cd ${pkgname}-${pkgver}
+  make check
 }
 
 package() {
-    cd ${pkgname}-${pkgver}
-    make DESTDIR="${pkgdir}" install
+  cd ${pkgname}-${pkgver}
+  make DESTDIR="${pkgdir}" install
 
-    # FS#28583
-    install -dm 755 "${pkgdir}/usr/lib/pkgconfig"
-    for i in ompi-c.pc ompi-cxx.pc ompi-f77.pc ompi-f90.pc ompi.pc; do
-        ln -sf "/usr/lib/openmpi/pkgconfig/${i}" "${pkgdir}/usr/lib/pkgconfig/"
-    done
+  # FS#28583
+  install -dm 755 "${pkgdir}/usr/lib/pkgconfig"
+  for i in ompi-c.pc ompi-cxx.pc ompi-f77.pc ompi-f90.pc ompi.pc; do
+    ln -sf "/usr/lib/openmpi/pkgconfig/${i}" "${pkgdir}/usr/lib/pkgconfig/"
+  done
 
-    install -dm 755 "${pkgdir}/etc/ld.so.conf.d"
-    echo "/usr/lib/${pkgname}" > "${pkgdir}"/etc/ld.so.conf.d/${pkgname}.conf
-    install -Dm 644 LICENSE -t "${pkgdir}/usr/share/licenses/${pkgname}"
+  install -dm 755 "${pkgdir}/etc/ld.so.conf.d"
+  echo "/usr/lib/${pkgname}" > "${pkgdir}"/etc/ld.so.conf.d/${pkgname}.conf
+  install -Dm 644 LICENSE -t "${pkgdir}/usr/share/licenses/${pkgname}"
 }
 
 sha256sums=('cce7b6d20522849301727f81282201d609553103ac0b09162cf28d102efb9709')

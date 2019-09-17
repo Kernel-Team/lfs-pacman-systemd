@@ -1,0 +1,95 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=krb5
+_pkgvermajor=1.17
+pkgver=${_pkgvermajor}
+pkgrel=1
+pkgdesc='The Kerberos network authentication system'
+url='https://web.mit.edu/kerberos/'
+arch=('x86_64')
+license=('custom')
+depends=('e2fsprogs' 'libldap' 'keyutils')
+makedepends=('perl')
+backup=('etc/krb5.conf' 'var/lib/krb5kdc/kdc.conf')
+options=('!emptydirs')
+source=(https://web.mit.edu/kerberos/dist/krb5/${_pkgvermajor}/${pkgname}-${pkgver}.tar.gz{,.asc}
+        krb5-config_LDFLAGS.patch
+        krb5-kadmind.service
+        krb5-kdc.service
+        krb5-kpropd.service
+        krb5-kpropd@.service
+        krb5-kpropd.socket)
+validpgpkeys=('2C732B1C0DBEF678AB3AF606A32F17FD0055C305'  # Tom Yu <tlyu@mit.edu>
+              'C4493CB739F4A89F9852CBC20CBA08575F8372DF') # Greg Hudson <ghudson@mit.edu>
+groups=('blfs' 'security')
+
+prepare() {
+    cd ${pkgname}-${pkgver}
+
+    # cf https://bugs.gentoo.org/show_bug.cgi?id=448778
+    patch -p1 < "${srcdir}"/krb5-config_LDFLAGS.patch
+
+    # FS#25384
+    sed -i "/KRB5ROOT=/s/\/local//" src/util/ac_check_krb5.m4
+
+    cd src/
+    export CFLAGS+=" -fPIC -fno-strict-aliasing -fstack-protector-all"
+    export CPPFLAGS+=" -I/usr/include/et"
+    ./configure --prefix=/usr \
+                --sysconfdir=/etc \
+                --localstatedir=/var/lib \
+                --enable-shared \
+                --with-system-et \
+                --with-system-ss \
+                --disable-rpath \
+                --without-tcl \
+                --enable-dns-for-realm \
+                --with-ldap \
+                --without-system-verto
+}
+
+build() {
+    cd ${pkgname}-${pkgver}/src
+    make
+}
+
+package() {
+    cd ${pkgname}-${pkgver}/src
+    make DESTDIR="${pkgdir}" EXAMPLEDIR=/usr/share/doc/${pkgname}/examples install
+
+    install -v -dm755 "${pkgdir}"/{bin,lib}
+    mv -v "${pkgdir}"/usr/lib/libkrb5.so.3* "${pkgdir}"/lib/
+    mv -v "${pkgdir}"/usr/lib/libk5crypto.so.3* "${pkgdir}"/lib/
+    mv -v "${pkgdir}"/usr/lib/libkrb5support.so.0* "${pkgdir}"/lib/
+
+    ln -v -sf ../../lib/libkrb5.so.3.3 "${pkgdir}"/usr/lib/libkrb5.so
+    ln -v -sf ../../lib/libk5crypto.so.3.1 "${pkgdir}"/usr/lib/libk5crypto.so
+    ln -v -sf ../../lib/libkrb5support.so.0.1 "${pkgdir}"/usr/lib/libkrb5support.so
+
+    mv -v "${pkgdir}"/usr/bin/ksu "${pkgdir}"/bin/
+    chmod -v 755 "${pkgdir}"/bin/ksu
+    # Fix FS#29889
+    install -m 644 plugins/kdb/ldap/libkdb_ldap/kerberos.{ldif,schema} \
+            "${pkgdir}/usr/share/doc/${pkgname}/examples"
+
+    install -Dpm 644 config-files/krb5.conf -t "${pkgdir}/etc"
+    install -Dpm 644 config-files/kdc.conf -t "${pkgdir}/var/lib/krb5kdc"
+
+    install -Dm 644 util/ac_check_krb5.m4 -t "${pkgdir}/usr/share/aclocal"
+
+    install -Dm 644 "${srcdir}"/${pkgname}-${pkgver}/NOTICE \
+            "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+
+    # systemd stuff
+    install -Dm 644 "${srcdir}"/krb5-{kadmind.service,kdc.service,kpropd.service,kpropd@.service,kpropd.socket} \
+            -t "${pkgdir}/lib/systemd/system"
+}
+
+md5sums=('3b729d89eb441150e146780c4138481b'
+         'SKIP'
+         'c84a0c7d8014e3528524956ffdd1c3e9'
+         '65d334b1242e8fb103a81f48dfc3fcfe'
+         'f0245d33083337f95654f4caf1d32f57'
+         '3dddf2f79ef74c4e736711e41228ee91'
+         'babefac221331f7131a29faac33cc5bc'
+         '5b9cee689e4f8085d39ef4e05f1ddd9a')

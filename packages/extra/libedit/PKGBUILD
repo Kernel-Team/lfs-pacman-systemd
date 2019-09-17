@@ -1,0 +1,30 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=libedit
+_pkgver=20190324-3.1
+pkgver=${_pkgver/-/_}
+pkgrel=1
+pkgdesc='Command line editor library providing generic line editing, history, and tokenization functions'
+url='http://thrysoee.dk/editline/'
+arch=('x86_64')
+license=('BSD')
+depends=('ncurses')
+source=("http://thrysoee.dk/editline/libedit-${_pkgver}.tar.gz")
+groups=('extra')
+
+build() {
+    cd "${srcdir}/${pkgname}-${_pkgver}"
+    ./configure --prefix=/usr --enable-widec
+    make
+}
+
+package() {
+    cd "${srcdir}/${pkgname}-${_pkgver}"
+    make prefix="${pkgdir}"/usr install
+
+    rm "${pkgdir}"/usr/share/man/man3/history.3 # conflicts with readline
+    cp "${pkgdir}"/usr/share/man/man3/editline.3 "${pkgdir}"/usr/share/man/man3/el.3
+    install -Dm644 COPYING "${pkgdir}"/usr/share/licenses/libedit/LICENSE
+}
+
+sha256sums=('ac8f0f51c1cf65492e4d1e3ed2be360bda41e54633444666422fbf393bba1bae')

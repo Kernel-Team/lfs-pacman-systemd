@@ -1,0 +1,1 @@
+u sshd 50 "sshd PrivSep" /var/lib/sshd /bin/false

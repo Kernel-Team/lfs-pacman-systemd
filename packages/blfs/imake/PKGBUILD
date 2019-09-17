@@ -1,0 +1,71 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=imake
+pkgver=1.0.8.r0.g5d1d515
+pkgrel=1
+pkgdesc="X.Org imake program and related utilities"
+arch=(x86_64)
+license=('custom')
+url="https://xorg.freedesktop.org/"
+depends=('glibc')
+makedepends=('pkgconfig' 'xproto' 'perl' 'xorg-util-macros' 'xorg-font-util')
+optdepends=('perl: for mkhtmlindex')
+groups=('blfs' 'xorg')
+source=(xorg/util/cf::git://anongit.freedesktop.org/git/xorg/util/cf
+        xorg/util/gccmakedep::git://anongit.freedesktop.org/git/xorg/util/gccmakedep
+        xorg/util/lndir::git://anongit.freedesktop.org/git/xorg/util/lndir
+        xorg/util/makedepend::git://anongit.freedesktop.org/git/xorg/util/makedepend
+        xorg/util/imake::git://anongit.freedesktop.org/git/xorg/util/imake
+        linuxconfig.patch
+        LICENSE)
+validpgpkeys=('4A193C06D35E7C670FA4EF0BA2FB9E081F2D130E') #Alan Coopersmith <alan.coopersmith@oracle.com>
+
+
+pkgver() {
+    cd "$pkgname"
+    git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g' | sed "s/$pkgname.//g"
+}
+
+prepare(){
+    cd cf
+    patch -p1 -i ../linuxconfig.patch
+    cd ..
+    for i in *; do
+        if [ -d "${i}" ]; then
+            pushd "${i}"
+            autoreconf -fi
+            ./configure --prefix=/usr --mandir=/usr/share/man
+            popd
+        fi
+    done
+}
+
+build() {
+    for i in *; do
+        if [ -d "${i}" ]; then
+            pushd "${i}"
+            make
+            popd
+        fi
+    done
+}
+
+package() {
+    for i in *; do
+        if [ -d "${i}" ]; then
+            pushd "${i}"
+            make DESTDIR="${pkgdir}" install
+            popd
+        fi
+    done
+
+    install -D -m644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
+
+md5sums=('SKIP'
+         'SKIP'
+         'SKIP'
+         'SKIP'
+         'SKIP'
+         'b3385d8efbbe7c7fc50ed3a96ce37a16'
+         'f5767133ef7a98a0bfa15139e0e3d32e')

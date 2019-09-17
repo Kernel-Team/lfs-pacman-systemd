@@ -1,0 +1,39 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=keyutils
+pkgver=1.6.1
+pkgrel=1
+pkgdesc="Linux Key Management Utilities"
+arch=('x86_64')
+url="http://www.kernel.org"
+license=('GPL2' 'LGPL2.1')
+depends=('glibc' 'sh')
+_makedeps=('git')
+makedepends=()
+backup=('etc/request-key.conf')
+source=("git+https://git.kernel.org/pub/scm/linux/kernel/git/dhowells/keyutils.git#tag=v${pkgver}?signed"
+        'request-key.conf.patch')
+validpgpkeys=('A86E54B0D5E1B4E0AB7C640FFBB7576BA7CB0B6B') # David Howells <dhowells@redhat.com>
+groups=('blfs' 'general-libraries')
+
+for _m in "${_makedeps[@]}";do
+    if [[ "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
+        makedepends+=( "${_m}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_m}")
+    fi
+done
+
+build() {
+    cd ${pkgname}
+    make CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}"
+}
+
+package() {
+    cd ${pkgname}
+    make DESTDIR="${pkgdir}" NO_ARLIB=1 install
+}
+
+sha256sums=('SKIP'
+            '203c602c61ed94ccd423a0a453d74143d678c641a9a4486367576ee8af2cb8d6')
