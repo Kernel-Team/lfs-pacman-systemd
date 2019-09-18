@@ -9,7 +9,7 @@ arch=('any')
 url="https://github.com/pypa/packaging"
 license=('Apache')
 _deps=('six')
-_makedeps=('setuptools' 'pyparsing')
+_makedeps=('setuptools' 'pyparsing' 'attrs')
 _checkdeps=('pytest-runner' 'pretend' 'coverage')
 depends=()
 makedepends=()
@@ -21,6 +21,7 @@ groups=('extra' 'python-extra')
 for _b in ${_deps[@]};do
     if [[ "$(pacman -Qq "${_d[@]/#/python-}" 2>/dev/null)" ]];then
         depends+=( "${_d[@]/#/python-}")
+        pkgrel=$((pkgrel+1))
     fi
     if [[ "$(pacman -Qq "${_d[@]/#/python2-}" 2>/dev/null)" ]];then
         depends+=( "${_d[@]/#/python-}")
@@ -29,6 +30,7 @@ done
 for _d in ${_makedeps[@]};do
     if [[ "$(pacman -Qq "${_d[@]/#/python-}" 2>/dev/null)" ]];then
         makedepends+=( "${_d[@]/#/python-}")
+        pkgrel=$((pkgrel+1))
     fi
     if [[ "$(pacman -Qq "${_d[@]/#/python2-}" 2>/dev/null)" ]];then
         makedepends+=( "${_d[@]/#/python2-}")
