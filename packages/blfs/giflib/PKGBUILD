@@ -1,0 +1,38 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=giflib
+pkgver=5.2.1
+pkgrel=1
+pkgdesc="A library for reading and writing gif images"
+url="http://sourceforge.net/projects/giflib/"
+arch=('x86_64')
+license=('MIT')
+depends=('glibc')
+makedepends=('xmlto' 'docbook-xml' 'docbook-xsl')
+source=(http://downloads.sourceforge.net/sourceforge/giflib/${pkgname}-${pkgver}.tar.gz
+        giflib-5.1.9-fix-missing-quantize-API-symbols.patch
+        giflib-5.1.9-make-flags.patch)
+md5sums=('2c171ced93c0e83bb09e6ccad8e3ba2b')
+groups=('blfs' 'graphics-font-libraries')
+
+prepare(){
+    cd ${pkgname}-${pkgver}
+    patch -Np1 < ../giflib-5.1.9-fix-missing-quantize-API-symbols.patch
+    patch -Np1 < ../giflib-5.1.9-make-flags.patch
+}
+
+build() {
+    cd ${pkgname}-${pkgver}
+    make
+}
+
+package() {
+    cd ${pkgname}-${pkgver}
+    make DESTDIR="${pkgdir}" install
+
+    install -Dm644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+}
+
+md5sums=('6f03aee4ebe54ac2cc1ab3e4b0a049e5'
+         '69d7c7893cad48f8024670efae51093f'
+         'ad28916bf7cd0dcba509fe1a27f12f97')
