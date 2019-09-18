@@ -1,0 +1,70 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=(java-binary-jdk)
+_majorver=12
+_minorver=0
+_securityver=2
+_updatever=10
+pkgver=${_majorver}.${_minorver}.${_securityver}
+pkgrel=1
+license=('GPL')
+arch=('x86_64')
+url="https://download.java.net"
+source=("$url/GA/jdk${_majorver}.${_minorver}.${_securityver}/e482c34c86bd4bf8b56c0b35558996b9/10/GPL/openjdk-${_majorver}.${_minorver}.${_securityver}_linux-x64_bin.tar.gz")
+groups=('blfs' 'programming')
+optdepends=('libcups' 'alsa-lib' 'giflib')
+provides=("java-runtime-headless=${_majorver}" "java-runtime-headless-openjdk=${_majorver}" "jre${_majorver}-openjdk-headless=${pkgver}-${pkgrel}"
+          "java-runtime=${_majorver}" "java-runtime-openjdk=${_majorver}" "jre${_majorver}-openjdk=${pkgver}-${pkgrel}"
+          "java-environment=${_majorver}" "java-environment-openjdk=${_majorver}" "jdk${_majorver}-openjdk=${pkgver}-${pkgrel}"
+          "openjdk${_majorver}-src=${pkgver}-${pkgrel}" "openjdk${_majorver}-doc=${pkgver}-${pkgrel}")
+install=install
+package(){
+    cd jdk-${pkgver}
+    install -vdm755 ${pkgdir}/opt/OpenJDK-${pkgver}+${_updatever}-bin
+    install -vDm644 legal/java.base/LICENSE ${pkgdir}/usr/share/licenses/${pkgname}/LICENSE
+    mv -v * ${pkgdir}/opt/OpenJDK-${pkgver}+${_updatever}-bin
+    chown -R root:root ${pkgdir}/opt/OpenJDK-${pkgver}+${_updatever}-bin
+    ln -sfvn OpenJDK-${pkgver}+${_updatever}-bin ${pkgdir}/opt/jdk
+
+    install -vdm755 ${pkgdir}/etc/profile.d/
+    cat > ${pkgdir}/etc/profile.d/openjdk.sh << "EOF"
+# Begin /etc/profile.d/openjdk.sh
+
+# Set JAVA_HOME directory
+JAVA_HOME=/opt/jdk
+
+# Adjust PATH
+pathappend $JAVA_HOME/bin
+
+# Add to MANPATH
+pathappend $JAVA_HOME/man MANPATH
+
+# Auto Java CLASSPATH: Copy jar files to, or create symlinks in, the
+# /usr/share/java directory. Note that having gcj jars with OpenJDK 8
+# may lead to errors.
+
+AUTO_CLASSPATH_DIR=/usr/share/java
+
+pathprepend . CLASSPATH
+
+for dir in `find ${AUTO_CLASSPATH_DIR} -type d 2>/dev/null`; do
+    pathappend $dir CLASSPATH
+done
+
+for jar in `find ${AUTO_CLASSPATH_DIR} -name "*.jar" 2>/dev/null`; do
+    pathappend $jar CLASSPATH
+done
+
+export JAVA_HOME
+unset AUTO_CLASSPATH_DIR dir jar
+
+# End /etc/profile.d/openjdk.sh
+EOF
+    install -vdm755 ${pkgdir}/etc/sudoers.d/
+    cat > ${pkgdir}/etc/sudoers.d/java << "EOF"
+Defaults env_keep += JAVA_HOME
+Defaults env_keep += CLASSPATH
+EOF
+}
+
+md5sums=('f5da6f4dec81bdd2a096184ec1d69216')
