@@ -1,8 +1,9 @@
+#-*-mode:conf-*-
 # GRUB boot loader configuration
 
 GRUB_DEFAULT=0
 GRUB_TIMEOUT=5
-GRUB_DISTRIBUTOR="Arch"
+GRUB_DISTRIBUTOR="Linuxfromscratch"
 GRUB_CMDLINE_LINUX_DEFAULT="quiet"
 GRUB_CMDLINE_LINUX=""
 

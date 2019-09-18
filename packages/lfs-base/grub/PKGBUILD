@@ -51,18 +51,19 @@ source=("https://ftp.gnu.org/gnu/${pkgname}/${pkgname}-${pkgver}.tar.xz"{,.sig}
 groups=(lfs-base)
 
 for _d in ${_deps[@]};do
-    if [[ -n "$(pacman -Qq "${_d}" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_d}" 2>/dev/null)" ]];then
         depends+=( "${_d}")
         pkgrel=$((pkgrel+1))
     else
         optdepends+=( "${_d}")
     fi
 done
-for _c in ${_makedeps[@]};do
-    if [[ -n "$(pacman -Qq "${_c}" 2>/dev/null)" ]];then
-        makedepends+=( "${_c}")
+for _m in ${_makedeps[@]};do
+    if [[ "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
+        makedepends+=( "${_m}")
+        pkgrel=$((pkgrel+1))
     else
-        optdepends+=( "${_c}")
+        optdepends+=( "${_m}")
     fi
 done
 
@@ -101,7 +102,7 @@ prepare() {
     else
         _configure_options+=( '--disable-efiemu')
     fi
-    if [[ -n "$(pacman -Qq "freetype2" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "freetype2" 2>/dev/null)" ]];then
         _configure_options+=( 'FREETYPE="pkg-config freetype2"' 'BUILD_FREETYPE="pkg-config freetype2"')
     fi
     
@@ -129,5 +130,5 @@ md5sums=('5aaca6713b47ca2456d8324a58755ac7'
          'SKIP'
          'af8a44e7d33b66ef54b2b5b497854b5e'
          'SKIP'
-         'ade5b722dd17db2bac763cf1cc7a890e'
-         'c8b9511586d57d6f2524ae7898397a46')
+         '8ad8b1f94305a9ee083bb5c693a0b335'
+         '88f521f9da17bac2a82601753c10e767')
