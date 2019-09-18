@@ -21,6 +21,7 @@ else
 fi
 if [[ "$(pacman -Ss ^texinfo$ 2>/dev/null)" ]];then
     makedepends+=( 'texinfo')
+    pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'texinfo')
 fi

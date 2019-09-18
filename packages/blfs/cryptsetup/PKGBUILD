@@ -12,15 +12,10 @@ depends=('device-mapper' 'libgcrypt' 'popt' 'libutil-linux' 'json-c' 'argon2')
 makedepends=('util-linux')
 options=('!emptydirs')
 validpgpkeys=('2A2918243FDE46648D0686F9D9B0577BD93E98FC') # Milan Broz <gmazyland@gmail.com>
-source=("https://www.kernel.org/pub/linux/utils/cryptsetup/v2.0/${pkgname}-${pkgver}.tar."{xz,sign}
+source=("https://www.kernel.org/pub/linux/utils/cryptsetup/v${pkgver%.*}/${pkgname}-${pkgver}.tar."{xz,sign}
         'hooks-encrypt'
         'install-encrypt'
         'install-sd-encrypt')
-sha256sums=('7c51fae0f0e7ea9af0f515b2ac77009fb2969a6619ebab47d097dca38b083d30'
-            'SKIP'
-            '416aa179ce3c6a7a5eee0861f1f0a4fafac91b69e84a2aae82b6e5a6140e31e2'
-            '7b8c8a189f1b63cb4a0c0dd93d3452615bdc05f0e33570c78b338446a59ca750'
-            '95a16baa273a0ea5c531bc4b65e7f142ae7cb6423b5e512f4413d1dd4a545421')
 groups=('blfs' 'security')
 
 build() {
@@ -44,3 +39,9 @@ package() {
     install -D -m0644 "${srcdir}"/install-encrypt "${pkgdir}"/usr/lib/initcpio/install/encrypt
     install -D -m0644 "${srcdir}"/install-sd-encrypt "${pkgdir}"/usr/lib/initcpio/install/sd-encrypt
 }
+
+sha256sums=('94e79a31ed38bdb0acd9af7ccca1605a2ac62ca850ed640202876b1ee11c1c61'
+            'SKIP'
+            '416aa179ce3c6a7a5eee0861f1f0a4fafac91b69e84a2aae82b6e5a6140e31e2'
+            '7a38b3cc0e12f0a212456f1eb08e673548e049e0c50a15e245fc5d8033413786'
+            '84ca0767412bb02a1f29d2164bea36e471531a24b4c864f2a680c0eb3cfe2498')

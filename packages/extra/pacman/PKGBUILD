@@ -23,24 +23,27 @@ validpgpkeys=('6645B0A8C7005E78DB1D7864F99FFE0FEAE999BD'  # Allan McRae <allan@a
 source=(https://sources.archlinux.org/other/pacman/$pkgname-$pkgver.tar.gz{,.sig}
         pacman.conf
         makepkg.conf)
+groups=('extra')
 
 for _c in "${_checkdeps[@]}";do
     if [[ "$(pacman -Qq "${_c}" 2>/dev/null)" ]];then
-        depends+=( "${_c}")
+        checkdepends+=( "${_c}")
     else
         optdepends+=( "${_c}: optional checkdepend")
     fi
 done
 for _d in "${_deps[@]}";do
-    if [[ -n "$(pacman -Qq "${_d}" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_d}" 2>/dev/null)" ]];then
         depends+=( "${_d}")
+        pkgrel=$((pkgrel+1))
     else
         optdepends+=( "${_d}: optional depend")
     fi
 done
 for _m in "${_makedeps[@]}";do
-    if [[ -n "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
-        depends+=( "${_m}")
+    if [[ "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
+        makedepends+=( "${_m}")
+        pkgrel=$((pkgrel+1))
     else
         optdepends+=( "${_m}: optional makedepends")
     fi

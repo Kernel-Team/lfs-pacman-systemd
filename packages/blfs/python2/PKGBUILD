@@ -39,13 +39,14 @@ done
 for _m in "${_makedeps[@]}";do
     if [[ -n "$(pacman -Ss "^${_m}$" 2>/dev/null)" ]];then
         makedepends+=( "${_m}")
+        pkgrel=$((pkgrel+1))
     else
         optdepends+=( "${_m}")
     fi
 done
 for _c in "${_checkdeps[@]}";do
     if [[ -n "$(pacman -Ss "^${_c}$" 2>/dev/null)" ]];then
-        depends+=( "${_c}")
+        checkdepends+=( "${_c}")
     else
         optdepends+=( "${_c}")
     fi

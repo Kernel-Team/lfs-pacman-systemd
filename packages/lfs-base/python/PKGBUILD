@@ -31,7 +31,7 @@ source=("https://www.python.org/ftp/python/${pkgver%rc*}/Python-${pkgver}.tar.xz
 validpgpkeys=('0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D')  # Ned Deily (Python release signing key) <nad@python.org>
 
 for _d in "${_deps[@]}";do
-    if [[ -n "$(pacman -Ss "^${_d}$" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Ss "^${_d}$" 2>/dev/null)" ]];then
         depends+=( "${_d}")
         pkgrel=$((pkgrel+1))
     else
@@ -41,6 +41,7 @@ done
 for _m in "${_makedeps[@]}";do
     if [[ -n "$(pacman -Ss "^${_m}$" 2>/dev/null)" ]];then
         makedepends+=( "${_m}")
+        pkgrel=$((pkgrel+1))
     else
         optdepends+=( "${_m}")
     fi

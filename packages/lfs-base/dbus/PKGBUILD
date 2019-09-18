@@ -21,8 +21,9 @@ validpgpkeys=('DA98F25C0871C49A59EAFF2C4DE8FF2A63C7CC90'  # Simon McVittie <simo
 groups=('lfs-base')
 
 for _d in ${_makedeps[@]};do
-    if [[ -n "$(pacman -Qq "${_d[@]/#/python-}" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_d[@]/#/python-}" 2>/dev/null)" ]];then
         makedepends+=( "${_d[@]}")
+        pkgrel=$((pkgrel+1))
     else
         optdepends+=( "${_d}")
     fi

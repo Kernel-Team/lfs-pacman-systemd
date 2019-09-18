@@ -32,6 +32,7 @@ else
 fi
 if [[ "$(pacman -Qq linux-atm 2>/dev/null)" ]];then
     makedepends+=( 'linux-atm')
+    pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'linux-atm')
 fi

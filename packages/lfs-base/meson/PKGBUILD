@@ -1,4 +1,4 @@
-#-*-mode:sh-
+#-*-mode:sh-*-
 # Maintainer: alexforsale@yahoo.com
 pkgname=meson
 pkgver=0.51.1
@@ -18,46 +18,47 @@ source=(https://github.com/mesonbuild/meson/releases/download/${pkgver}/meson-${
 validpgpkeys=('95181F4EED14FDF4E41B518D3BF4693BFEEB9428') # Jussi Pakkanen <jpakkane@gmail.com>
 
 if [[ -n "$(pacman -Ss ^python-setuptools$ 2>/dev/null)" ]];then
-  makedepends+=( 'python-setuptools')
+    makedepends+=( 'python-setuptools')
+    pkgrel=$((pkgrel+1))
 else
-  optdepends+=( 'python-setuptools')
+    optdepends+=( 'python-setuptools')
 fi
 for _c in ${_checkdeps[@]};do
-  if [[ -n "$(pacman -Ss "^${_c}$" 2>/dev/null)" ]];then
-    checkdepends+=( "${_c}")
-  fi
+    if [[ "$(pacman -Ss "^${_c}$" 2>/dev/null)" ]];then
+        checkdepends+=( "${_c}")
+    fi
 done
 
 build() {
-  cd ${pkgname}-${pkgver}
-  python3 setup.py build
+    cd ${pkgname}-${pkgver}
+    python3 setup.py build
 }
 
 check() (
-  cd ${pkgname}-${pkgver}
+    cd ${pkgname}-${pkgver}
 
-  # --as-needed breaks openmpi linking
-  LDFLAGS="${LDFLAGS/,--as-needed/}"
+    # --as-needed breaks openmpi linking
+    LDFLAGS="${LDFLAGS/,--as-needed/}"
 
-  # set for debug output
-  #export MESON_PRINT_TEST_OUTPUT=1
+    # set for debug output
+    #export MESON_PRINT_TEST_OUTPUT=1
 
-  export LC_CTYPE=en_US.UTF-8
-  ./run_tests.py
+    export LC_CTYPE=en_US.UTF-8
+    ./run_tests.py
 )
 
 package() {
-  cd ${pkgname}-${pkgver}
-  python3 setup.py install --root="${pkgdir}" --optimize=1 --skip-build
+    cd ${pkgname}-${pkgver}
+    python3 setup.py install --root="${pkgdir}" --optimize=1 --skip-build
 
-  install -d "${pkgdir}/usr/share/vim/vimfiles"
-  cp -rt "${pkgdir}/usr/share/vim/vimfiles" data/syntax-highlighting/vim/*
+    install -d "${pkgdir}/usr/share/vim/vimfiles"
+    cp -rt "${pkgdir}/usr/share/vim/vimfiles" data/syntax-highlighting/vim/*
 
-  install -Dt "${pkgdir}/usr/share/emacs/site-lisp" -m644 data/syntax-highlighting/emacs/*
-  install -Dt "${pkgdir}/usr/share/zsh/site-functions" -m644 data/shell-completions/zsh/*
+    install -Dt "${pkgdir}/usr/share/emacs/site-lisp" -m644 data/syntax-highlighting/emacs/*
+    install -Dt "${pkgdir}/usr/share/zsh/site-functions" -m644 data/shell-completions/zsh/*
 
-  # packaging helper
-  install -D ../meson-helper -t "${pkgdir}/usr/bin"
+    # packaging helper
+    install -D ../meson-helper -t "${pkgdir}/usr/bin"
 }
 
 md5sums=('48787e391ec5c052799a3dd491f73909'

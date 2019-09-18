@@ -1,4 +1,4 @@
-#-*-mode:sh-
+#-*-mode:sh-*-
 # Maintainer: alexforsale@yahoo.com
 pkgname=autoconf
 pkgver=2.69
@@ -15,60 +15,61 @@ source=(ftp://ftp.gnu.org/pub/gnu/${pkgname}/${pkgname}-${pkgver}.tar.xz{,.sig})
 validpgpkeys=('71C2CC22B1C4602927D2F3AAA7A16B4A2527436A')
 
 if [[ "$(pacman -Ss ^awk$ 2>/dev/null)" ]];then
-  depends+=( 'awk')
-  pkgrel=$((pkgrel+1))
+    depends+=( 'awk')
+    pkgrel=$((pkgrel+1))
 else
-  optdepends+=( 'awk')
+    optdepends+=( 'awk')
 fi
 
 if [[ "$(pacman -Ss ^m4$ 2>/dev/null)" ]];then
-  depends+=( 'm4')
-  pkgrel=$((pkgrel+1))
+    depends+=( 'm4')
+    pkgrel=$((pkgrel+1))
 else
-  optdepends+=( 'm4')
+    optdepends+=( 'm4')
 fi
 if [[ -n "$(pacman -Ss ^diffutils$ 2>/dev/null)" ]];then
-  depends+=( 'diffutils')
-  pkgrel=$((pkgrel+1))
+    depends+=( 'diffutils')
+    pkgrel=$((pkgrel+1))
 else
-  optdepends+=( 'diffutils')
+    optdepends+=( 'diffutils')
 fi
 if [[ -n "$(pacman -Ss ^help2man$ 2>/dev/null)" ]];then
-  makedepends+=( 'help2man')
+    makedepends+=( 'help2man')
+    pkgrel=$((pkgrel+1))
 else
-  optdepends+=( 'help2man')
+    optdepends+=( 'help2man')
 fi
 if [[ -n "$(pacman -Ss ^gcc-fortran$ 2>/dev/null)" ]];then
-  checkdepends+=( 'gcc-fortran')
+    checkdepends+=( 'gcc-fortran')
 else
-  optdepends+=( 'gcc-fortran')
+    optdepends+=( 'gcc-fortran')
 fi
 
 prepare() {
-  cd ${pkgname}-${pkgver}
-  ./configure --prefix=/usr
+    cd ${pkgname}-${pkgver}
+    ./configure --prefix=/usr
 }
 
 build() {
-  cd ${pkgname}-${pkgver}
-  make
+    cd ${pkgname}-${pkgver}
+    make
 }
 
 check() {
-  cd ${srcdir}/${pkgname}-${pkgver}
-  make check
+    cd ${srcdir}/${pkgname}-${pkgver}
+    make check
 }
 
 package() {
-  cd ${srcdir}/${pkgname}-${pkgver}
-  make DESTDIR=${pkgdir} install
+    cd ${srcdir}/${pkgname}-${pkgver}
+    make DESTDIR=${pkgdir} install
 
-  # license exception
-  install -Dm644 COPYING.EXCEPTION \
-          $pkgdir/usr/share/licenses/autoconf/COPYING.EXCEPTION
+    # license exception
+    install -Dm644 COPYING.EXCEPTION \
+            $pkgdir/usr/share/licenses/autoconf/COPYING.EXCEPTION
 
-  # remove unwanted file
-  rm -f ${pkgdir}/usr/share/info/standards.info
+    # remove unwanted file
+    rm -f ${pkgdir}/usr/share/info/standards.info
 }
 
 md5sums=('50f97f4159805e374639a73e2636f22e'

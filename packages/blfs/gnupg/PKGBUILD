@@ -31,16 +31,19 @@ if [[ "$(pacman -Qq openssh 2>/dev/null)" ]];then
 fi
 if [[ "$(pacman -Qq libldap 2>/dev/null)" ]];then
     makedepends+=( 'libldap')
+    pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'libldap: makedepends')
 fi
 if [[ "$(pacman -Qq libusb-compat 2>/dev/null)" ]];then
     makedepends+=( 'libusb-compat')
+    pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'libusb-compat: makedepends')
 fi
 if [[ "$(pacman -Qq pcsclite 2>/dev/null)" ]];then
     makedepends+=( 'pcsclite')
+    pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'pcsclite: makedepends')
 fi

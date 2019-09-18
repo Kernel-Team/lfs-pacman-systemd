@@ -17,7 +17,7 @@ source=(ftp://ftp.vim.org/pub/$pkgname/unix/$pkgname-${pkgver}.tar.bz2
        )
 
 for _d in ${_deps[@]};do
-    if [[ -n "$(pacman -Qq "${_d}" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_d}" 2>/dev/null)" ]];then
         depends+=( "${_d}")
         pkgrel=$((pkgrel+1))
     else

@@ -18,6 +18,7 @@ groups=('blfs' 'networking-libraries')
 _confargs=('--prefix=/usr' '--mandir=/usr/share/man' '--disable-ldap' '--disable-ldaps' '--disable-manual' '--enable-ipv6'
            '--enable-versioned-symbols' '--enable-threaded-resolver' '--with-random=/dev/urandom' '--with-ca-path=/etc/ssl/certs'
            '--with-ca-bundle=/etc/ssl/ca-bundle.crt')
+
 if [[ "$(pacman -Qq libssh2 2>/dev/null)" ]];then
     _confargs+=( '--with-libssh2')
     depends+=( 'libssh2')

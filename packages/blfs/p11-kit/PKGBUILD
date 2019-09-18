@@ -19,6 +19,7 @@ groups=('blfs' 'security')
 for _m in ${_makedeps[@]};do
     if [[ -n "$(pacman -Ss "^${_m}$" 2>/dev/null)" ]];then
         makedepends+=( "${_m}")
+        pkgrel=$((pkgrel+1))
     fi
 done
 

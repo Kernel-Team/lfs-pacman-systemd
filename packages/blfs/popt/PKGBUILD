@@ -27,3 +27,5 @@ package() {
     make DESTDIR="${pkgdir}" install
     install -Dm644 COPYING "${pkgdir}"/usr/share/licenses/${pkgname}/LICENSE
 }
+
+md5sums=('3743beefa3dd6247a73f8f7a32c14c33')

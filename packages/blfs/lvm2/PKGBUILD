@@ -15,13 +15,9 @@ source=("git+https://sourceware.org/git/lvm2.git#tag=v${pkgver//./_}?signed"
         'lvm2_hook'
         'sd-lvm2_install'
         '11-dm-initramfs.rules')
-sha256sums=('SKIP'
-            'cc51940a8437f3c8339bb9cec7e929b2cc0852ffc8a0b2463e6f67ca2b9950f6'
-            '97d7c92e4954bc0108e7cd183b2eb5fe7ecc97e6f56369669e6537cb6ed45d80'
-            'b749c2da0e9307b0c2c3858d024a19c268e01e393e876a284fe1a302427f72f1'
-            'e10f24b57582d6e2da71f7c80732a62e0ee2e3b867fe84591ccdb53e80fa92e0')
+groups=('blfs' 'file-systems-disk-management')
 
-local _CONFIGUREOPTS=(
+_CONFIGUREOPTS=(
     --prefix=/usr
     --sbindir=/usr/bin
     --sysconfdir=/etc
@@ -112,15 +108,16 @@ package_lvm2() {
     install -D -m644 "${srcdir}/lvm2-initramfs/udev/69-dm-lvm-metad.rules" "${pkgdir}/usr/lib/initcpio/udev/69-dm-lvm-metad.rules"
     # systemd support
     make DESTDIR="${pkgdir}" install_systemd_units
-    rm -f "${pkgdir}/usr/lib/systemd/system/"dm-*
+    rm -f "${pkgdir}/lib/systemd/system/"dm-*
     install -d -m755 "${pkgdir}/lib/systemd/system/sysinit.target.wants"
     ln -sf ../lvm2-lvmetad.socket "${pkgdir}/lib/systemd/system/sysinit.target.wants/lvm2-lvmetad.socket"
     ln -sf ../lvm2-lvmpolld.socket "${pkgdir}/lib/systemd/system/sysinit.target.wants/lvm2-lvmpolld.socket"
     ln -sf ../lvm2-monitor.service "${pkgdir}/lib/systemd/system/sysinit.target.wants/lvm2-monitor.service"
     make DESTDIR="${pkgdir}" install_systemd_generators
 }
+
 sha256sums=('SKIP'
-            'd06cc1582b880ed4d4b18c195181183dc1fdc7fc805c737891e6914f55c23f87'
+            'f56afaaf1fb8958d6af0fa672258a344d47829553cbba17262ca99c11e3aae4a'
             '97d7c92e4954bc0108e7cd183b2eb5fe7ecc97e6f56369669e6537cb6ed45d80'
-            'b749c2da0e9307b0c2c3858d024a19c268e01e393e876a284fe1a302427f72f1'
+            '0495ed2faa7ec4606742654da2302013bee86793d4f67050b8f4f0dd0821ab61'
             'e10f24b57582d6e2da71f7c80732a62e0ee2e3b867fe84591ccdb53e80fa92e0')

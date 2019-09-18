@@ -31,7 +31,7 @@ prepare(){
     # fix a problem introduced with glibc-2.26
     sed -i "/math.h/a #include <malloc.h>" src/flexdef.h
 
-    [[ ! $(command -v help2man) ]] && HELP2MAN=/tools/bin/true \
+    [[ ! $(command -v help2man) ]] && HELP2MAN=/tools/bin/true 
     ./configure --prefix=/usr --docdir=/usr/share/doc/${pkgname}-${pkgver}
 }
 

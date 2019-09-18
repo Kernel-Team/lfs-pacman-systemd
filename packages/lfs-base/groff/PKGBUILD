@@ -20,11 +20,14 @@ validpgpkeys=('58E0C111E39F5408C5D3EC76C1A60EACE707FDA5') # Werner Lemberg <wl@g
 
 if [[ -n "$(pacman -Qq netpbm 2>/dev/null)" ]];then
     makedepends+=( 'netpbm')
+    pkgrel=$((pkgrel+1))
 fi
 if [[ -n "$(pacman -Qq psutils 2>/dev/null)" ]];then
+    pkgrel=$((pkgrel+1))
     makedepends+=( 'psutils')
 fi
 if [[ -n "$(pacman -Qq libxaw 2>/dev/null)" ]];then
+    pkgrel=$((pkgrel+1))
     makedepends+=( 'libxaw')
 fi
 

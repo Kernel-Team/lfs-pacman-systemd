@@ -29,6 +29,7 @@ else
 fi
 if [[ -n "$(pacman -Ss ^help2man$ 2>/dev/null)" ]];then
     makedepends+=( 'help2man')
+    pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'help2man')
 fi

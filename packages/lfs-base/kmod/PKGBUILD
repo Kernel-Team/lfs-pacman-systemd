@@ -16,131 +16,130 @@ source=("https://www.kernel.org/pub/linux/utils/kernel/$pkgname/$pkgname-$pkgver
 
 _confargs=()
 if [[ "$(pacman -Ss ^gtk-doc$ 2>/dev/null)" ]];then
-  _confargs+=( '--enable-gtk-doc')
-  makedepends+=( 'gtk-doc')
-  pkgrel=$((pkgrel+1))
+    makedepends+=( 'gtk-doc')
+    pkgrel=$((pkgrel+1))
 else
-  optdepends+=( 'gtk-doc')
-  _confargs+=( '--disable-gtk-doc')
+    optdepends+=( 'gtk-doc')
+    _confargs+=( '--disable-gtk-doc')
 fi
 if [[ "$(pacman -Ss ^linux-headers$ 2>/dev/null)" ]];then
-  checkdepends+=( 'linux-headers')
+    checkdepends+=( 'linux-headers')
 else
-  optdepends+=( 'linux-headers')
+    optdepends+=( 'linux-headers')
 fi
 if [[ "$(pacman -Ss ^libelf$ 2>/dev/null)" ]];then
-  checkdepends+=( 'libelf')
+    checkdepends+=( 'libelf')
 else
-  optdepends+=( 'libelf')
+    optdepends+=( 'libelf')
 fi
 
 prepare(){
-  mkdir -pv build-$pkgbase build-lib{,x}32-$pkgbase
+    mkdir -pv build-$pkgbase build-lib{,x}32-$pkgbase
 
-  cd $srcdir/build-$pkgbase
-  $srcdir/$pkgname-$pkgver/configure \
-    --prefix=/usr \
-    --with-rootlibdir=/lib \
-    --sysconfdir=/etc \
-    --with-xz \
-    --bindir=/bin \
-    --with-zlib ${_confargs[@]}
-
-  cd $srcdir/build-lib32-$pkgbase
-  CC="gcc -m32" PKG_CONFIG_PATH="/usr/lib32/pkgconfig" \
+    cd $srcdir/build-$pkgbase
     $srcdir/$pkgname-$pkgver/configure \
-    --prefix=/usr --with-rootlibdir=/usr/lib32 \
-    --libdir=/usr/lib32 --bindir=/bin --sysconfdir=/etc \
-    --disable-tools --host=i686-pc-linux-gnu
+        --prefix=/usr \
+        --with-rootlibdir=/lib \
+        --sysconfdir=/etc \
+        --with-xz \
+        --bindir=/bin \
+        --with-zlib ${_confargs[@]}
+
+    cd $srcdir/build-lib32-$pkgbase
+    CC="gcc -m32" PKG_CONFIG_PATH="/usr/lib32/pkgconfig" \
+      $srcdir/$pkgname-$pkgver/configure \
+      --prefix=/usr --with-rootlibdir=/usr/lib32 \
+      --libdir=/usr/lib32 --bindir=/bin --sysconfdir=/etc \
+      --disable-tools --host=i686-pc-linux-gnu
     
-  cd $srcdir/build-libx32-$pkgbase
-  CC="gcc -mx32" PKG_CONFIG_PATH="/usr/libx32/pkgconfig" \
-    $srcdir/$pkgname-$pkgver/configure \
-    --prefix=/usr --with-rootlibdir=/usr/libx32 \
-    --libdir=/usr/libx32 --bindir=/bin --sysconfdir=/etc \
-    --disable-tools --host=x86_64-pc-linux-gnux32
+    cd $srcdir/build-libx32-$pkgbase
+    CC="gcc -mx32" PKG_CONFIG_PATH="/usr/libx32/pkgconfig" \
+      $srcdir/$pkgname-$pkgver/configure \
+      --prefix=/usr --with-rootlibdir=/usr/libx32 \
+      --libdir=/usr/libx32 --bindir=/bin --sysconfdir=/etc \
+      --disable-tools --host=x86_64-pc-linux-gnux32
 }
 
 build() {
-  cd $srcdir/build-$pkgbase
-  make
+    cd $srcdir/build-$pkgbase
+    make
 
-  cd $srcdir/build-lib32-$pkgbase
-  make
+    cd $srcdir/build-lib32-$pkgbase
+    make
 
-  cd $srcdir/build-libx32-$pkgbase
-  make
+    cd $srcdir/build-libx32-$pkgbase
+    make
 }
 
 check() {
-  # As of kmod v20, the test suite needs to build some kernel modules, and thus
-  # needs headers available in order to run. We depend on linux-headers, but
-  # this is really only to try and make sure that *some* useable tree of kernel
-  # headers exist. The first useable tree we find is good enough, as these
-  # modules will never be loaded by tests.
+    # As of kmod v20, the test suite needs to build some kernel modules, and thus
+    # needs headers available in order to run. We depend on linux-headers, but
+    # this is really only to try and make sure that *some* useable tree of kernel
+    # headers exist. The first useable tree we find is good enough, as these
+    # modules will never be loaded by tests.
 
-  local kdirs=(/lib/modules/*/build/Makefile)
-  if [[ ! -f ${kdirs[0]} ]]; then
-    printf '==> Unable to find kernel headers to build modules for tests\n' >&2
-    return 1
-  fi
+    local kdirs=(/lib/modules/*/build/Makefile)
+    if [[ ! -f ${kdirs[0]} ]]; then
+        printf '==> Unable to find kernel headers to build modules for tests\n' >&2
+        return 1
+    fi
 
-  local kver kdir=${kdirs[0]%/Makefile}
-  IFS=/ read _ _ _ kver _ <<<"$kdir"
+    local kver kdir=${kdirs[0]%/Makefile}
+    IFS=/ read _ _ _ kver _ <<<"$kdir"
 
-  make -C $srcdir/build-$pkgbase check KDIR="$kdir" KVER="$kver"
+    make -C $srcdir/build-$pkgbase check KDIR="$kdir" KVER="$kver"
 }
 
 package_kmod() {
-  pkgdesc="Linux kernel module management tools and library"
-  depends=('glibc' 'zlib' 'xz')
-  provides=('module-init-tools=3.16' 'libkmod.so')
-  conflicts=('module-init-tools')
-  replaces=('module-init-tools')
-  groups=('lfs-base')
+    pkgdesc="Linux kernel module management tools and library"
+    depends=('glibc' 'zlib' 'xz')
+    provides=('module-init-tools=3.16' 'libkmod.so')
+    conflicts=('module-init-tools')
+    replaces=('module-init-tools')
+    groups=('lfs-base')
 
-  make -C $srcdir/build-$pkgbase DESTDIR="$pkgdir" install
+    make -C $srcdir/build-$pkgbase DESTDIR="$pkgdir" install
 
-  # extra directories
-  install -v -dm755 "$pkgdir"/{etc,lib}/{depmod,modprobe}.d
-  install -v -dm755 "$pkgdir"/{bin,sbin}
+    # extra directories
+    install -v -dm755 "$pkgdir"/{etc,lib}/{depmod,modprobe}.d
+    install -v -dm755 "$pkgdir"/{bin,sbin}
 
-  for target in depmod insmod lsmod modinfo modprobe rmmod; do
-    ln -sfv ../bin/kmod "$pkgdir"/sbin/$target
-  done
+    for target in depmod insmod lsmod modinfo modprobe rmmod; do
+        ln -sfv ../bin/kmod "$pkgdir"/sbin/$target
+    done
 
-  ln -sv kmod "$pkgdir"/bin/lsmod
-  
-  # install depmod.d file for search/ dir
-  install -Dm644 "$srcdir/depmod-search.conf" "$pkgdir/usr/lib/depmod.d/search.conf"
+    ln -sv kmod "$pkgdir"/bin/lsmod
+    
+    # install depmod.d file for search/ dir
+    install -Dm644 "$srcdir/depmod-search.conf" "$pkgdir/usr/lib/depmod.d/search.conf"
 }
 
 package_lib32-kmod() {
-  pkgdesc="Linux kernel module management tools and library (32-bit)"
-  depends=('lib32-zlib' 'lib32-xz')
-  makedepends=('gcc-multilib')
-  groups=('lfs-base' 'lfs-multilib')
+    pkgdesc="Linux kernel module management tools and library (32-bit)"
+    depends=('lib32-zlib' 'lib32-xz')
+    makedepends=('gcc-multilib')
+    groups=('lfs-base' 'lfs-multilib')
 
-  cd $srcdir/build-lib32-$pkgbase
-  make DESTDIR="${pkgdir}" install
+    cd $srcdir/build-lib32-$pkgbase
+    make DESTDIR="${pkgdir}" install
 
-  # nuke manpages and headers
-  rm -rf "${pkgdir}"/usr/{share,include,bin}
-  rm -rf "${pkgdir}"/{sbin,bin}
+    # nuke manpages and headers
+    rm -rf "${pkgdir}"/usr/{share,include,bin}
+    rm -rf "${pkgdir}"/{sbin,bin}
 }
 
 package_libx32-kmod() {
-  pkgdesc="Linux kernel module management tools and library (x32 ABI)"
-  depends=('libx32-zlib' 'libx32-xz')
-  makedepends=('gcc-multilib')
-  groups=('lfs-base' 'lfs-multilib')
+    pkgdesc="Linux kernel module management tools and library (x32 ABI)"
+    depends=('libx32-zlib' 'libx32-xz')
+    makedepends=('gcc-multilib')
+    groups=('lfs-base' 'lfs-multilib')
 
-  cd $srcdir/build-libx32-$pkgbase
-  make DESTDIR="${pkgdir}" install
+    cd $srcdir/build-libx32-$pkgbase
+    make DESTDIR="${pkgdir}" install
 
-  # nuke manpages and headers
-  rm -rf "${pkgdir}"/usr/{share,include,bin}
-  rm -rf "${pkgdir}"/{sbin,bin}
+    # nuke manpages and headers
+    rm -rf "${pkgdir}"/usr/{share,include,bin}
+    rm -rf "${pkgdir}"/{sbin,bin}
 }
 
 md5sums=('1129c243199bdd7db01b55a61aa19601'

@@ -1,5 +1,5 @@
 #-*-mode:sh-*-
-# Maintainer: %s <%s>
+# Maintainer: alexforsale@yahoo.com
 pkgname=bash
 _basever=5.0
 _patchlevel=011
