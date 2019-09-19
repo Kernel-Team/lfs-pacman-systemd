@@ -15,6 +15,7 @@ depends=('python-babel'
          'python-setuptools'
          'python-snowballstemmer'
          'python-sphinx-alabaster-theme'
+         'python-sphinx_rtd_theme'
          'python-sphinxcontrib-'{{apple,dev,html}help,jsmath,qthelp,serializinghtml})
 checkdepends=('imagemagick' 'librsvg'
               'python-html5lib'
