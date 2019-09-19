@@ -42,7 +42,8 @@ optdepends=('freetype2: For grub-mkfont usage'
             'mtools: For grub-mkrescue FAT FS support')
 install="${pkgname}.install"
 validpgpkeys=('E53D497F3FA42AD8C9B4D1E835A93B74E82E4209'  # Vladimir 'phcoder' Serbinenko <phcoder@gmail.com>
-              '95D2E9AB8740D8046387FD151A09227B1F435A33') # Paul Hardy <unifoundry@unifoundry.com>
+              '95D2E9AB8740D8046387FD151A09227B1F435A33'  # Paul Hardy <unifoundry@unifoundry.com>
+              'BE5C23209ACDDACEB20DB0A28C8189F1988C2166') 
 source=("https://ftp.gnu.org/gnu/${pkgname}/${pkgname}-${pkgver}.tar.xz"{,.sig}
         "https://ftp.gnu.org/gnu/unifont/unifont-${_UNIFONT_VER}/unifont-${_UNIFONT_VER}.bdf.gz"{,.sig}
         'grub.default'
