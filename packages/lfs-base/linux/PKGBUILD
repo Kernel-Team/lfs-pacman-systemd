@@ -10,7 +10,7 @@ license=(GPL2)
 _makedeps=('python-sphinx' 'graphviz')
 options=('!strip')
 source=(https://www.kernel.org/pub/linux/kernel/v4.x/linux-${pkgver}.tar.{xz,sign}
-        "config" "60-linux.hook")
+        "config" "60-linux.hook" "90-linux.hook")
 validpgpkeys=(
     'ABAF11C65A2970B130ABE3C479BE3E4300411886'  # Linus Torvalds
     '647F28654894E3BD457199BE38DBBDC86092693E')  # Greg Kroah-Hartman
@@ -20,11 +20,12 @@ md5sums=('SKIP')
 if [[ "$(pacman -Qq "python-sphinx" 2>/dev/null)" ]] &&
        [[ "$(pacman -Qq "graphviz" 2>/dev/null)" ]];then
     pkgname+=( "$pkgbase-docs")
+    pkgrel=$((pkgrel+1))
 fi
 
 for _m in "${_makedeps[@]}";do
     if [[ "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
-        depends+=( "${_m}")
+        makedepends+=( "${_m}")
         pkgrel=$((pkgrel+1))
     else
         optdepends+=( "${_m}")
@@ -108,7 +109,8 @@ package_linux(){
 
     sed "$subst" ../60-linux.hook | install -Dm644 /dev/stdin \
                                             "$pkgdir/usr/share/libalpm/hooks/60-$pkgbase.hook"
-    
+    sed "$subst" ../90-linux.hook | install -Dm644 /dev/stdin \
+                                            "$pkgdir/usr/share/libalpm/hooks/90-$pkgbase.hook"
     msg2 "Fixing permissions..."
     chmod -Rc u=rwX,go=rX "$pkgdir"
 }
@@ -226,5 +228,6 @@ package_linux-docs(){
 
 md5sums=('d7162b4421327c756b1d548204fd8fb1'
          'SKIP'
-         '02dfefb00a7fd4b64bc82b444117e2b0'
-         'e0d72f1162d1f86c48acfd32db8ad154')
+         '47d32aeb1bb75b47f949817599330e19'
+         'e0d72f1162d1f86c48acfd32db8ad154'
+         '57c0a571537d4637518546ee5a88f2d8')
