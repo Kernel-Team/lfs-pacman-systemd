@@ -2,15 +2,17 @@
 # Maintainer: alexforsale@yahoo.com
 pkgbase=docutils
 pkgname=('python-docutils' 'python2-docutils')
-pkgver=0.14
+pkgver=0.15.2
 pkgrel=1
 pkgdesc='Set of tools for processing plaintext docs into formats such as HTML, XML, or LaTeX'
 arch=('any')
 url='http://docutils.sourceforge.net'
 license=('custom')
 makedepends=('python' 'python2')
-source=("http://downloads.sourceforge.net/$pkgbase/$pkgbase-$pkgver.tar.gz")
-md5sums=('c53768d63db3873b7d452833553469de')
+source=(https://files.pythonhosted.org/packages/93/22/953e071b589b0b1fee420ab06a0d15e5aa0c7470eb9966d60393ce58ad61/$pkgbase-$pkgver.tar.gz
+    #"http://downloads.sourceforge.net/$pkgbase/$pkgbase-$pkgver.tar.gz"
+)
+md5sums=('e26a308d8000b0bed7416a633217c676')
 groups=('extra')
 
 build() {
