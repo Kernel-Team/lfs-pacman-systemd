@@ -1,0 +1,1 @@
+u rsyncd 48 "rsyncd Daemon" /home/rsync /bin/false
