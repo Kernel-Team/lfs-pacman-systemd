@@ -1,6 +1,7 @@
-# Maintainer: %s <%s>
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
 pkgname=ocamlbuild
-pkgver=0.13.1
+pkgver=0.14.0
 pkgrel=1
 pkgdesc='Build tool, that has built-in rules for building OCaml library and programs'
 arch=('x86_64')
@@ -9,19 +10,21 @@ url='https://github.com/ocaml/ocamlbuild/releases'
 depends=('ocaml>=4.04.0')
 options=('!makeflags')
 source=("https://github.com/ocaml/${pkgname}/archive/$pkgver.tar.gz")
-sha1sums=('092907719d184ca5ada87958eea1866e83b0fd51')
+groups=('extra' 'ocaml-extra')
 
 prepare(){
-  cd $pkgname-$pkgver
-  make configure
+    cd $pkgname-$pkgver
+    make configure PREFIX="/usr" MANDIR="/usr/share/man"
 }
 
 build() {
-  cd $pkgname-$pkgver
-  make
+    cd $pkgname-$pkgver
+    make
 }
 
 package() {
-  cd $pkgname-$pkgver
-  make DESTDIR="$pkgdir" install
+    cd $pkgname-$pkgver
+    make DESTDIR="$pkgdir" install
 }
+
+sha1sums=('be89f02fd406116aa0c334cb4eac53a7974bc6dd')
