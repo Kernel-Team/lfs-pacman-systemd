@@ -1,0 +1,41 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+# Maintainer: Bruno Pagani <archange@archlinux.org>
+# Contributor: Jakob Gahde <j5lx@fmail.co.uk>
+pkgname=dune
+pkgver=1.11.1
+pkgrel=1
+pkgdesc="A composable build system for OCaml (formerly jbuilder)"
+arch=(x86_64)
+url="https://github.com/ocaml/dune"
+license=(Apache)
+depends=(glibc ocaml ocaml-findlib)
+provides=(jbuilder)
+conflicts=(jbuilder)
+replaces=(jbuilder)
+source=("${url}/archive/${pkgver}/${pkgname}-${pkgver}.tar.gz")
+sha256sums=('f2aa962451c98e47a90ca47273b2080e5f9aaeb6e3b6271dc78a44b831cc0d46')
+groups=('extra' 'ocaml-extra')
+
+build() {
+    cd ${pkgname}-${pkgver}
+    make release
+}
+
+# Tests requires a bunch of (currently) unpackaged dependencies
+#check() {
+#    cd ${pkgname}-${pkgver/b/-beta}
+#    make test
+#}
+
+package() {
+    cd ${pkgname}-${pkgver}
+
+    make DESTDIR="${pkgdir}" INSTALL_ARGS="--prefix=/usr --libdir='$(ocamlfind printconf destdir)'" install
+
+    # Fix doc and man install
+    rm -r "${pkgdir}"/usr/doc
+    install -dm755 "${pkgdir}"/usr/share
+    mv "${pkgdir}"/usr/{man,share/}
+}
+
