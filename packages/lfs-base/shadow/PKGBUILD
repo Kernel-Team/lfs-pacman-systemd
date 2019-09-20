@@ -37,7 +37,7 @@ done
 if [[ "$(pacman -Qq linux-pam 2>/dev/null)" ]];then
     backup=(etc/login.defs
             etc/pam.d/{chage,passwd,shadow,useradd,usermod,userdel}
-            etc/pam.d/{newusers,groupadd,groupdel,groupmod}
+            etc/pam.d/{groupadd,groupdel,groupmod}
             etc/pam.d/groupmems
             etc/default/useradd)
 fi
@@ -45,6 +45,7 @@ fi
 for m in ${_makedeps[@]};do
     if [[ $(pacman -Ss ^${m}$ 2>/dev/null) ]];then
         makedepends+=( "$m")
+        pkgrel=$((pkgrel+1))
     else
         optdepends+=( "$m")
     fi
