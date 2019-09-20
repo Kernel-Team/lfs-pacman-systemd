@@ -1,0 +1,51 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=gd
+pkgver=2.2.5
+pkgrel=1
+pkgdesc="Library for the dynamic creation of images by programmers"
+arch=('x86_64')
+url="http://www.libgd.org/"
+license=('custom')
+depends=('fontconfig' 'libxpm' 'libwebp')
+optdepends=('perl: bdftogd script')
+checkdepends=('ttf-liberation')
+source=("https://github.com/libgd/libgd/releases/download/gd-${pkgver}/libgd-${pkgver}.tar.xz"
+        'gd-CVE-2018-1000222.patch' 'gd-CVE-2018-5711.patch'
+        'gd-CVE-2019-6977.patch' 'gd-CVE-2019-6978.patch')
+groups=('extra')
+
+prepare(){
+    cd libgd-${pkgver}
+    # security patches from openSUSE:
+    # https://build.opensuse.org/package/show/openSUSE:Factory/gd
+    patch -p1 -i "${srcdir}/gd-CVE-2018-1000222.patch"
+    patch -p1 -i "${srcdir}/gd-CVE-2018-5711.patch"
+    patch -p1 -i "${srcdir}/gd-CVE-2019-6977.patch"
+    patch -p1 -i "${srcdir}/gd-CVE-2019-6978.patch"
+    ./configure \
+          --prefix=/usr \
+          --disable-rpath
+}
+
+build() {
+    cd libgd-${pkgver}
+    make
+}
+
+check() {
+    cd libgd-${pkgver}
+    make check
+}
+
+package() {
+    cd libgd-${pkgver}
+    make DESTDIR="${pkgdir}" install
+    install -D -m644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
+
+md5sums=('8d8d6a6189513ecee6e893b1fb109bf8'
+         'f60e73bde2573ab69ecb39230437ff87'
+         '7705c7d3a6f07baf3e80cd37ddf1c601'
+         '896f4e0a12af2e5fa9d6ca32c01c5a20'
+         'f15dd50db79be56df2373c2f136df2bc')

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+FMTUTIL="etc/local/texmf/web2c/fmtutil.cnf"
+FMTUTILLOCAL="etc/local/texmf/web2c/fmtutil-local.cnf"
+
+cp usr/local/share/texmf-dist/web2c/fmtutil-hdr.cnf $FMTUTIL
+for file in var/local/lib/texmf/arch/installedpkgs/*.fmts; do
+    echo >> $FMTUTIL
+    echo "# $file" >> $FMTUTIL
+    cat $file >> $FMTUTIL
+done
+if [[ -f "$FMTUTILLOCAL" ]]; then
+    echo >> $FMTUTIL
+    echo "# $FMTUTILLOCAL" >> $FMTUTIL
+    cat "$FMTUTILLOCAL" >> $FMTUTIL
+fi
+
+/usr/local/bin/fmtutil-sys --all --cnffile $FMTUTIL > /dev/null

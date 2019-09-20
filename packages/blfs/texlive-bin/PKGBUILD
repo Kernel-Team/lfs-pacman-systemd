@@ -1,0 +1,473 @@
+#-*-mode:sh-*-
+# Maintainer: Rémy Oudompheng <remy@archlinux.org>
+# Contributor: francois <francois.archlinux.org>
+# Contributor: alexforsale@yahoo.com
+pkgname=('texlive-bin' 'libsynctex')
+pkgver=2019.51075
+pkgrel=1
+license=('GPL')
+arch=('x86_64')
+makedepends=('git' 'perl' 'zlib' 'ncurses')
+url='https://tug.org/texlive/'
+_commit=74c2495978a4a84ffae10252c0fd244f1140228e  # texlive-2019.2 r51075
+source=("git://github.com/Tex-Live/texlive-source.git#commit=${_commit}"
+        "pdftex-poppler0.76.patch")
+sha256sums=('SKIP'
+            '5da9f5356ca14d950c222108b431baaf5c27667460ffab9597b29ef11b426c0f')
+groups=('blfs' 'typesetting')
+
+_texlive_bin_deps=()
+_confargs=('--prefix=/usr/local -C' '--sysconfdir=/usr/local/etc' '--datarootdir=/usr/local/share' '--datadir=/usr/local/share'
+           '--mandir=/usr/local/share/man' '--localstatedir=/var/local' '--disable-native-texlive-build' '--disable-multiplatform'
+           '--disable-dialog' '--disable-psutils' '--disable-t1utils' '--disable-bibtexu' '--disable-xz' '--enable-shared'
+           '--disable-static' '--with-system-zlib' '--with-system-ncurses' '--with-xdvi-x-toolkit=xaw' '--disable-dump-share'
+           '--disable-aleph' '--enable-luatex'
+           )
+
+# NOTES: needs harfbuzz compiled with graphite
+if [[ $(pacman -Qq harfbuzz 2>/dev/null) ]];then
+    makedepends+=( 'harfbuzz')
+    pkgrel=$((pkgrel+1))
+    _confargs+=( '--with-system-harfbuzz')
+    _texlive_bin_deps+=( 'harfbuzz')
+fi
+if [[ $(pacman -Qq harfbuzz-icu 2>/dev/null) ]];then
+    makedepends+=( 'harfbuzz-icu')
+    pkgrel=$((pkgrel+1))
+    _texlive_bin_deps+=( 'harfbuzz-icu')
+fi
+if [[ $(pacman -Qq icu 2>/dev/null) ]];then
+    makedepends+=( 'icu')
+    pkgrel=$((pkgrel+1))
+    _confargs+=( '--with-system-icu')
+    _texlive_bin_deps+=( 'icu')
+fi
+if [[ $(pacman -Qq cairo 2>/dev/null) ]];then
+    makedepends+=( 'cairo')
+    pkgrel=$((pkgrel+1))
+    _confargs+=( '--with-system-cairo')
+    _texlive_bin_deps+=( 'cairo')
+fi
+if [[ $(pacman -Qq zziplib 2>/dev/null) ]];then
+    makedepends+=( 'zziplib')
+    pkgrel=$((pkgrel+1))
+    _confargs+=( '--with-system-zziplib')
+    _texlive_bin_deps+=( 'zziplib')
+fi
+if [[ $(pacman -Qq gmp 2>/dev/null) ]];then
+    makedepends+=( 'gmp')
+    pkgrel=$((pkgrel+1))
+    _confargs+=( '--with-system-gmp')
+    _texlive_bin_deps+=( 'gmp')
+fi
+if [[ $(pacman -Qq mpfr 2>/dev/null) ]];then
+    makedepends+=( 'mpfr')
+    pkgrel=$((pkgrel+1))
+    _confargs+=( '--with-system-mpfr')
+    _texlive_bin_deps+=( 'mpfr')
+fi
+if [[ $(pacman -Qq graphite 2>/dev/null) ]];then
+    makedepends+=( 'graphite')
+    pkgrel=$((pkgrel+1))
+    _confargs+=( '--with-system-graphite')
+    _texlive_bin_deps+=( 'graphite')
+fi
+if [[ $(pacman -Qq poppler 2>/dev/null) ]];then
+    makedepends+=( 'poppler')
+    pkgrel=$((pkgrel+1))
+    _confargs+=( '--with-system-poppler' '--with-system-xpdf')
+    _texlive_bin_deps+=( 'poppler')
+fi
+if [[ $(pacman -Qq freetype2 2>/dev/null) ]];then
+    makedepends+=( 'freetype2')
+    pkgrel=$((pkgrel+1))
+    _confargs+=( '--with-system-freetype2' '--with-freetype2-libdir=/usr/lib'
+                 '--with-freetype2-include=/usr/include/freetype2')
+    _texlive_bin_deps+=( 'freetype2')
+fi
+if [[ $(pacman -Qq pixman 2>/dev/null) ]];then
+    makedepends+=( 'pixman')
+    pkgrel=$((pkgrel+1))
+    _confargs+=( '--with-system-pixman')
+    _texlive_bin_deps+=( 'pixman')
+fi
+if [[ $(pacman -Qq t1lib 2>/dev/null) ]];then
+    makedepends+=( 't1lib')
+    pkgrel=$((pkgrel+1))
+    _confargs+=( '--with-system-t1lib')
+    _texlive_bin_deps+=( 't1lib')
+fi
+if [[ $(pacman -Qq gd 2>/dev/null) ]];then
+    makedepends+=( 'gd')
+    pkgrel=$((pkgrel+1))
+    _confargs+=( '--with-system-gd')
+    _texlive_bin_deps+=( 'gd')
+fi
+if [[ $(pacman -Qq potrace 2>/dev/null) ]];then
+    makedepends+=( 'potrace')
+    pkgrel=$((pkgrel+1))
+    _confargs+=( '--with-system-potrace')
+    _texlive_bin_deps+=( 'potrace')
+fi
+if [[ $(pacman -Qq libpaper 2>/dev/null) ]];then
+    makedepends+=( 'libpaper')
+    pkgrel=$((pkgrel+1))
+    _confargs+=( '--with-system-libpaper')
+    _texlive_bin_deps+=( 'libpaper')
+fi
+if [[ $(pacman -Qq libpng 2>/dev/null) ]];then
+    makedepends+=( 'libpng')
+    pkgrel=$((pkgrel+1))
+    _confargs+=( '--with-system-pnglib')
+    _texlive_bin_deps+=( 'libpng')
+fi
+if [[ $(pacman -Qq clisp 2>/dev/null) ]];then
+    makedepends+=( 'clisp')
+    pkgrel=$((pkgrel+1))
+    _confargs+=( '--with-clisp-runtime=default' '--enable-xindy' '--disable-xindy-rules' '--disable-xindy-docs')
+    _texlive_bin_provides=( 'xindy')
+fi
+if [[ $(pacman -Qq ffcall 2>/dev/null) ]];then
+    makedepends+=( 'ffcall')
+    pkgrel=$((pkgrel+1))
+fi
+if [[ $(pacman -Qq libsigsegv 2>/dev/null) ]];then
+    makedepends+=( 'libsigsegv')
+    pkgrel=$((pkgrel+1))
+    _texlive_bin_deps+=( 'libsigsegv')
+fi
+if [[ $(pacman -Qq libjpeg 2>/dev/null) ]];then
+    makedepends+=( 'libjpeg')
+    pkgrel=$((pkgrel+1))
+    _texlive_bin_deps+=( 'libjpeg')
+fi
+
+prepare() {
+    cd "$srcdir/texlive-source"
+
+    # t4ht expects to be in /usr/share/texmf/bin/t4ht (FS#27251)
+    sed -i s/SELFAUTOPARENT/TEXMFROOT/ texk/tex4htk/t4ht.c
+
+    # pdftex poppler compatibility (upstream patches)
+    patch -Np1 -i "$srcdir/pdftex-poppler0.76.patch"
+    cp -pv texk/web2c/pdftexdir/pdftoepdf{-poppler0.76.0,}.cc
+    cp -pv texk/web2c/pdftexdir/pdftosrc{-poppler0.76.0,}.cc
+}
+
+build() {
+    cd "$srcdir/texlive-source"
+    #############################################################
+    ### configure
+    mkdir -p Work
+    cd Work
+    msg2 "--> Initial configuration..."
+    # we use temporary prefix to avoid messing the existing
+    # $pkgdir/usr/share/texmf tree
+    ../configure ${_confargs[@]}
+    #############################################################
+    ### make
+    msg2 "-------------------------------------------------------"
+    msg2 "--> Building the whole beast ..."
+    msg2 "-------------------------------------------------------"
+    make
+}
+
+package_libsynctex() {
+    pkgdesc='Library for synchronization between TeX files and resulting file'
+    depends=('glibc' 'zlib')
+
+    cd "${srcdir}/texlive-source/Work"
+    make -C texk/web2c DESTDIR="${pkgdir}" \
+         install-data-am install-libLTLIBRARIES
+}
+
+package_texlive-bin() {
+    pkgdesc="TeX Live binaries"
+    depends=('libsynctex' ${_texlive_bin_deps[@]})
+    provides=('lcdf-typetools' 'kpathsea' ${_texlive_bin_provides[@]})
+    optdepends=('ed: for texconfig'
+                'biber: for bibliography processing')
+    options=('!strip')
+
+    cd "$srcdir/texlive-source"
+
+    if [[ $(pacman -Qq clisp 2>/dev/null) ]];then
+        #############################################################
+        ### install
+        # fixes for xindy
+        find utils/xindy -name Makefile -exec sed -i -e "s|^prefix =.\+$|prefix = $pkgdir/usr/local|" -e "s|^mandir =.\+$|mandir = \${prefix}/share/man|" -e "s|^datadir =.\+$|datadir = \${datarootdir}/texmf|" -e "s|^docdir =.\+$|docdir = \${datadir}/doc/xindy|" '{}' \;
+    fi
+
+    echo "-------------------------------------------------------"
+    echo "--> Proceeding with make install ..."
+    echo "-------------------------------------------------------"
+    cd Work
+    make DESTDIR="${pkgdir}" texmf="$pkgdir"/usr/local/share/texmf install
+    rm -rf "${pkgdir}"/usr/local/{texmf,share/texmf-dist}
+
+    ## symlink engines by hand. texlinks has moved to texlive-core...
+    mkdir -p ${pkgdir}/usr/local/bin
+    ln -s eptex ${pkgdir}/usr/local/bin/platex
+    ln -s euptex ${pkgdir}/usr/local/bin/uplatex
+    ln -s luatex ${pkgdir}/usr/local/bin/dvilualatex
+    ln -s luatex ${pkgdir}/usr/local/bin/dviluatex
+    ln -s luatex ${pkgdir}/usr/local/bin/lualatex
+    ln -s pdftex ${pkgdir}/usr/local/bin/amstex
+    ln -s pdftex ${pkgdir}/usr/local/bin/cslatex
+    ln -s pdftex ${pkgdir}/usr/local/bin/csplain
+    ln -s pdftex ${pkgdir}/usr/local/bin/eplain
+    ln -s pdftex ${pkgdir}/usr/local/bin/etex
+    ln -s pdftex ${pkgdir}/usr/local/bin/jadetex
+    ln -s pdftex ${pkgdir}/usr/local/bin/latex
+    ln -s tex ${pkgdir}/usr/local/bin/lollipop
+    ln -s pdftex ${pkgdir}/usr/local/bin/mex
+    ln -s pdftex ${pkgdir}/usr/local/bin/mllatex
+    ln -s pdftex ${pkgdir}/usr/local/bin/mltex
+    ln -s pdftex ${pkgdir}/usr/local/bin/pdfetex
+    ln -s pdftex ${pkgdir}/usr/local/bin/pdfcslatex
+    ln -s pdftex ${pkgdir}/usr/local/bin/pdfcsplain
+    ln -s pdftex ${pkgdir}/usr/local/bin/pdfjadetex
+    ln -s pdftex ${pkgdir}/usr/local/bin/pdflatex
+    ln -s pdftex ${pkgdir}/usr/local/bin/pdfmex
+    ln -s pdftex ${pkgdir}/usr/local/bin/pdfxmltex
+    ln -s pdftex ${pkgdir}/usr/local/bin/texsis
+    ln -s pdftex ${pkgdir}/usr/local/bin/utf8mex
+    ln -s pdftex ${pkgdir}/usr/local/bin/xmltex
+    ln -s xetex ${pkgdir}/usr/local/bin/xelatex
+
+    #############################################################
+    # remove dangling symlinks
+    _bibtexextra_scripts="
+bbl2bib
+bib2gls
+bibdoiadd
+bibexport
+bibmradd
+biburl2doi
+bibzbladd
+convertgls2bib
+listbib
+ltx2crossrefxml
+multibibliography
+urlbst
+"
+    _core_scripts="
+a2ping
+a5toa4
+adhocfilelist
+afm2afm
+allcm
+allec
+allneeded
+arara
+arlatex
+autoinst
+bundledoc
+checkcites
+checklistings
+chkweb
+cjk-gs-integrate
+cluttex
+context
+contextjit
+ctanbib
+ctanify
+ctanupload
+ctan-o-mat
+de-macro
+depythontex
+deweb
+dosepsbin
+dtxgen
+dvi2fax
+dviasm
+dviinfox
+dvired
+e2pall
+epstopdf
+findhyph
+fmtutil
+fmtutil-sys
+fmtutil-user
+fontinst
+fragmaster
+ht
+htcontext
+htlatex
+htmex
+httex
+httexi
+htxelatex
+htxetex
+installfont-tl
+jfmutil
+kpsepath
+kpsetool
+kpsewhere
+kpsexpand
+latex-git-log
+latex-papersize
+latex2man
+latex2nemeth
+latexdef
+latexdiff
+latexdiff-vc
+latexfileversion
+latexindent
+latexmk
+latexpand
+latexrevise
+listings-ext.sh
+ltxfileinfo
+ltximg
+lua2dox_filter
+luaotfload-tool
+luatools
+lwarpmk
+make4ht
+match_parens
+mf2pt1
+mk4ht
+mkjobtexmf
+mkt1font
+mktexfmt
+mptopdf
+mtxrun
+mtxrunjit
+ot2kpx
+pdf180
+pdf270
+pdf90
+pdfatfi
+pdfbook
+pdfbook2
+pdfcrop
+pdfflip
+pdfjam
+pdfjam-pocketmod
+pdfjam-slides3up
+pdfjam-slides6up
+pdfjoin
+pdflatexpicscale
+pdfnup
+pdfpun
+pdftex-quiet
+pdfxup
+pfarrei
+pkfix
+pkfix-helper
+ps2eps
+ps2frag
+pslatex
+purifyeps
+pythontex
+repstopdf
+rpdfcrop
+rungs
+simpdftex
+srcredact
+sty2dtx
+tex4ebook
+texconfig
+texconfig-dialog
+texconfig-sys
+texcount
+texdef
+texdiff
+texdirflatten
+texdoc
+texdoctk
+texexec
+texfot
+texlinks
+texliveonfly
+texloganalyser
+texmfstart
+texosquery
+texosquery-jre5
+texosquery-jre8
+thumbpdf
+tlcockpit
+tlshell
+typeoutfileinfo
+updmap
+updmap-sys
+updmap-user
+vpl2ovp
+vpl2vpl
+xhlatex
+xindex
+"
+    if [[ $(pacman -Qq clisp 2>/dev/null) ]];then
+        _core_scripts+="xindy texindy"
+    fi
+
+    _games_scripts="rubikrotation"
+    _humanities_scripts="diadia"
+    _langcyrillic_scripts="rubibtex rumakeindex"
+    _langextra_scripts="ebong"
+    _langgreek_scripts="mkgrkindex"
+    _langjapanese_scripts="convbkmk ptex2pdf
+kanji-fontmap-creator
+kanji-config-updmap
+kanji-config-updmap-sys
+kanji-config-updmap-user
+"
+    _langkorean_scripts="jamo-normalize komkindex ttf2kotexfont"
+    _latexextra_scripts="
+authorindex
+exceltex
+l3build
+makedtx
+makeglossaries
+makeglossaries-lite
+pdfannotextractor
+perltex
+ps4pdf
+splitindex
+svn-multi
+vpe
+webquiz
+wordcount
+yplan"
+    _music_scripts="lily-glyph-commands lily-image-commands lily-rebuild-pdfs
+m-tx musixtex musixflx pmxchords"
+    _pictures_scripts="
+cachepic
+epspdf
+epspdftk
+fig4latex
+getmapdl
+mathspic
+mkpic
+pn2pdf"
+    _pstricks_scripts="pedigree pst2pdf"
+    _science_scripts="pygmentex ulqda"
+    for s in \
+        ${_bibtexextra_scripts} \
+            ${_core_scripts}        \
+            ${_games_scripts}       \
+            ${_htmlxml_scripts}     \
+            ${_humanities_scripts}   \
+            ${_langcyrillic_scripts} \
+            ${_langextra_scripts}    \
+            ${_langgreek_scripts}    \
+            ${_langjapanese_scripts} \
+            ${_langkorean_scripts} \
+            ${_latexextra_scripts} \
+            ${_music_scripts}      \
+            ${_pictures_scripts}   \
+            ${_pstricks_scripts}   \
+            ${_science_scripts}    \
+            tlmgr; do
+        ! readlink -e "$pkgdir"/usr/local/bin/$s && rm "$pkgdir"/usr/local/bin/$s
+    done
+    ###################################################################
+
+    # remove libsynctex
+    rm -f "$pkgdir"/usr/local/include/synctex/*
+    rm -f "$pkgdir"/usr/local/lib/libsynctex.*
+    rm -f "$pkgdir"/usr/local/lib/pkgconfig/synctex.pc
+    rm -f "$pkgdir"/usr/local/share/man/man*/synctex.*
+}
+

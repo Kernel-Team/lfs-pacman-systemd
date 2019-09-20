@@ -1,0 +1,9 @@
+post_install() {
+    echo ">>> updmap custom entries should go into etc/local/texmf/web2c/updmap-local.cfg"
+    echo ">>> fmtutil custom entries should go into etc/local/texmf/web2c/fmtutil-local.cnf"
+}
+
+post_upgrade() {
+    echo ">>> updmap custom entries should go into etc/local/texmf/web2c/updmap-local.cfg"
+    echo ">>> fmtutil custom entries should go into etc/local/texmf/web2c/fmtutil-local.cnf"
+}

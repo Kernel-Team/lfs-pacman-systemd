@@ -1,0 +1,101 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgbase=poppler
+pkgname=('poppler' 'poppler-glib')
+pkgver=0.80.0
+pkgrel=1
+arch=(x86_64)
+license=('GPL')
+_makedeps=('poppler-data' 'gtk3' 'qt5-base' 'nss' 'gtk-doc')
+makedepends=('libjpeg' 'gcc-libs' 'cairo' 'fontconfig' 'openjpeg2' 'pkgconfig' 'lcms2' 
+             'gobject-introspection' 'icu' 'git' 'curl' 'cmake' 'python' 'boost')
+options=('!emptydirs')
+url="https://poppler.freedesktop.org/"
+source=(https://poppler.freedesktop.org/${pkgbase}-${pkgver}.tar.xz{,.sig}
+        test::git+https://anongit.freedesktop.org/git/poppler/test/#commit=fcb27feed2e9a98ec0db3ab60aef4e010a9fdeb3)
+validpgpkeys=('CA262C6C83DE4D2FB28A332A3A6A4DB839EAA6D7') # "Albert Astals Cid <aacid@kde.org>"
+groups=('blfs' 'graphics-font-libraries')
+
+for _m in "${_makedeps[@]}";do
+    if [[ "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
+        makedepends+=( "${_m}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_m}")
+    fi
+done
+
+_confargs=()
+if [[ "$(pacman -Qq "qt5-base" 2>/dev/null)" ]];then
+    pkgname+=( 'poppler-qt5')
+fi
+if [[ "$(pacman -Qq "gtk-doc" 2>/dev/null)" ]];then
+    _confargs+=( -DENABLE_GTK_DOC=ON)
+else
+    _confargs+=( -DENABLE_GTK_DOC=OFF)
+fi
+
+prepare() {
+    mkdir build
+    cd build
+    cmake ../${pkgbase}-${pkgver} \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_INSTALL_PREFIX:PATH=/usr \
+          -DCMAKE_INSTALL_LIBDIR=/usr/lib \
+          -DENABLE_UNSTABLE_API_ABI_HEADERS=ON \
+          ${_confargs[@]}
+}
+
+build() {
+    cd build
+    make
+}
+
+check() {
+    cd build
+    LANG=en_US.UTF8 make test
+}
+
+package_poppler() {
+    pkgdesc="PDF rendering library based on xpdf 3.0"
+    depends=('libjpeg' 'gcc-libs' 'cairo' 'fontconfig' 'openjpeg2' 'lcms2' 'nss' 'curl')
+    optdepends=('poppler-data: encoding data to display PDF documents containing CJK characters')
+    conflicts=("poppler-qt3<${pkgver}" "poppler-qt4<${pkgver}")
+
+    cd build
+    make DESTDIR="${pkgdir}" install
+
+    # cleanup for splitted build
+    rm -vrf "${pkgdir}"/usr/include/poppler/{glib,qt5}
+    rm -vf "${pkgdir}"//usr/lib/libpoppler-{glib,qt5}.*
+    rm -vf "${pkgdir}"/usr/lib/pkgconfig/poppler-{glib,qt5}.pc
+    rm -vrf "${pkgdir}"/usr/{lib,share}/gir*
+    rm -vrf "${pkgdir}"/usr/share/gtk-doc
+}
+
+package_poppler-glib() {
+    pkgdesc="Poppler glib bindings"
+    depends=("poppler=${pkgver}" 'glib2')
+
+    cd build
+
+    make -C glib DESTDIR="${pkgdir}" install
+    install -m755 -d "${pkgdir}/usr/lib/pkgconfig"
+    install -m644 poppler-glib.pc "${pkgdir}/usr/lib/pkgconfig/"
+    rm -vf "${pkgdir}"/usr/lib/libpoppler.*
+    rm -vf "${pkgdir}/usr/bin/poppler-glib-demo"
+}
+
+package_poppler-qt5() {
+    pkgdesc="Poppler Qt5 bindings"
+    depends=("poppler=${pkgver}" 'qt5-base')
+
+    cd build
+    make -C qt5 DESTDIR="${pkgdir}" install
+    install -m755 -d "${pkgdir}/usr/lib/pkgconfig"
+    install -m644 poppler-qt5.pc "${pkgdir}/usr/lib/pkgconfig/poppler-qt5.pc"
+}
+
+sha256sums=('4d3ca6b79bc13b8e24092e34f83ef5f387f3bb0bbd7359a6c078e09c696d104f'
+            'SKIP'
+            'SKIP')

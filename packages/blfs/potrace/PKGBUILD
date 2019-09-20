@@ -1,0 +1,32 @@
+#-*-mode:sh-*-
+# Contributor: alexforsale@yahoo.com
+pkgname=potrace
+pkgver=1.16
+pkgrel=1
+pkgdesc='Utility for tracing a bitmap (input: PBM,PGM,PPM,BMP; output: EPS,PS,PDF,SVG,DXF,PGM,Gimppath,XFig)'
+url='http://potrace.sourceforge.net/'
+arch=('x86_64')
+license=('GPL')
+source=("https://downloads.sourceforge.net/potrace/potrace-$pkgver.tar.gz")
+sha256sums=('be8248a17dedd6ccbaab2fcc45835bb0502d062e40fbded3bc56028ce5eb7acc')
+groups=('blfs' 'graphics-font-libraries')
+
+prepare(){
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    ./configure \
+        --prefix=/usr \
+        --mandir=/usr/share/man \
+        --enable-a4 \
+        --enable-metric \
+        --with-libpotrace
+}
+
+build() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    make
+}
+
+package() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    make DESTDIR="${pkgdir}" install
+}

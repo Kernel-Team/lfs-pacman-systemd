@@ -1,0 +1,15 @@
+[Trigger]
+Type = File
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Target = usr/local/bin/mktexlsr
+Target = etc/local/texmf/*
+Target = usr/local/share/texmf/*
+Target = usr/local/share/texmf-dist/*
+Target = var/local/lib/texmf/*
+
+[Action]
+Description = Updating TeXLive filename database...
+When = PostTransaction
+Exec = /usr/share/libalpm/scripts/mktexlsr
