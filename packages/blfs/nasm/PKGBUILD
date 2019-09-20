@@ -1,0 +1,44 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=nasm
+pkgver=2.14.02
+pkgrel=1
+pkgdesc='80x86 assembler designed for portability and modularity'
+url='https://www.nasm.us'
+arch=('x86_64')
+license=('BSD')
+depends=('glibc')
+_makedeps=('perl-font-ttf' 'perl-sort-versions' 'fontconfig' 'adobe-source-sans-pro-fonts'
+           'ttf-liberation' 'ghostscript' 'xmlto' 'asciidoc')
+makedepends=()
+source=(https://www.nasm.us/pub/nasm/releasebuilds/${pkgver}/${pkgname}-${pkgver}.tar.xz)
+groups=('blfs' 'programming')
+
+for _m in "${_makedeps[@]}";do
+    if [[ "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
+        makedepends+=( "${_m}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_m}")
+    fi
+done
+
+build() {
+    cd ${pkgname}-${pkgver}
+    ./configure --prefix=/usr
+    make
+    if [[ "$(pacman -Qq "${_makedeps}" 2>/dev/null)" ]];then
+        make -C doc
+    fi
+}
+
+package() {
+    cd ${pkgname}-${pkgver}
+    make DESTDIR="${pkgdir}" install
+    if [[ -n "$(pacman -Qq "${_makedeps}" 2>/dev/null)" ]];then
+        make DESTDIR="${pkgdir}" install_rdf
+    fi
+    install -Dm 644 LICENSE -t "${pkgdir}"/usr/share/licenses/nasm
+}
+
+sha512sums=('c7a228095f37321d57f2813d04f58ee66949e8f81fc49ef6c4ecd391301e308217583ce1a265d4fe8c13d54b5b9c72aeb132caa3caee36e31b6555fbfff34c81')

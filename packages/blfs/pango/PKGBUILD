@@ -1,0 +1,62 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=pango
+pkgver=1.44.6
+pkgrel=1
+pkgdesc="A library for layout and rendering of text"
+url="https://www.pango.org/"
+arch=(x86_64)
+license=(LGPL)
+_deps=()
+depends=(libthai libxft harfbuzz fribidi cairo)
+_makedeps=(gtk-doc)
+makedepends=(gobject-introspection help2man git meson)
+checkdepends=(ttf-dejavu cantarell-fonts)
+_commit=ee65d75feca3e128c951fdfbf9a61619e2a5239e  # tags/1.44.6^0
+source=("git+https://gitlab.gnome.org/GNOME/pango.git#commit=$_commit")
+sha256sums=('SKIP')
+groups=('blfs' 'xorg-libraries')
+
+for _d in "${_deps[@]}";do
+    if [[ "$(pacman -Qq "${_d}" 2>/dev/null)" ]];then
+        depends+=( "${_d}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_d}")
+    fi
+done
+
+for _m in "${_makedeps[@]}";do
+    if [[ "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
+        depends+=( "${_m}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_m}")
+    fi
+done
+
+_confargs=()
+if [[ "$(pacman -Qq "gtk-doc" 2>/dev/null)" ]];then
+    _confargs+=( -D enable_docs=true)
+fi
+
+pkgver() {
+    cd $pkgname
+    git describe --tags | sed 's/-/+/g'
+}
+
+prepare() {
+    meson-helper $pkgname build 
+}
+
+build() {
+    ninja -C build
+}
+
+check() {
+    meson test -C build --print-errorlogs
+}
+
+package() {
+    DESTDIR="$pkgdir" meson install -C build
+}

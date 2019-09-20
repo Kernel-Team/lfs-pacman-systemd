@@ -1,0 +1,41 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=freeglut
+pkgver=3.2.0
+pkgrel=1
+pkgdesc="Provides functionality for small OpenGL programs"
+arch=(x86_64)
+url="http://freeglut.sourceforge.net/"
+license=(MIT)
+depends=(libxi libxrandr libgl)
+makedepends=(mesa glu libxxf86vm cmake)
+replaces=(glut)
+provides=(glut)
+conflicts=(glut)
+source=(https://downloads.sourceforge.net/freeglut/${pkgname}-${pkgver}.tar.gz
+        glut.diff)
+groups=('blfs' 'xorg-libraries')
+
+prepare() {
+    mkdir build
+    cd $srcdir/$pkgname-$pkgver
+    patch -Np1 -i ../glut.diff
+}
+
+build() {
+    cd build
+    cmake ../$pkgname-$pkgver -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Release
+    make
+}
+
+package() {
+    cd build
+    make DESTDIR="$pkgdir" install
+    install -Dm644 ../$pkgname-$pkgver/COPYING "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    ln -sr "$pkgdir"/usr/lib/pkgconfig/{glut,freeglut}.pc
+}
+
+md5sums=('2abbb255b10ee669faf6b26ba27c050b'
+         'affb131d39831e97c367cfb5129b84d7')
+sha1sums=('cc88845a3bfce41bbaa345d10038a1bcc6782af2'
+          '17f13c9e78dcd596fa2c15ec9f6194ff07241cf0')

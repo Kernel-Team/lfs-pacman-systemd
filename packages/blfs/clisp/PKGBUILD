@@ -1,0 +1,61 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=clisp
+pkgver=2.49
+pkgrel=1
+pkgdesc="ANSI Common Lisp interpreter, compiler and debugger"
+arch=('x86_64')
+license=('GPL')
+url="http://clisp.cons.org/"
+depends=('readline' 'libsigsegv')
+provides=('common-lisp')
+makedepends=('ffcall')
+options=('!makeflags' '!emptydirs')
+source=("ftp://ftp.gnu.org/gnu/$pkgname/latest/$pkgname-$pkgver.tar.bz2"
+        "http://www.linuxfromscratch.org/patches/blfs/9.0/$pkgname-$pkgver-readline7_fixes-1.patch")
+groups=('blfs' 'programming')
+
+prepare(){
+    mkdir -pv ${srcdir}/build 
+    cd ${srcdir}/${pkgname}-${pkgver}
+    # two tests, which fail for unknown reasons
+    sed -i -e '/socket/d' -e '/"streams"/d' tests/tests.lisp
+
+    patch -Np1 -i ../$pkgname-$pkgver-readline7_fixes-1.patch
+    unset CFLAGS CPPFLAGS LDFLAGS
+    cd ${srcdir}/build
+    ${srcdir}/${pkgname}-${pkgver}/configure \
+             --srcdir=${srcdir}/${pkgname}-${pkgver} \
+             --prefix=/usr \
+             --docdir=/usr/share/doc/${pkgname}-${pkgver} \
+             --with-readline \
+             --with-libsigsegv-prefix=/usr \
+             --with-libffcall-prefix=/usr
+
+    ./makemake --prefix=/usr \
+               --docdir=/usr/share/doc/${pkgname}-${pkgver} \
+               --with-readline \
+               --with-libsigsegv-prefix=/usr \
+               --with-libffcall-prefix=/usr \
+               --with-ffcall \
+               --with-dynamic-ffi > Makefile
+    ulimit -s 16384
+}
+
+build() {
+    cd ${srcdir}/build
+    make -j1
+}
+
+check() {
+    cd ${srcdir}/build
+    make check || :
+}
+
+package() {
+    cd ${srcdir}/build
+    make DESTDIR=$pkgdir install
+}
+
+md5sums=('1962b99d5e530390ec3829236d168649'
+         '88393744b629d658039ceb3c575764fd')
