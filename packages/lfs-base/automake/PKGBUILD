@@ -17,28 +17,18 @@ validpgpkeys=('E1622F96D2BB4E58018EEF9860F906016E407573'   # Stefano Lattarini
 
 if [[ "$(pacman -Ss ^gcc-fortran$ 2>/dev/null)" ]];then
     checkdepends+=( 'gcc-fortran')
-else
-    optdepends+=( 'gcc-fortan')
 fi
 if [[ "$(pacman -Ss ^java-environment$ 2>/dev/null)" ]];then
     checkdepends+=( 'java-environment')
-else
-    optdepends+=( 'java-environment')
 fi
 if [[ "$(pacman -Ss ^vala$ 2>/dev/null)" ]];then
     checkdepends+=( 'vala')
-else
-    optdepends+=( 'vala')
 fi
 if [[ "$(pacman -Ss ^emacs$ 2>/dev/null)" ]];then
     checkdepends+=( 'emacs')
-else
-    optdepends+=( 'emacs')
 fi
 if [[ "$(pacman -Ss ^cscope$ 2>/dev/null)" ]];then
     checkdepends+=( 'cscope')
-else
-    optdepends+=( 'cscope')
 fi
 
 prepare() {
