@@ -9,7 +9,7 @@ pkgdesc="GNU compiler collection, which includes the C and C++ compilers"
 arch=(x86_64)
 license=(GPL LGPL FDL custom)
 url='http://gcc.gnu.org'
-_makedeps=('gcc-ada' 'doxygen' 'lib32-glibc' 'python')
+_makedeps=('gcc-ada' 'doxygen' 'lib32-glibc' 'libx32-glibc' 'python')
 makedepends=('binutils'
              'libmpc'
             )
