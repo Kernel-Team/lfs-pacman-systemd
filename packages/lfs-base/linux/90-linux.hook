@@ -1,0 +1,11 @@
+[Trigger]
+Type = File
+Operation = Install
+Operation = Upgrade
+Target = lib/modules/%KERNVER%/vmlinuz
+Target = usr/lib/dracut/*
+
+[Action]
+Description = Updating %PKGBASE% ramdisk...
+When = PostTransaction
+Exec = /usr/bin/dracut --hostonly --kver %PKGBASE% /boot/initramfs-linux.img
