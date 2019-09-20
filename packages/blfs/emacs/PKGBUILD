@@ -198,7 +198,7 @@ package_emacs(){
     install -Dm644 $srcdir/games.sysusers  ${pkgdir}/usr/lib/sysusers.d/games.conf
 }
 
-package_emacs-git-docs() {
+package_emacs-docs() {
     pkgdesc="GNU Emacs, built from git sources — HTML and PDF documentation package."
     provides=('emacs-docs')
     conflicts=('emacs-docs')
