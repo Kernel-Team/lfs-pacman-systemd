@@ -2,7 +2,7 @@
 # Maintainer: alexforsale@yahoo.com
 BRANCH=master
 pkgname=emacs
-pkgver=27.0.50.138467
+pkgver=27.0.50.138477
 pkgrel=1
 pkgdesc="GNU Emacs. Development."
 arch=('x86_64')
