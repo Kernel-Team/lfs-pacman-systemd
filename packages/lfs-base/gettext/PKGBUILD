@@ -8,12 +8,13 @@ url="https://www.gnu.org/software/gettext/"
 arch=(x86_64)
 license=(GPL)
 depends=('gcc-libs' 'acl' 'sh')
-makedepends=()
+makedepends=('xz' 'bzip2')
 optdepends=('git: for autopoint infrastructure updates')
 options=(!docs)
 source=(https://ftp.gnu.org/pub/gnu/gettext/$pkgname-$pkgver.tar.gz{,.sig})
 validpgpkeys=('68D94D8AAEEAD48AE7DC5B904F494A942E4616C2')
 
+_confargs=()
 if [[ "$(pacman -Ss ^glib2$ 2>/dev/null)" ]];then
     depends+=( 'glib2')
     pkgrel=$((pkgrel+1))
@@ -23,6 +24,7 @@ fi
 if [[ "$(pacman -Ss ^libunistring$ 2>/dev/null)" ]];then
     depends+=( 'libunistring')
     pkgrel=$((pkgrel+1))
+    _confargs+=( '--with-libunistring-prefix=/usr')
 else
     optdepends+=( 'libunistring')
 fi
@@ -40,13 +42,28 @@ else
 fi
 if [[ "$(pacman -Ss ^emacs$ 2>/dev/null)" ]];then
     makedepends+=( 'emacs')
+    pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'emacs')
 fi
 if [[ "$(pacman -Ss ^git$ 2>/dev/null)" ]];then
     makedepends+=( 'git')
+    pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'git')
+fi
+if [[ "$(pacman -Ss ^java-environment$ 2>/dev/null)" ]];then
+    makedepends+=( 'java-environment')
+    pkgrel=$((pkgrel+1))
+else
+    optdepends+=( 'java-environment')
+fi
+if [[ "$(pacman -Ss ^libxml2$ 2>/dev/null)" ]];then
+    makedepends+=( 'libxml2')
+    _confargs+=( '--with-libxml2-prefix=/usr')
+    pkgrel=$((pkgrel+1))
+else
+    optdepends+=( 'libxml2')
 fi
 
 prepare() {
@@ -54,7 +71,7 @@ prepare() {
     ./configure \
         --prefix=/usr \
         --disable-static \
-        --docdir=/usr/share/doc/${pkgname}-${pkgver}
+        --docdir=/usr/share/doc/${pkgname}-${pkgver} ${_confargs[@]}
 }
 
 build() {
