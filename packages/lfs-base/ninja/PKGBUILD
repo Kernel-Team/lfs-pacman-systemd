@@ -14,11 +14,13 @@ source=($pkgname-$pkgver.zip::https://github.com/martine/ninja/archive/v$pkgver.
 
 if [[ "$(pacman -Ss ^emacs$ 2>/dev/null)" ]];then
     makedepends+=( 'emacs')
+    pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'emacs')
 fi
 if [[ "$(pacman -Ss ^re2c$ 2>/dev/null)" ]];then
     makedepends+=( 're2c')
+    pkgrel=$((pkgrel+1))
 else
     optdepends+=( 're2c')
 fi
