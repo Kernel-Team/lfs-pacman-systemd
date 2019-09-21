@@ -191,6 +191,10 @@ package_systemd() {
     # executable (symlinks) shipped with systemd-sysvcompat
     rm -v "$pkgdir"/sbin/{halt,init,poweroff,reboot,runlevel,shutdown,telinit}
 
+    # files shipped with systemd-resolvconf
+    rm "$pkgdir"/sbin/resolvconf
+    rm "$pkgdir"/usr/share/man/man1/resolvconf.1
+
     # avoid a potential conflict with [core]/filesystem
     rm -v "$pkgdir"/usr/share/factory/etc/nsswitch.conf
     sed -i '/^C \/etc\/nsswitch\.conf/d' "$pkgdir"/usr/lib/tmpfiles.d/etc.conf
@@ -261,8 +265,8 @@ package_systemd-resolvconf() {
     provides=('openresolv' 'resolvconf')
     conflicts=('openresolv')
 
-    install -d -m0755 "$pkgdir"/usr/bin
-    ln -s resolvectl "$pkgdir"/usr/bin/resolvconf
+    install -d -m0755 "$pkgdir"/sbin
+    ln -s resolvectl "$pkgdir"/sbin/resolvconf
 
     install -d -m0755 "$pkgdir"/usr/share/man/man1
     ln -s resolvectl.1.gz "$pkgdir"/usr/share/man/man1/resolvconf.1.gz
