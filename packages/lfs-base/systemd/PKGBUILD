@@ -1,7 +1,7 @@
 #-*-mode:sh-*-
 # Maintainer: alexforsale@yahoo.com
 pkgbase=systemd
-pkgname=('systemd' 'libsystemd' 'systemd-sysvcompat')
+pkgname=('systemd' 'systemd-libs' 'systemd-sysvcompat' 'systemd-resolvconf')
 pkgver=241
 pkgrel=1
 arch=('x86_64')
@@ -129,11 +129,11 @@ prepare() {
     fi
 
     mkdir -pv build && cd $_
-    # for first time compile in chroot with /tools phase
-    #PKG_CONFIG_PATH="/usr/lib/pkgconfig:/tools/lib/pkgconfig" \
-        LANG=en_US.UTF-8 CFLAGS+=" -Wno-format-overflow" \
-        meson --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
-              "${meson_options[@]}" ..
+        # for first time compile in chroot with /tools phase
+        #PKG_CONFIG_PATH="/usr/lib/pkgconfig:/tools/lib/pkgconfig" \
+            LANG=en_US.UTF-8 CFLAGS+=" -Wno-format-overflow" \
+                meson --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
+                "${meson_options[@]}" ..
 }
 
 build(){
@@ -149,7 +149,7 @@ check(){
 package_systemd() {
     pkgdesc="system and service manager"
     license=('GPL2' 'LGPL2.1')
-    depends=('acl' 'bash' 'kmod' 'libcap' 'libsystemd' 'libelf'
+    depends=('acl' 'bash' 'kmod' 'libcap' 'systemd-libs' 'libelf'
             )
     provides=('nss-myhostname' "systemd-tools=$pkgver" "udev=$pkgver")
     replaces=('nss-myhostname' 'systemd-tools' 'udev')
@@ -182,8 +182,8 @@ package_systemd() {
     [[ -d "$pkgdir"/var/log/journal/remote ]] && rm -rv "$pkgdir"/var/log/journal/remote
 
     # runtime libraries shipped with libsystemd
-    install -v -dm755 libsystemd
-    mv -v "$pkgdir"/lib/lib{nss,systemd,udev}*.so* libsystemd
+    install -v -dm755 systemd-libs
+    mv -v "$pkgdir"/lib/lib{nss,systemd,udev}*.so* systemd-libs
 
     # manpages shipped with systemd-sysvcompat
     [[ -d "$pkgdir"/usr/share/man/man8 ]] && rm -v "$pkgdir"/usr/share/man/man8/{halt,poweroff,reboot,runlevel,shutdown,telinit}.8
@@ -222,16 +222,19 @@ package_systemd() {
     #install -Dm644 systemd-user-sessions "$pkgdir"/lib/systemd/systemd-user-sessions
 }
 
-package_libsystemd() {
-    pkgdesc="systemd client libraries"
-    license=('GPL2')
-    provides=('libsystemd.so' 'libudev.so')
-
+package_systemd-libs() {
+    pkgdesc='systemd client libraries'
+    depends=('glibc' 'libcap' 'libgcrypt' 'lz4' 'xz')
+    license=('LGPL2.1')
+    provides=('libsystemd' 'libsystemd.so' 'libudev.so')
+    conflicts=('libsystemd')
+    replaces=('libsystemd')
+    
     install -v -dm755 "$pkgdir"/usr/{lib,share/pkgconfig}
     install -v -dm755 "$pkgdir"/lib/
-    mv -v libsystemd "$pkgdir"/lib
-    mv -v "$pkgdir"/lib/libsystemd/* "$pkgdir"/lib/
-    rm -rv "$pkgdir"/lib/libsystemd
+    mv -v systemd-libs "$pkgdir"/lib
+    mv -v "$pkgdir"/lib/systemd-libs/* "$pkgdir"/lib/
+    rm -rv "$pkgdir"/lib/systemd-libs
     install systemd-$pkgver/build/src/libsystemd/libsystemd.pc ${pkgdir}/usr/share/pkgconfig/
 }
 
@@ -249,6 +252,20 @@ package_systemd-sysvcompat() {
     for tool in runlevel reboot shutdown poweroff halt telinit; do
         ln -s systemctl "$pkgdir"/sbin/$tool
     done
+}
+
+package_systemd-resolvconf() {
+    pkgdesc='systemd resolvconf replacement (for use with systemd-resolved)'
+    license=('LGPL2.1')
+    depends=('systemd')
+    provides=('openresolv' 'resolvconf')
+    conflicts=('openresolv')
+
+    install -d -m0755 "$pkgdir"/usr/bin
+    ln -s resolvectl "$pkgdir"/usr/bin/resolvconf
+
+    install -d -m0755 "$pkgdir"/usr/share/man/man1
+    ln -s resolvectl.1.gz "$pkgdir"/usr/share/man/man1/resolvconf.1.gz
 }
 
 md5sums=('6942e1a9032e19da6639f9705241d119'
