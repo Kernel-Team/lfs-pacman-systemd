@@ -130,6 +130,7 @@
     After creating the files for //var/log/, these additional files and symlinks are necessary for /pacman/
     #+BEGIN_SRC sh :name files-and-symlinks
     install -vdm755 /var/{lib,cache}/pacman
+    install -vdm755 /etc/local
     ln -sv ../../etc/local /usr/local/etc # this is for etc symbolic link to /etc/local
     ln -sv /tools/bin/du /usr/bin
     #+END_SRC
@@ -433,6 +434,7 @@ where:
     makepkg -fCc --skippgpcheck
     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
     #+END_SRC
+    install with ~--asdeps~ since it's a dependency for /[[*~filesystem~][filesystem]]/
 **** ~filesystem~
    #+BEGIN_SRC sh :name filesystem
    . PKGBUILD
@@ -441,6 +443,7 @@ where:
    #+END_SRC
 ***** Installing as root
       Since most of the directories already created in $LFS, you should install it with ~pacman -Syy filesystem --force~. Also remove the //var/mail/ directory since the package expects it to be symlink.
+      This package also installed {b}lfs book and can be viewed from host using web browser by navigating to /file:///mnt/lfs/srv/http/lfs-systemd/index.html/, /file:///mnt/lfs/srv/http/lfs-multilib-systemd/index.html/, and /file:///mnt/lfs/srv/http/blfs-systemd/index.html/.
 **** ~linux-api-headers~
 #+BEGIN_SRC sh :name linux-api-headers
 . PKGBUILD
