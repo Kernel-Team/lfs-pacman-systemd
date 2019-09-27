@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Felix Yan <felixonmars@archlinux.org>
+# Contributor: Vesa Kaihlavirta <vesa@archlinux.org>
+# Contributor: Thomas Dziedzic <gostrc@gmail.com>
+# Contributor: alexforsale@yahoo.com
 shopt -s extglob
 pkgbase=ghc
 pkgname=(ghc-libs ghc ghc-static)
@@ -9,7 +12,8 @@ pkgdesc="The Glasgow Haskell Compiler"
 url="https://www.haskell.org/ghc/"
 arch=('x86_64')
 license=('custom')
-_deps=(ghc-static numactl)
+_deps=(ghc-static)
+depends=('numactl')
 _makedeps=('ghc-static' 'haskell-hscolour' 'texlive-bin' 'texlive-latexextra' 'ttf-dejavu')
 makedepends=('perl' 'libxslt' 'docbook-xsl' 'python-sphinx')
 source=(https://downloads.haskell.org/~ghc/"${pkgver}"/"${pkgbase}"-"${pkgver}"-src.tar.xz
@@ -28,14 +32,16 @@ validpgpkeys=('FFEB7CE81E16A36B3E2DED6F2DE04D4E97DB64AD')
 for _d in "${_deps[@]}";do
     if [[ "$(pacman -Qq "${_d}" 2>/dev/null)" ]];then
         depends+=( "${_d}")
+        pkgrel=$((pkgrel+1))
     else
         optdepends+=( "${_d}")
     fi
 done
 
 for _m in "${_makedeps[@]}";do
-    if [[ -n "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
-        depends+=( "${_m}")
+    if [[ "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
+        makedepends+=( "${_m}")
+        pkgrel=$((pkgrel+1))
     else
         optdepends+=( "${_m}")
     fi
@@ -46,8 +52,8 @@ prepare(){
     if [[ ! "$(pacman -Qq "ghc-static" 2>/dev/null)" ]];then
         mkdir -pv ghc-bin build-bin
         pushd ${srcdir}/build-bin
-        bsdtar -xf ${srcdir}/"${pkgbase}"-"${pkgver}"-"${arch}"-deb9-linux.tar.xz \
-               --strip-components=1
+        LANG=en_US.UTF-8 bsdtar -xf ${srcdir}/"${pkgbase}"-"${pkgver}"-"${arch}"-deb9-linux.tar.xz \
+            --strip-components=1
         ./configure --prefix=${srcdir}/ghc-bin
         make install
         export PATH=${PATH}:${srcdir}/ghc-bin/bin
@@ -65,8 +71,8 @@ prepare(){
     sed -i '1iBuildFlavour = perf' mk/build.mk
 
     ./configure \
-        --prefix=/usr \
-        --docdir=/usr/share/doc/ghc \
+        --prefix=/usr/local \
+        --docdir=/usr/local/share/doc/ghc \
         --with-system-libffi \
         --with-ffi-includes=$(pkg-config --variable=includedir libffi)
 }
@@ -83,11 +89,11 @@ package_ghc-static() {
     cd ${srcdir}/${pkgbase}-${pkgver}
     make DESTDIR=${pkgdir} -j1 install
 
-    mv "${pkgdir}"/usr/lib/${pkgbase}-${pkgver}/package.conf.d "$srcdir"/static-package.conf.d
-    find "${pkgdir}"/usr/lib ! \( -name "*.a" -o -name "*.p_hi" -o -name "*.hi" \) -type f -delete
-    find "${pkgdir}"/usr/lib -type d -empty -delete
-    mv "${srcdir}"/static-package.conf.d "$pkgdir"/usr/lib/ghc-$pkgver/
-    rm -r "${pkgdir}"/usr/bin "${pkgdir}"/usr/share/man
+    mv "${pkgdir}"/usr/local/lib/${pkgbase}-${pkgver}/package.conf.d "$srcdir"/static-package.conf.d
+    find "${pkgdir}"/usr/local/lib ! \( -name "*.a" -o -name "*.p_hi" -o -name "*.hi" \) -type f -delete
+    find "${pkgdir}"/usr/local/lib -type d -empty -delete
+    mv "${srcdir}"/static-package.conf.d "$pkgdir"/usr/local/lib/ghc-$pkgver/
+    rm -r "${pkgdir}"/usr/local/bin "${pkgdir}"/usr/local/share/man
 
     install -Dm644 "${srcdir}"/ghc-rebuild-doc-index.hook "$pkgdir"/usr/share/libalpm/hooks/ghc-rebuild-doc-index.hook
 }
@@ -102,15 +108,15 @@ package_ghc() {
     make DESTDIR=${pkgdir} -j1 install
     
     # Remove static libs
-    find "$pkgdir"/usr/lib \( -name "*.a" -o -name "*.p_hi" -o -name "*.hi" \) -delete
+    find "$pkgdir"/usr/local/lib \( -name "*.a" -o -name "*.p_hi" -o -name "*.hi" \) -delete
 
     # ghc-pkg is in ghc-libs
-    rm "$pkgdir"/usr/lib/ghc-$pkgver/bin/ghc-pkg*
-    rm "$pkgdir"/usr/bin/ghc-pkg*
-    (cd "$pkgdir"/usr/lib/ghc-$pkgver; rm -r !(bin|ghc-$pkgver))
+    rm "$pkgdir"/usr/local/lib/ghc-$pkgver/bin/ghc-pkg*
+    rm "$pkgdir"/usr/local/bin/ghc-pkg*
+    (cd "$pkgdir"/usr/local/lib/ghc-$pkgver; rm -r !(bin|ghc-$pkgver))
 
     # docs moved to ghc-static
-    rm -r "$pkgdir"/usr/share/doc
+    rm -r "$pkgdir"/usr/local/share/doc
 
     install -Dm644 utils/completion/ghc.bash \
             "$pkgdir/usr/share/bash-completion/completions/ghc"
@@ -188,27 +194,25 @@ package_ghc-libs() {
     make DESTDIR=${pkgdir} -j1 install
 
     # Remove static libs
-    find "${pkgdir}"/usr/lib \( -name "*.a" -o -name "*.p_hi" -o -name "*.hi" \) -delete
+    find "${pkgdir}"/usr/local/lib \( -name "*.a" -o -name "*.p_hi" -o -name "*.hi" \) -delete
 
     # ghc library and other exes are in the ghc package
-    rm -r "${pkgdir}"/usr/lib/${pkgbase}-${pkgver}/${pkgbase}-${pkgver}
-    (cd "${pkgdir}"/usr/lib/${pkgbase}-${pkgver}/bin; rm !(ghc-pkg*))
-    (cd "${pkgdir}"/usr/bin; rm !(ghc-pkg*))
+    rm -r "${pkgdir}"/usr/local/lib/${pkgbase}-${pkgver}/${pkgbase}-${pkgver}
+    (cd "${pkgdir}"/usr/local/lib/${pkgbase}-${pkgver}/bin; rm !(ghc-pkg*))
+    (cd "${pkgdir}"/usr/local/bin; rm !(ghc-pkg*))
 
     # docs moved to ghc-static
-    rm -r "${pkgdir}"/usr/share/{man,doc}
+    rm -r "${pkgdir}"/usr/local/share/{man,doc}
 
     install -Dm644 "${srcdir}"/ghc-register.hook "${pkgdir}"/usr/share/libalpm/hooks/ghc-register.hook
     install -Dm644 "${srcdir}"/ghc-unregister.hook "${pkgdir}"/usr/share/libalpm/hooks/ghc-unregister.hook
 
-    install -dm755 "${pkgdir}"/usr/share/haskell/{register,unregister}
+    install -dm755 "${pkgdir}"/usr/local/share/haskell/{register,unregister}
 
     install -Dm644 LICENSE "${pkgdir}"/usr/share/licenses/${pkgname}/LICENSE
 }
 
 md5sums=('b47726aaf302eb87b4970fcee924d45d'
-         '4966d798a2868b289022aea8b655bf17'
-         '2478d62d0e542fa01291e88973d083da'
-         '0f8888c1f33ce9dc82519401e9f30866'
-         '8de779b73c1b2f1b7ab49030015fce3d'
-         'SKIP')
+         '1dcbf0fb6f53313e19c6620fb27823b8'
+         'b257c25be865c0017929314daf166af9'
+         'a348972104a183a3265cff6083c1be5e')

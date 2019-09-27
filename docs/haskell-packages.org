@@ -1,0 +1,56 @@
+#+OPTIONS: html-link-use-abs-url:nil html-postamble:auto
+#+OPTIONS: html-preamble:t html-scripts:t html-style:t
+#+OPTIONS: html5-fancy:nil tex:t toc:nil num:nil
+#+HTML_DOCTYPE: xhtml-strict
+#+HTML_CONTAINER: div
+#+DESCRIPTION:
+#+KEYWORDS:
+#+HTML_LINK_HOME:
+#+HTML_LINK_UP:
+#+HTML_MATHJAX:
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://gongzhitaao.org/orgcss/org.css"/>
+#+HTML_HEAD_EXTRA:
+#+SUBTITLE:
+#+INFOJS_OPT:
+#+CREATOR: <a href="https://www.gnu.org/software/emacs/">Emacs</a> 26.3 (<a href="https://orgmode.org">Org</a> mode 9.1.9)
+#+LATEX_HEADER:
+* Haskell Packages
+  This is just my logs for installing /haskell packages/.
+*** No Dependencies
+*** haskell-hscolour
+*** haskell-base16-bytestring
+*** haskell-cryptohash-sha256
+*** haskell-echo
+*** haskell-wcwidth
+*** haskell-unbounded-delays
+*** haskell-tagged
+*** haskell-colour
+*** haskell-ansi-terminal
+*** haskell-ansi-wl-pprint
+*** haskell-transformers-compat
+*** haskell-optparse-applicative
+*** haskell-clock
+*** haskell-hashable
+*** haskell-async
+*** haskell-tasty
+*** haskell-silently
+*** haskell-random
+*** haskell-edit-distance
+*** haskell-primitive
+*** haskell-erf
+*** haskell-tf-random
+*** haskell-base-compat
+*** haskell-base-compat-batteries
+*** haskell-quickcheck
+*** haskell-zlib
+*** haskell-tar
+*** haskell-cabal-doctest
+*** haskell-integer-logarithms
+*** haskell-setenv
+*** haskell-hostname
+*** haskell-old-locale
+*** haskell-regex-base
+*** haskell-regex-posix
+*** haskell-xml
+*** haskell-libxml
+*** haskell-diff

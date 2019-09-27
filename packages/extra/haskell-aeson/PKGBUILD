@@ -26,8 +26,8 @@ sha512sums=('0ff462f93f28135ad255e77aaf0523a6d306c0a5fde7439ed4f652fec7811c6b446
 build() {
     cd $_hkgname-$pkgver
     runhaskell Setup configure -O --enable-shared --enable-executable-dynamic --disable-library-vanilla \
-               --prefix=/usr --docdir=/usr/share/doc/$pkgname --enable-tests \
-               --dynlibdir=/usr/lib --libsubdir=\$compiler/site-local/\$pkgid \
+               --prefix=/usr/local --docdir=/usr/local/share/doc/$pkgname --enable-tests \
+               --dynlibdir=/usr/local/lib --libsubdir=\$compiler/site-local/\$pkgid \
                -f-developer -f-fast -f-bytestring-builder -f-cffi
     runhaskell Setup build
     runhaskell Setup register --gen-script
@@ -44,8 +44,8 @@ check() {
 package() {
     cd $_hkgname-$pkgver
 
-    install -D -m744 register.sh "$pkgdir"/usr/share/haskell/register/$pkgname.sh
-    install -D -m744 unregister.sh "$pkgdir"/usr/share/haskell/unregister/$pkgname.sh
+    install -D -m744 register.sh "$pkgdir"/usr/local/share/haskell/register/$pkgname.sh
+    install -D -m744 unregister.sh "$pkgdir"/usr/local/share/haskell/unregister/$pkgname.sh
     runhaskell Setup copy --destdir="$pkgdir"
     rm -f "$pkgdir/usr/share/doc/$pkgname/LICENSE"
 }
