@@ -25,7 +25,6 @@ build() {
 
     ./configure \
         --prefix=/usr \
-        --sbindir=/usr/bin \
         --enable-libargon2 \
         --disable-static
     make
@@ -37,9 +36,9 @@ package() {
     make DESTDIR="${pkgdir}" install
 
     # install hook
-    install -D -m0644 "${srcdir}"/hooks-encrypt "${pkgdir}"/usr/lib/initcpio/hooks/encrypt
-    install -D -m0644 "${srcdir}"/install-encrypt "${pkgdir}"/usr/lib/initcpio/install/encrypt
-    install -D -m0644 "${srcdir}"/install-sd-encrypt "${pkgdir}"/usr/lib/initcpio/install/sd-encrypt
+    #install -D -m0644 "${srcdir}"/hooks-encrypt "${pkgdir}"/usr/lib/initcpio/hooks/encrypt
+    #install -D -m0644 "${srcdir}"/install-encrypt "${pkgdir}"/usr/lib/initcpio/install/encrypt
+    #install -D -m0644 "${srcdir}"/install-sd-encrypt "${pkgdir}"/usr/lib/initcpio/install/sd-encrypt
 }
 
 sha256sums=('94e79a31ed38bdb0acd9af7ccca1605a2ac62ca850ed640202876b1ee11c1c61'
