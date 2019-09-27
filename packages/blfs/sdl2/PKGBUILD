@@ -8,9 +8,11 @@ pkgdesc="A library for portable low-level access to a video framebuffer, audio o
 arch=('x86_64')
 url="https://www.libsdl.org"
 license=('MIT')
-depends=('glibc' 'libxext' 'libxrender' 'libx11' 'libgl' 'libxcursor' 'libibus')
+depends=('glibc' 'libxext' 'libxrender' 'libx11' 'libgl' 'libxcursor')
+_deps=('libibus')
 makedepends=('alsa-lib' 'mesa' 'libpulse' 'libxrandr' 'libxinerama' 'wayland' 'libxkbcommon'
-             'wayland-protocols' 'ibus' 'fcitx' 'libxss' 'cmake' 'jack')
+             'wayland-protocols' 'libxss' 'cmake' 'jack')
+_makedeps=('ibus' 'fcitx')
 optdepends=('alsa-lib: ALSA audio driver'
             'libpulse: PulseAudio audio driver'
             'jack: JACK audio driver')
@@ -19,6 +21,23 @@ sha512sums=('f49b869362699b3282f6e82920e59c7fac581bcbf955f18a81cc126293c08093a90
             'SKIP')
 validpgpkeys=('1528635D8053A57F77D1E08630A59377A7763BE6') # Sam Lantinga
 groups=('blfs' 'multimedia-libraries-drivers')
+
+for d in ${_deps[@]};do
+    if [[ $(pacman -Qq $d 2>/dev/null) ]];then
+        depends+=( $d)
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( $d)
+    fi
+done
+for m in ${_makedeps[@]};do
+    if [[ $(pacman -Qq $m 2>/dev/null) ]];then
+        makedepends+=( $m)
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( $m)
+    fi
+done
 
 prepare() {
     cd SDL2-${pkgver}
