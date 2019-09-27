@@ -1,0 +1,62 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+# Maintainer: Maxime Gauduin <alucryd@archlinux.org>
+# Contributor: Ionut Biru <ibiru@archlinux.org>
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Andrew Cook <ariscop@gmail.com>
+pkgname=libbluray
+pkgver=1.1.2
+pkgrel=1
+pkgdesc='Library to access Blu-Ray disks for video playback'
+arch=(x86_64)
+url=https://www.videolan.org/developers/libbluray.html
+license=(LGPL2.1)
+depends=(fontconfig libfreetype.so libxml2)
+makedepends=(git)
+_makedeps=(apache-ant java-environment)
+optdepends=('java-runtime: BD-J library')
+provides=(libbluray.so)
+source=(
+    git+https://code.videolan.org/videolan/libbluray.git#tag=${pkgver}
+    git+https://code.videolan.org/videolan/libudfread.git
+)
+sha256sums=('SKIP'
+            'SKIP')
+groups=('extra')
+
+for _m in "${_makedeps[@]}";do
+    if [[ "$(pacman -Qq "^${_m}$" 2>/dev/null)" ]];then
+        makedepends+=( "${_m}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_m}")
+        case $_m in
+            apache-ant|java-environment)
+                _confargs+=( '--disable-bdjava-jar');;
+        esac
+    fi
+done
+
+prepare() {
+    cd libbluray
+
+    for submodule in contrib/libudfread; do
+        git submodule init ${submodule}
+        git config submodule.${submodule}.url ../${submodule#*/}
+        git submodule update ${submodule}
+    done
+
+    autoreconf -fiv
+
+    ./configure \
+        --prefix='/usr' ${_confargs[@]}
+}
+
+build() {
+    cd libbluray
+    make
+}
+
+package() {
+    make DESTDIR="${pkgdir}" -C libbluray install
+}

@@ -1,0 +1,130 @@
+#-*-mode:sh-*-
+# Maintainer: Sébastien Luttringer
+# Contributor: Gaetan Bisson <bisson@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+# Contributor: Mario Vazquez <mario_vazq@hotmail.com>
+# Contributor: alexforsale@yahoo.com
+pkgbase=bind
+pkgname=(bind bind-tools)
+_pkgver=9.14.6
+pkgver=${_pkgver//-/.}
+pkgrel=1
+url='https://www.isc.org/software/bind/'
+license=('MPL2')
+arch=('x86_64')
+options=('!emptydirs')
+makedepends=('libcap' 'libxml2' 'zlib' 'krb5' 'e2fsprogs' 'openssl' 'readline'
+             'libidn2' 'dnssec-anchors' 'python' 'json-c' 'python-ply' 'lmdb'
+             'zlib' 'icu' 'xz' 'curl')
+validpgpkeys=('AE3FAC796711EC59FC007AA474BB6B9A4CBB3D38') #ISC Code Signing Key 2019 – 2020 (codesign@isc.org)
+source=("https://ftp.isc.org/isc/bind9/${_pkgver}/bind-${_pkgver}.tar.gz"{,.asc}
+        'tmpfiles.conf'
+        'sysusers.conf'
+        'named.conf'
+        'named.service'
+        'localhost.ip6.zone'
+        'localhost.zone'
+        '127.0.0.zone'
+        'empty.zone')
+
+prepare() {
+    msg2 'Getting a fresh version of root DNS'
+    # no more using source array, lack of versioning.
+    curl -o root.hint https://www.internic.net/zones/named.root
+    [[ -s root.hint ]]
+    cd bind-$_pkgver
+    # apply patch from the source array (should be a pacman feature)
+    local filename
+    for filename in "${source[@]}"; do
+        if [[ "$filename" =~ \.patch$ ]]; then
+            msg2 "Applying patch ${filename##*/}"
+            patch -p1 -N -i "$srcdir/${filename##*/}"
+        fi
+    done
+
+    export CFLAGS+=' -DDIG_SIGCHASE'
+    ./configure \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --disable-static \
+        --enable-fixed-rrset \
+        --enable-full-report \
+        --enable-dnsrps \
+        --with-python=/usr/bin/python \
+        --with-openssl \
+        --with-libidn2 \
+        --with-libjson \
+        --with-libxml2 \
+        --with-lmdb \
+        --with-libtool
+}
+
+build() {
+    cd bind-$_pkgver
+    make
+}
+
+package_bind() {
+    pkgdesc='The ISC DNS Server'
+    provides=('dns-server')
+    depends=('glibc' 'libxml2' 'libcap' 'openssl' 'json-c' 'bind-tools'
+             'zlib' 'lmdb')
+    backup=('etc/named.conf'
+            'var/named/127.0.0.zone'
+            'var/named/localhost.zone'
+            'var/named/localhost.ip6.zone'
+            'var/named/empty.zone')
+    groups=('blfs' 'major-servers')
+
+    cd "bind-$_pkgver"
+    install -dm755 "$pkgdir/usr/share/licenses/$pkgname/"
+    install -Dm644 LICENSE COPYRIGHT "$pkgdir/usr/share/licenses/$pkgname/"
+    for _d in bin/{check,named,rndc}; do
+        (cd "$_d" && make DESTDIR="$pkgdir" install)
+    done
+
+    cd "$srcdir"
+    install -D -m644 tmpfiles.conf "$pkgdir/usr/lib/tmpfiles.d/$pkgname.conf"
+    install -D -m644 sysusers.conf "$pkgdir/usr/lib/sysusers.d/$pkgname.conf"
+
+    install -D -m644 named.service "$pkgdir/lib/systemd/system/named.service"
+    install -D -m640 -o 0 -g 40 named.conf "$pkgdir/etc/named.conf"
+
+    install -d -m770 -o 0 -g 40 "$pkgdir/var/named"
+    install    -m640 -o 0 -g 40 root.hint "$pkgdir/var/named"
+    install    -m640 -o 0 -g 40 localhost.zone "$pkgdir/var/named"
+    install    -m640 -o 0 -g 40 localhost.ip6.zone "$pkgdir/var/named"
+    install    -m640 -o 0 -g 40 127.0.0.zone "$pkgdir/var/named"
+    install    -m640 -o 0 -g 40 empty.zone "$pkgdir/var/named"
+}
+
+package_bind-tools() {
+    pkgdesc='The ISC DNS tools'
+    depends=('glibc' 'libcap' 'libxml2' 'zlib' 'krb5' 'e2fsprogs' 'python' 'bash'
+             'openssl' 'readline' 'libidn2' 'dnssec-anchors' 'json-c'
+             'lmdb' 'xz' 'icu')
+    conflicts=('dnsutils')
+    replaces=('dnsutils' 'host')
+    provides=("dnsutils=$pkgver")
+    groups=('blfs' 'networking-utilities')
+
+    cd "bind-$_pkgver"
+    install -Dm644 COPYRIGHT "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    make DESTDIR="$pkgdir" SUBDIRS="" install
+    (cd lib && make DESTDIR="$pkgdir" install)
+    for _d in bin/{confgen,dig,dnssec,delv,nsupdate,python,tools}; do
+        (cd "$_d" && make DESTDIR="$pkgdir" install)
+    done
+}
+
+sha1sums=('320cb035c0c5d2699c6b82adeeeb7772f3ea43be'
+          'SKIP'
+          'c5a2bcd9b0f009ae71f3a03fbdbe012196962a11'
+          '4f3794ca6c94b32e99762576e55852d4e549b6f3'
+          'c017aae379c32c7cb1aa1ad84776b83e3a5c139f'
+          'ace15a2be46dfea12366e7959acfbd8e1fb9a3c6'
+          'd529c3f849c862e0d6d2ddaf29c257d41b183c33'
+          '406d57c1a49d2c39526517f6e648e9a64643f543'
+          '37c4226ec3b79765d92f2fa27914055e6e7cb9b4'
+          'ab5e714ccbc37db9d14e1e78a0b1565ad0d3c933')

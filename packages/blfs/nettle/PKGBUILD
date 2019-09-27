@@ -1,5 +1,7 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: bender02 at gmx dot com
+# Contributor: alexforsale@yahoo.com
 pkgname=nettle
 pkgver=3.5.1
 pkgrel=1
@@ -15,7 +17,7 @@ validpgpkeys=('343C2FF0FBEE5EC2EDBEF399F3599FF828C67298') # Niels Möller <nisse
 groups=('blfs' 'security')
 
 for _c in ${_checkdeps[@]};do
-    if [[ -n "$(pacman -Qq "${_c}" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_c}" 2>/dev/null)" ]];then
         checkdepends+=( "${_c}")
     else
         optdepends+=( "${_c}")

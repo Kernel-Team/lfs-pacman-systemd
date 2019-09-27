@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Gaetan Bisson <bisson@archlinux.org>
+# Contributor: Hisato Tatekura <hisato_tatekura@excentrics.net>
+# Contributor: Massimiliano Torromeo <massimiliano DOT torromeo AT google mail service>
+# Contributor: alexforsale@yahoo.com
 pkgname=unbound
 pkgver=1.9.3
 pkgrel=1

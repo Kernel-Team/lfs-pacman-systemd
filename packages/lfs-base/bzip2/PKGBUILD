@@ -1,5 +1,7 @@
 # -*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Contributor: alexforsale@yahoo.com
+# Maintainer: Ronald van Haren <ronald.archlinux.org>
+# Contributor: Judd <jvinet@zeroflux.org> 
 pkgbase=bzip2
 pkgname=($pkgbase lib32-$pkgbase libx32-$pkgbase)
 pkgver=1.0.8
@@ -10,7 +12,7 @@ url="http://sources.redhat.com/bzip2"
 source=(http://anduin.linuxfromscratch.org/LFS/${pkgbase}-${pkgver}.tar.gz
         http://www.linuxfromscratch.org/patches/lfs/9.0-rc1/${pkgbase}-${pkgver}-install_docs-1.patch)
 
-if [[ "$(pacman -Ss ^sh$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq sh 2>/dev/null)" ]];then
     common_depends+=( 'sh')
     pkgrel=$((pkgrel+1))
 else

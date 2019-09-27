@@ -1,7 +1,8 @@
 #-*-mode:sh-*-
-# Contributor: Jon Nordby <jononor@gmail.com>
 # Maintainer: Pablo Lezaeta <prflr88@gmail.com_
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Giancarlo Razzolini <grazzolini@archlinux.org>
+# Contributor: Jon Nordby <jononor@gmail.com>
+# Contributor: alexforsale@yahoo.com
 pkgname=dracut
 pkgver=049
 pkgrel=1
@@ -10,16 +11,17 @@ arch=("x86_64")
 # At the first "Not build" from aarch64 i remove it, you are warned
 url="https://dracut.wiki.kernel.org/"
 license=("GPL")
-_deps=("cpio" "dash" "kbd" "kmod" "util-linux" "systemd" "bash")
-depends=()
+_deps=("cpio" "dash" "kbd")
+depends=('coreutils' 'bash' 'filesystem' 'findutils' 'grep' 'gzip' 'procps-ng' 'sed' 'kmod' 'util-linux' 'systemd')
 optdepends=("cryptsetup: Part of the Crypto setup"
 	    "dmraid: Part of the Raid setup"
 	    "lvm2: Part of the LVM setup"
 	    "mdadm: Part of the MDadmin thing"
 	    "kexec-tools: For switch kernels without reboot support"
             "gnupg>=2.1: For OpenPGP smartcards support")
-_makedeps=("docbook-xsl" "asciidoc")
-makedepends=()
+_makedeps=("docbook-xsl")
+provides=('initramfs')
+makedepends=("asciidoc")
 backup=("etc/dracut.conf")
 install="dracut.install"
 _tag_blob='1a3447fa9bbf0954d62025957362536a482f1f79'
@@ -28,7 +30,7 @@ sha512sums=('SKIP')
 validpgpkeys=(
     '4C96E1500F9421CCF82D5DCA034EB370014DF270' # Harald Hoyer <harald@redhat.com>
 )
-groups=('extra')
+groups=('extra' 'lfs-base')
 
 for _d in "${_deps[@]}";do
     if [[ "$(pacman -Qq "${_d}" 2>/dev/null)" ]];then
@@ -67,22 +69,12 @@ prepare() {
 build() {
     cd "$srcdir/${pkgname}"
 
-    make sysconfdir=/etc prefix=/usr \
-         bindir=/usr/bin sbindir=/usr/bin \
-         libdir=/usr/lib libexecdir=/usr/lib/dracut \
-         systemdsystemunitdir=/lib/systemd/system \
-         bashcompletiondir=/usr/share/bash-completion/completions \
-         sysconfdir=/etc loginstall=/var/log/dracut
+    make
 }
 
 package() {
     cd "$srcdir/${pkgname}"
 
-    make DESTDIR="${pkgdir}" sysconfdir=/etc prefix=/usr \
-         bindir=/usr/bin sbindir=/usr/bin \
-         libdir=/usr/lib libexecdir=/usr/lib/dracut \
-         systemdsystemunitdir=/lib/systemd/system \
-         bashcompletiondir=/usr/share/bash-completion/completions \
-         sysconfdir=/etc loginstall=/var/log/dracut install
+    make DESTDIR="${pkgdir}" install
 }
 

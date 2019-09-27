@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer:  Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Andrzej Giniewicz <gginiu@gmail.com>
+# Contributor: Johan Förberg <johan@forberg.se>
+# Contributor: alexforsale@yahoo.com
 pkgname=zstd
 pkgver=1.4.2
 pkgrel=1

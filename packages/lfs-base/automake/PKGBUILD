@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Lukas Fleischer <lfleischer@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=automake
 pkgver=1.16.1
 pkgrel=1

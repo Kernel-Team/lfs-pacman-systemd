@@ -1,5 +1,7 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Tobias Powalowski <tpowa@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=linux-pam
 pkgver=1.3.1
 pkgrel=1
@@ -10,7 +12,8 @@ url="http://linux-pam.org"
 _deps=('prelude-lml' 'w3m')
 depends=('glibc' 'cracklib' 'libtirpc' 'pambase')
 makedepends=('flex' 'docbook-xml>=4.4' 'docbook-xsl')
-backup=(etc/security/{access.conf,group.conf,limits.conf,namespace.conf,namespace.init,pam_env.conf,time.conf} etc/default/passwd etc/environment)
+provides=('pam')
+backup=(etc/security/{access.conf,group.conf,limits.conf,namespace.conf,namespace.init,pam_env.conf,time.conf} etc/environment)
 source=(https://github.com/linux-pam/linux-pam/releases/download/v$pkgver/Linux-PAM-$pkgver.tar.xz
         https://github.com/linux-pam/linux-pam/releases/download/v$pkgver/Linux-PAM-$pkgver.tar.xz.asc
         https://github.com/linux-pam/linux-pam/releases/download/v$pkgver/Linux-PAM-$pkgver-docs.tar.xz)

@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Stéphane Gaudreault <stephane@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=berkeley-db
 pkgver=5.3.28
 pkgrel=1
@@ -9,11 +12,11 @@ url="http://www.oracle.com/technology/software/products/berkeley-db/index.html"
 license=('custom')
 depends=('gcc-libs' 'sh')
 provides=('db')
-groups=('blfs')
+groups=('blfs' 'lfs-base')
 source=(http://download.oracle.com/${pkgname}/db-${pkgver}.tar.gz)
 
 _confargs=()
-if [[ "$(pacman -Ss ^tcl$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq tcl 2>/dev/null)" ]];then
     _confargs+=( '--enable-tcl --with-tcl=/usr/lib')
     depends+=( 'tcl')
     pkgrel=$((pkgrel+1))

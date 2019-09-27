@@ -1,5 +1,7 @@
 # -*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Contributor: alexforsale@yahoo.com
+# Maintainer: Allan McRae <allan@archlinux.org>
+# Contributer: Jan de Groot <jgc@archlinux.org>
 pkgbase=gmp
 pkgname=($pkgbase lib32-$pkgbase libx32-$pkgbase)
 pkgver=6.1.2
@@ -13,17 +15,17 @@ md5sums=('f58fa8001d60c4c77595fbbb62b63c1d'
          'SKIP')
 
 
-if [[ "$(pacman -Ss ^gcc-libs$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq gcc-libs 2>/dev/null)" ]];then
     gmp_depends+=(gcc-libs)
 else
     gmp_optdepends+=(gcc-libs)
 fi
-if [[ "$(pacman -Ss ^lib32-gcc-libs$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq lib32-gcc-libs 2>/dev/null)" ]];then
     lib32_gmp_depends+=(lib32-gcc-libs)
 else
     lib32_gmp_optdepends+=(lib32-gcc-libs)
 fi
-if [[ "$(pacman -Ss ^libx32-gcc-libs$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq libx32-gcc-libs 2>/dev/null)" ]];then
     libx32_gmp_depends+=(libx32-gcc-libs)
 else
     libx32_gmp_optdepends+=(libx32-gcc-libs)
@@ -37,6 +39,7 @@ prepare(){
                                     --prefix=/usr \
                                     --enable-cxx \
                                     --disable-static \
+                                    --enable-fat \
                                     --docdir=/usr/share/doc/${pkgname}-${pkgver}
 
     cd $srcdir/build-lib32-$pkgbase

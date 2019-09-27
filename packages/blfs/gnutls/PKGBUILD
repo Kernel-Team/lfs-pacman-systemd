@@ -1,5 +1,7 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=gnutls
 pkgver=3.6.9
 pkgrel=1
@@ -8,7 +10,7 @@ arch=('x86_64')
 license=('GPL3' 'LGPL2.1')
 url="https://www.gnutls.org/"
 options=('!zipman')
-depends=('gcc-libs' 'libtasn1' 'readline' 'zlib' 'nettle' 'p11-kit' 'libidn' 'libunistring')
+depends=('gcc-libs' 'libtasn1' 'readline' 'zlib' 'nettle' 'p11-kit' 'libidn2' 'libunistring')
 checkdepends=('net-tools')
 optdepends=('guile: for use with Guile bindings')
 source=(https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/${pkgname}-${pkgver}.tar.xz{,.sig})

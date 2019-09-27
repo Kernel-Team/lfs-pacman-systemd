@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Gaetan Bisson <bisson@archlinux.org>
+# Contributor: Thomas Mudrunka <harvie@email.cz>
+# Contributor: m4xm4n <max@maxfierke.com>
+# Contributor: alexforsale@yahoo.com
 pkgname=dnssec-anchors
 pkgver=20181003
 pkgrel=1

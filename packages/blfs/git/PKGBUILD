@@ -1,5 +1,7 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Christian Hesse <mail@eworm.de>
+# Maintainer: Dan McGee <dan@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=git
 pkgver=2.23.0
 pkgrel=1
@@ -51,53 +53,53 @@ fi
 
 _confargs=('--prefix=/usr' '--with-gitconfig=/etc/gitconfig' '--with-openssl')
 
-if [[ "$(pacman -Ss ^tk$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq tk 2>/dev/null)" ]];then
     _confargs+=( '--with-tcltk')
     makedepends+=( 'tk')
 fi
-if [[ "$(pacman -Ss ^expat$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq expat 2>/dev/null)" ]];then
     _confargs+=( '--with-expat')
     depends+=( 'expat')
     pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'expat')
 fi
-if [[ "$(pacman -Ss ^curl$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq curl 2>/dev/null)" ]];then
     _confargs+=( '--with-curl')
     depends+=( 'curl')
     pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'curl')
 fi
-if [[ "$(pacman -Ss ^pcre2$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq pcre2 2>/dev/null)" ]];then
     _confargs+=( '--with-libpcre2')
     depends+=( 'pcre2')
     pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'pcre2')
 fi
-if [[ "$(pacman -Ss ^pcre$ 2>/dev/null)" ]] &&
+if [[ "$(pacman -Qq pcre 2>/dev/null)" ]] &&
        [[ ! "$(pacman -Qq pcre2 2>/dev/null)" ]];then
     _confargs+=( '--with-libpcre1')
     depends+=( 'pcre')
     pkgrel=$((pkgrel+1))
 fi
-if [[ "$(pacman -Ss ^perl-error$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq perl-error 2>/dev/null)" ]];then
     depends+=( 'perl-error')
     pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'perl-error')
 fi
-if [[ "$(pacman -Ss ^perl-mailtools$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq perl-mailtools 2>/dev/null)" ]];then
     depends+=( 'perl-mailtools')
     pkgrel=$((pkgrel+1))
 fi
-if [[ "$(pacman -Ss ^libgnome-keyring$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq libgnome-keyring 2>/dev/null)" ]];then
     makedepends+=( 'libgnome-keyring')
     _GNOME_KEYRING=1
     pkgrel=$((pkgrel+1))
 fi
-if [[ "$(pacman -Ss ^libsecret$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq libsecret 2>/dev/null)" ]];then
     makedepends+=( 'libsecret')
     _LIBSECRET=1
 else
@@ -173,7 +175,7 @@ package(){
 
     sed -i '/^<a href=/s|howto/|&html/|' "$pkgdir"/usr/share/doc/${pkgname}-${pkgver}/howto-index.html
     sed -i '/^\* link:/s|howto/|&html/|' "$pkgdir"/usr/share/doc/${pkgname}-${pkgver}/howto-index.txt
-
+    chmod -v 644 "$pkgdir"/usr/share/doc/${pkgname}-${pkgver}/*
     # bash completion
     install -v -dm755 "$pkgdir"/usr/share/bash-completion/completions/
     install -m 0644 ./contrib/completion/git-completion.bash "$pkgdir"/usr/share/bash-completion/completions/git

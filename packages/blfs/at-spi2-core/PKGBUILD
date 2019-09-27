@@ -1,0 +1,47 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: Ionut Biru <ibiru@archlinux.org>
+pkgname=at-spi2-core
+pkgver=2.34.0
+pkgrel=1
+pkgdesc="Protocol definitions and daemon for D-Bus at-spi"
+url="https://gitlab.gnome.org/GNOME/at-spi2-core"
+arch=(x86_64)
+license=(GPL2)
+depends=(dbus glib2 libxtst)
+makedepends=(gobject-introspection git gtk-doc meson dbus-broker)
+optdepends=('dbus-broker: Alternative bus implementation')
+_commit=6da122f1e8d6b02dda0f368610ab72fc3d1720cf  # tags/AT_SPI2_CORE_2_34_0^0
+source=("git+https://gitlab.gnome.org/GNOME/at-spi2-core.git#commit=$_commit")
+sha256sums=('SKIP')
+groups=('blfs' 'xorg-libraries')
+
+pkgver() {
+    cd $pkgname
+    git describe --tags | sed 's/^AT_SPI2_CORE_//;s/_/./g;s/-/+/g'
+}
+
+prepare() {
+    meson-helper $pkgname build \
+                 -D default_bus=dbus-broker \
+                 -D docs=true
+}
+
+build() {
+    ninja -C build
+}
+
+check() {
+    # memory test fails without desktop
+    # broker fails to launch without journald
+    dbus-run-session meson test -C build --print-errorlogs || :
+}
+
+package() {
+    DESTDIR="$pkgdir" meson install -C build
+
+    install -vdm755 $pkgdir/lib/systemd
+    mv -v $pkgdir/usr/lib/systemd/ $pkgdir/lib/
+}
+

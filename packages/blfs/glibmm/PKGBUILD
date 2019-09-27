@@ -1,0 +1,49 @@
+#-*-mode:sh-*-
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+# Contributor: Tom Newsom <Jeepster@gmx.co.uk>
+# Contributor: alexforsale@yahoo.com
+pkgbase=glibmm
+pkgname=(glibmm glibmm-docs)
+pkgver=2.62.0
+pkgrel=1
+pkgdesc="C++ bindings for GLib"
+url="https://www.gtkmm.org/"
+arch=(x86_64)
+license=(LGPL)
+depends=(glib2 libsigc++)
+makedepends=(git mm-common perl-xml-parser clang)
+_commit=ceff460bbfbca3acf60e6d35cf01961ff988177c  # tags/2.62.0^0
+source=("git+https://gitlab.gnome.org/GNOME/glibmm.git#commit=$_commit")
+sha256sums=('SKIP')
+groups=('blfs' 'general-libraries')
+
+pkgver() {
+    cd $pkgbase
+    git describe --tags | sed 's/-/+/g'
+}
+
+prepare() {
+    cd $pkgbase
+    NOCONFIGURE=1 ./autogen.sh
+    ./configure --prefix=/usr --enable-maintainer-mode
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+}
+
+build() {
+    cd $pkgbase
+    make
+}
+
+package_glibmm() {
+    cd $pkgbase
+    sed -i -e '/^doc_subdirs/s/^/#/' Makefile
+    make DESTDIR="$pkgdir" install
+}
+
+package_glibmm-docs() {
+    pkgdesc+=" (documentation)"
+    depends=()
+
+    cd $pkgbase
+    make -C docs DESTDIR="$pkgdir" install
+}

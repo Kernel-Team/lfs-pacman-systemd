@@ -1,5 +1,6 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=gperf
 pkgver=3.1
 pkgrel=1
@@ -15,7 +16,7 @@ options=('!makeflags')
 groups=('lfs-base')
 validpgpkeys=('EDEB87A500CC0A211677FBFD93C08C88471097CD') # Marcel Schaible <marcel.schaible@studium.fernuni-hagen.de>
 
-if [[ "$(pacman -Ss ^texinfo$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq texinfo 2>/dev/null)" ]];then
     depends+=( 'texinfo')
     pkgrel=$((pkgrel+1))
 else

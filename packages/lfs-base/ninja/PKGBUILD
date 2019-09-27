@@ -1,5 +1,9 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Anatol Pomozov <anatol.pomozov@gmail.com>
+# Contributor: Filip Brcic <brcha@gna.org>
+# Contributor: Mika Fischer <mika.fischer@zoopnet.de>
+# Contributor: Gergely Imreh <imrehgATgmailDOTcom>
+# Contributor: alexforsale@yahoo.com
 pkgname=ninja
 pkgver=1.9.0
 pkgrel=1
@@ -12,13 +16,13 @@ makedepends=(python)
 groups=('lfs-base')
 source=($pkgname-$pkgver.zip::https://github.com/martine/ninja/archive/v$pkgver.zip)
 
-if [[ "$(pacman -Ss ^emacs$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq emacs 2>/dev/null)" ]];then
     makedepends+=( 'emacs')
     pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'emacs')
 fi
-if [[ "$(pacman -Ss ^re2c$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq re2c 2>/dev/null)" ]];then
     makedepends+=( 're2c')
     pkgrel=$((pkgrel+1))
 else
@@ -27,6 +31,12 @@ fi
 
 prepare(){
     cd ninja-$pkgver
+    sed -i '/int Guess/a \
+  int   j = 0;\
+  char* jobs = getenv( "NINJAJOBS" );\
+  if ( jobs != NULL ) j = atoi( jobs );\
+  if ( j > 0 ) return j;\
+' src/ninja.cc
 }
 
 build() {

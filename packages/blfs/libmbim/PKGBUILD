@@ -1,0 +1,43 @@
+#-*-mode:sh-*-
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: alexforsale@yahoo.com
+pkgname=libmbim
+pkgver=1.20.0
+pkgrel=1
+pkgdesc="MBIM modem protocol helper library"
+arch=(x86_64)
+url="https://www.freedesktop.org/wiki/Software/libmbim/"
+license=(GPL2)
+depends=(glib2 bash systemd libgudev)
+makedepends=(gtk-doc python git help2man)
+_commit=376824c586fbf72ea0aeda3c8fb0df38c213a99e  # tags/1.20.0
+source=("git+https://gitlab.freedesktop.org/mobile-broadband/libmbim.git#commit=$_commit")
+sha256sums=('SKIP')
+groups=('blfs' 'general-libraries')
+
+pkgver() {
+    cd $pkgname
+    git describe --tags | sed 's/-/+/g'
+}
+
+prepare() {
+    cd $pkgname
+    NOCONFIGURE=1 ./autogen.sh
+    ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
+                --libexecdir=/usr/lib --disable-static --enable-gtk-doc
+}
+
+build() {
+    cd $pkgname
+    make
+}
+
+check() {
+    cd $pkgname
+    make check
+}
+
+package() {
+    cd $pkgname
+    make DESTDIR="$pkgdir" install
+}

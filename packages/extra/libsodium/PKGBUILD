@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Felix Yan <felixonmars@archlinux.org>
+# Contributor: namelessjon <jonathan.stott@gmail.com>
+# Contributor: Alessio Sergi <asergi at archlinux dot us>
+# Contributor: alexforsale@yahoo.com
 pkgname=libsodium
 pkgver=1.0.18
 pkgrel=1

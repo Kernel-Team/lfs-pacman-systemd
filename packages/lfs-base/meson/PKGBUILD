@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Contributor: Anatol Pomozov <anatol dot pomozov at gmail>
+# Contributor: alexforsale@yahoo.com
 pkgname=meson
 pkgver=0.51.1
 pkgrel=1
@@ -17,7 +20,7 @@ source=(https://github.com/mesonbuild/meson/releases/download/${pkgver}/meson-${
         meson-helper)
 validpgpkeys=('95181F4EED14FDF4E41B518D3BF4693BFEEB9428') # Jussi Pakkanen <jpakkane@gmail.com>
 
-if [[ -n "$(pacman -Ss ^python-setuptools$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq python-setuptools 2>/dev/null)" ]];then
     makedepends+=( 'python-setuptools')
     pkgrel=$((pkgrel+1))
 else
@@ -63,4 +66,4 @@ package() {
 
 md5sums=('48787e391ec5c052799a3dd491f73909'
          'SKIP'
-         '78d05dfbc940aa916019bcabfee1550e')
+         'eb030dc4ec12a46be9c66f5fce5951f4')

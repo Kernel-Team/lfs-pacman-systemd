@@ -1,5 +1,6 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=cyrus-sasl
 pkgver=2.1.27
 pkgrel=1
@@ -49,9 +50,9 @@ if [[ "$(pacman -Qq postgresql-libs 2>/dev/null)" ]];then
     makedepends+=( 'postgresql-libs')
     pkgrel=$((pkgrel+1))
 fi
-if [[ "$(pacman -Qq libmariadbclient 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq mariadb-libs 2>/dev/null)" ]];then
     _confargs+=( '--enable-sql' '--with-mysql=/usr')
-    makedepends+=( 'libmariadbclient')
+    makedepends+=( 'mariadb-libs')
     pkgrel=$((pkgrel+1))
 fi
 

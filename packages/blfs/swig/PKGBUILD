@@ -16,9 +16,13 @@ source=(https://downloads.sourceforge.net/${pkgname}/${pkgname}-${pkgver}.tar.gz
 sha1sums=('3915d3ab537c171d6d086a8e93bfc545cebf6172')
 groups=('blfs' 'programming')
 
+prepare(){
+    cd ${pkgname}-${pkgver}
+    ./configure --prefix=/usr --without-maximum-compile-warnings
+}
+
 build() {
     cd ${pkgname}-${pkgver}
-    ./configure --prefix=/usr
     make
 }
 

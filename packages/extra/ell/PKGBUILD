@@ -1,5 +1,7 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: AndyRTR <andyrtr@archlinux.org>
+# Contributor: Jameson Pugh <imntreal@gmail.com>
+# Contributor: alexforsale@yahoo.com
 pkgname=ell
 _commit=726ca36c2a494d7b22222f35a0cedf04114cdabf  # tags/0.5
 pkgver=0.22

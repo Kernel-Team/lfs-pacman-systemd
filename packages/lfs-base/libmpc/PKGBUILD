@@ -1,5 +1,6 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Contributor: alexforsale@yahoo.com
+# Maintainer: Allan McRae <allan@archlinux.org>
 pkgname=libmpc
 pkgver=1.1.0
 pkgrel=1

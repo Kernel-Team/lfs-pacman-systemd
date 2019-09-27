@@ -1,0 +1,12 @@
+#-*-mode:sh-*-
+post_install() {
+    echo ">>> lfs systemd book can be viewed from /srv/http/lfs-systemd"
+    echo ">>> lfs systemd multilib book can be viewed from /srv/http/lfs-multilib-systemd"
+    echo ">>> blfs systemd book can be viewed from /srv/http/blfs-systemd"
+    echo ">>> by using any web browser."
+}
+
+post_upgrade() {
+    post_install
+}
+

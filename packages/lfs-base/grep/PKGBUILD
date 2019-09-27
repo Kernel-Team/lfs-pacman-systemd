@@ -1,5 +1,8 @@
 # -*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Sébastien Luttringer <seblu@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=grep
 pkgver=3.3
 pkgrel=1
@@ -13,13 +16,13 @@ groups=('lfs-base')
 validpgpkeys=('155D3FC500C834486D1EEA677FD9FCCB000BEEEE') # Jim Meyering
 source=("https://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.xz"{,.sig})
 
-if [[ "$(pacman -Ss ^pcre$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq pcre 2>/dev/null)" ]];then
     depends+=( 'pcre')
     pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'pcre')
 fi
-if [[ "$(pacman -Ss ^texinfo$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq texinfo 2>/dev/null)" ]];then
     makedepends+=( 'texinfo')
     pkgrel=$((pkgrel+1))
 else
@@ -45,5 +48,6 @@ package() {
     cd $pkgname-$pkgver
     make DESTDIR=$pkgdir install
 }
+
 md5sums=('05d0718a1b7cc706a4bdf8115363f1ed'
          'SKIP')

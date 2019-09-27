@@ -1,5 +1,9 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Felix Yan <felixonmars@archlinux.org>
+# Contributor: Stéphane Gaudreault <stephane@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Jason Chu <jason@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=python2
 pkgver=2.7.16
 pkgrel=1
@@ -29,7 +33,7 @@ source=("https://www.python.org/ftp/python/${pkgver%rc?}/Python-${pkgver}.tar.xz
 validpgpkeys=('C01E1CAD5EA2C4F0B8E3571504C367C218ADD4FF')  # Benjamin Peterson
 
 for _d in "${_deps[@]}";do
-    if [[ "$(pacman -Ss "^${_d}$" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_d}" 2>/dev/null)" ]];then
         depends+=( "${_d}")
         pkgrel=$((pkgrel+1))
     else
@@ -37,7 +41,7 @@ for _d in "${_deps[@]}";do
     fi
 done
 for _m in "${_makedeps[@]}";do
-    if [[ -n "$(pacman -Ss "^${_m}$" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
         makedepends+=( "${_m}")
         pkgrel=$((pkgrel+1))
     else
@@ -45,7 +49,7 @@ for _m in "${_makedeps[@]}";do
     fi
 done
 for _c in "${_checkdeps[@]}";do
-    if [[ -n "$(pacman -Ss "^${_c}$" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_c}" 2>/dev/null)" ]];then
         checkdepends+=( "${_c}")
     else
         optdepends+=( "${_c}")
@@ -88,9 +92,9 @@ build() {
 check() {
     cd Python-${pkgver}
 
-    if [[ -n "$(pacman -Qq xorg-server-xvfb 2>/dev/null)" ]] &&
-           [[ -n "$(pacman -Qq tk 2>/dev/null)" ]] &&
-           [[ -n "$(pacman -Qq gdb 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq xorg-server-xvfb 2>/dev/null)" ]] &&
+           [[ "$(pacman -Qq tk 2>/dev/null)" ]] &&
+           [[ "$(pacman -Qq gdb 2>/dev/null)" ]];then
 
         LD_LIBRARY_PATH="${srcdir}/Python-${pkgver}":${LD_LIBRARY_PATH} \
                        xvfb-run "${srcdir}/Python-${pkgver}/python" -m test.regrtest -v -uall -x test_idle test_tk test_ttk_guionly test_ctypes

@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Dan McGee <dan@archlinux.org>
+# Contributor: Eli Schwartz <eschwartz@archlinux.org>
+# Contributor: Sebastien Binet <binet@lblbox>
+# Contributor: alexforsale@yahoo.com
 pkgname=('python-pip' 'python2-pip')
 pkgver=19.2.3
 pkgrel=1

@@ -1,0 +1,41 @@
+#-*-mode:sh-*-
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+# Maintainer: Jan de Groot
+# Contributor: alexforsale@yahoo.com
+_pkgname=libinput
+pkgname=${_pkgname}
+pkgver=1.14.1.r38.g0fa8d0d9
+pkgrel=1
+pkgdesc="User preference utility for X"
+arch=(x86_64)
+url="https://xorg.freedesktop.org/"
+license=(custom:X11)
+depends=('mtdev' 'systemd' 'libevdev' 'libwacom')
+makedepends=('meson' 'gtk3')
+_tag=7a12e460c07f070cb71e55e875e8156c924a4fd3
+#source=("xorg/${_pkgname}::git://anongit.freedesktop.org/git/wayland/${_pkgname}#tag=$_tag")
+source=("xorg/${_pkgname}::git://anongit.freedesktop.org/git/wayland/${_pkgname}")
+sha512sums=('SKIP')
+groups=('blfs' 'xorg')
+
+pkgver() {
+    cd "$_pkgname"
+    git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g' | sed "s/$_pkgname.//g"
+}
+
+prepare(){
+    meson-helper "$_pkgname" build \
+                 -Dudev-dir=/usr/lib/udev \
+                 -Dtests=false \
+                 -Ddocumentation=false
+}
+
+build() {
+    ninja -C build
+}
+
+package() {
+    DESTDIR="$pkgdir" ninja -C build install
+    install -Dvm644 "$_pkgname"/COPYING \
+            "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Gaetan Bisson <bisson@archlinux.org>
+# Maintainer: Vesa Kaihlavirta <vesa@archlinux.org>
+# Contributor: Roman Cheplyaka <roma@ro-che.info>
+# Contributor: alexforsale@yahoo.com
 pkgname=libedit
 _pkgver=20190324-3.1
 pkgver=${_pkgver/-/_}

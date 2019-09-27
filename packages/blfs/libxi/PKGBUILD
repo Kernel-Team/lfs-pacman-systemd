@@ -12,8 +12,6 @@ makedepends=('pkgconfig' 'xorg-util-macros' 'libxfixes' 'automake')
 license=('custom')
 source=(xorg/lib/libXi::git://anongit.freedesktop.org/git/xorg/lib/libXi)
 sha256sums=('SKIP')
-validpgpkeys=('3C2C43D9447D5938EF4551EBE23B7E70B467F0BF') # Peter Hutterer
-validpgpkeys+=('C41C985FDCF1E5364576638B687393EE37D128F8') # Matthieu Herrb <matthieu.herrb@laas.fr>
 groups=('blfs' 'xorg')
 
 pkgver() {

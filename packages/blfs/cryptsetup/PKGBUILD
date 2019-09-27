@@ -1,5 +1,7 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer:  Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Thomas Bächler <thomas@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=cryptsetup
 pkgver=2.2.1
 pkgrel=1
@@ -16,7 +18,7 @@ source=("https://www.kernel.org/pub/linux/utils/cryptsetup/v${pkgver%.*}/${pkgna
         'hooks-encrypt'
         'install-encrypt'
         'install-sd-encrypt')
-groups=('blfs' 'security')
+groups=('blfs' 'security' 'lfs-base')
 
 build() {
     cd "${srcdir}"/$pkgname-${pkgver}

@@ -57,4 +57,6 @@ where:
             err;
         fi
     fi
+
+    unset pkgname
 }

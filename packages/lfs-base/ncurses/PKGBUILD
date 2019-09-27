@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Contributor: alexforsale@yahoo.com
+# Maintainer:  Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
 pkgbase=ncurses
 pkgname=(${pkgbase} ${pkgbase}5-compat-libs)
 pkgver=6.1
@@ -11,21 +14,23 @@ license=(MIT)
 source=(https://ftp.gnu.org/pub/gnu/ncurses/ncurses-$pkgver.tar.gz{,.sig})
 validpgpkeys=('C52048C0C0748FEE227D47A2702353E0F7E48EDB')  # Thomas Dickey
 
-if [[ $(pacman -Ss ^"sh"$ 2>/dev/null) ]];then
+if [[ $(pacman -Qq "sh" 2>/dev/null) ]];then
     _deps=('sh')
     pkgrel=$((pkgrel+1))
 else
     _optdeps=('sh')
 fi
 
-if [[ $(pacman -Ss ^"gcc-ada"$ 2>/dev/null) ]];then
+if [[ $(pacman -Qq "gcc-ada" 2>/dev/null) ]];then
     _makedeps=('gcc-ada')
+    pkgrel=$((pkgrel+1))
 else
     _optdeps+=( 'gcc-ada')
 fi
 
-if [[ $(pacman -Ss ^"${pkgbase}"$ 2>/dev/null) ]];then
+if [[ $(pacman -Qq "${pkgbase}" 2>/dev/null) ]];then
     pkgname+=( lib{,x}32-${pkgbase} lib32-${pkgbase}5-compat-libs)
+    pkgrel=$((pkgrel+1))
 fi
 
 prepare(){
@@ -49,7 +54,7 @@ prepare(){
        --without-debug --with-cxx-binding \
        --with-cxx-shared --with-abi-version=5
 
-    if [[ $(pacman -Ss ^"${pkgbase}"$ 2>/dev/null) ]];then
+    if [[ $(pacman -Qq "${pkgbase}" 2>/dev/null) ]];then
         cd ${srcdir}/lib32-ncurses
         CC="gcc -m32" CXX="g++ -m32" \
           ../${pkgbase}-${pkgver}/configure \
@@ -87,7 +92,7 @@ build() {
     cd ${srcdir}/compat-libs
     make
 
-    if [[ $(pacman -Ss ^"${pkgbase}"$ 2>/dev/null) ]];then
+    if [[ $(pacman -Qq "${pkgbase}" 2>/dev/null) ]];then
         cd ${srcdir}/lib32-ncurses
         make
 

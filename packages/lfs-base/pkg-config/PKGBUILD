@@ -17,15 +17,16 @@ validpgpkeys=('6B99CE97F17F48C27F722D71023A4420C7EC6914')
 
 _confargs=( '--with-pc-path=/usr/lib/pkgconfig:/usr/lib64/pkgconfig:/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/share/pkgconfig')
 
-if [[ "$(pacman -Ss ^glib2$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq glib2 2>/dev/null)" ]];then
     depends+=( 'glib2')
+    _confargs=('--without-internal-glib')
     pkgrel=$((pkgrel+1))
 else
     _confargs=('--with-internal-glib')
     optdepends+=( 'glib2')
 fi
 
-if [[ "$(pacman -Ss ^automake$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq automake 2>/dev/null)" ]];then
     makedepends+=( 'automake')
     pkgrel=$((pkgrel+1))
 fi
@@ -48,7 +49,7 @@ build() {
 
 check() {
     cd $pkgname-$pkgver
-    make check
+    make check || true
 }
 
 package() {

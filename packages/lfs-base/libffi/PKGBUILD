@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer:  Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Stéphane Gaudreault <stephane@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgbase=libffi
 pkgname=(libffi lib{,x}32-libffi)
 pkgver=3.2.1

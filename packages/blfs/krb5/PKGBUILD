@@ -1,5 +1,6 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Contributor: alexforsale@yahoo.com
 pkgname=krb5
 _pkgvermajor=1.17
 pkgver=${_pkgvermajor}

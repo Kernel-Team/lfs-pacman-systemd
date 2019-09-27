@@ -1,5 +1,11 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Felix Yan <felixonmars@archlinux.org>
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Contributor: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: Alexandre Bique <bique.alexandre@gmail.com>
+# Contributor: Louis R. Marascio <lrm@fitnr.com>
+# Contributor: Cody Maloney <cmaloney@theoreticalchaos.com>
+# Contributor: alexforsale@yahoo.com
 pkgbase=gtest
 pkgname=('gtest' 'gmock')
 pkgver=1.8.1

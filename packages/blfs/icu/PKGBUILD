@@ -1,5 +1,7 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.om
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: Art Gramlich <art@gramlich-net.com>
+# Contributor: alexforsale@yahoo.om
 pkgname=icu
 pkgver=64.2
 pkgrel=1

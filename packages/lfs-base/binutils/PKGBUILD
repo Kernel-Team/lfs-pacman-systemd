@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Contributor: alexforsale@yahoo.com
+# Maintainer:  Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# toolchain build order: linux-api-headers->glibc->binutils->gcc->binutils->glibc
 pkgname=binutils
 pkgver=2.32
 pkgrel=1

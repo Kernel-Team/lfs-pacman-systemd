@@ -1,0 +1,693 @@
+#+OPTIONS: html-link-use-abs-url:nil html-postamble:auto
+#+OPTIONS: html-preamble:t html-scripts:t html-style:t
+#+OPTIONS: html5-fancy:nil tex:t toc:nil num:nil
+#+HTML_DOCTYPE: xhtml-strict
+#+HTML_CONTAINER: div
+#+DESCRIPTION:
+#+KEYWORDS:
+#+HTML_LINK_HOME:
+#+HTML_LINK_UP:
+#+HTML_MATHJAX:
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://gongzhitaao.org/orgcss/org.css"/>
+#+HTML_HEAD_EXTRA:
+#+SUBTITLE:
+#+INFOJS_OPT:
+#+CREATOR: <a href="https://www.gnu.org/software/emacs/">Emacs</a> 26.3 (<a href="https://orgmode.org">Org</a> mode 9.1.9)
+#+LATEX_HEADER:
+* Installing packages
+    From now on, package installation should be handled by pacman. For compiling and packaging will be done by /makepkg/ from the user chroot terminal. The compiled package should be in $PKGDEST directory (defined in /makepkg.conf/). If you previously store all the tarball in /$LFS/sources/, move them to $SRCDEST since that's where ~makepkg~ will look for sources. 
+    Since this installation of /pacman/ is very minimal, ~makepkg~ must be invoked with ~--skippgpcheck~, and optionally ~--nocheck~ if needed. Installing packages is done in root chroot terminal, with ~pacman -Syy <package-name>~. You can inspect all the files installed by a specific package with ~pacman -Ql <packagename>~, and if you want to check which package owns a certain file or directory, use ~pacman -Qo </path/to/file>~.
+    Also add this function in the user chroot terminal for easy moving packages to it's designated repository:
+#+BEGIN_SRC sh
+function add_to_repo(){
+    if [ ! $(command -v pacman) ];then
+        echo "pacman not installed!"
+        return 1
+    fi
+
+    # determine pacman location
+    case $(dirname $(command -v pacman)| sed 's/bin//g') in
+        "/usr/local/")
+            pacpath="/usr/local"
+            ;;
+        "/usr/")
+            pacpath="/"
+            ;;
+        "/tools/")
+            # this is my default
+            pacpath="/usr/local"
+            ;;
+    esac
+
+    [ -f $pacpath/etc/makepkg.conf ] &&
+        . $pacpath/etc/makepkg.conf
+    [ -f ~/.config/pacman/makepkg.conf ] && . ~/.config/pacman/makepkg.conf
+
+    function err(){
+        echo "$FUNCNAME tarball repo -- simple program add compiled program from makepkg to pacman repository
+
+where:
+    tarball : path and filename or compiled packaged
+    repo    : name of pacman repo(refer to pacman.conf for the names)"
+
+        return 1
+    }
+
+    if [ -z $2 ];then
+        err;
+    else
+        tarball="$(basename $1)"
+        repo=`cat $pacpath/etc/pacman.conf | awk "/\/${2}/" | sed 's/Server = file:\/\///g'`
+
+        if [ -n $repo ] && [ -d $repo ];then
+            if [ -f $1 ];then
+                echo "moving $1 to $repo dir"
+                mv -v $1 $repo
+                pushd $repo
+                repo-add ${2}.db.tar.?z $tarball
+                popd
+            else
+                err;
+            fi
+        else
+            err;
+        fi
+    fi
+    unset pkgname
+}
+#+END_SRC
+
+**** ~iana-etc~
+    #+BEGIN_SRC sh :name iana-etc
+    . PKGBUILD
+    makepkg -fCc --skippgpcheck
+    add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+    #+END_SRC
+    install with ~--asdeps~ since it's a dependency for /[[*~filesystem~][filesystem]]/
+**** ~filesystem~
+   #+BEGIN_SRC sh :name filesystem
+   . PKGBUILD
+   makepkg -fCc --skippgpcheck
+   add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+   #+END_SRC
+***** Installing as root
+      Since most of the directories already created in $LFS, you should install it with ~pacman -Syy filesystem --force~. Also remove the //var/mail/ directory since the package expects it to be symlink.
+      This package also installed {b}lfs book and can be viewed from host using web browser by navigating to /file:///mnt/lfs/srv/http/lfs-systemd/index.html/, /file:///mnt/lfs/srv/http/lfs-multilib-systemd/index.html/, and /file:///mnt/lfs/srv/http/blfs-systemd/index.html/.
+**** ~linux-api-headers~
+#+BEGIN_SRC sh :name linux-api-headers
+. PKGBUILD
+makepkg -fcC --skippgpcheck
+add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+#+END_SRC
+**** ~man-pages~
+   #+BEGIN_SRC sh :name man-pages
+   . PKGBUILD
+   makepkg -fCc --skippgpcheck
+   add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+   #+END_SRC
+**** ~tzdata~
+   #+BEGIN_SRC sh :name tzdata
+   . PKGBUILD
+   makepkg -fCc --skippgpcheck
+   add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+   #+END_SRC
+**** ~glibc~
+***** *BEFORE COMPILING*:
+    #+NAME: as root
+    #+BEGIN_SRC sh
+  ln -sfv /tools/lib/gcc /usr/lib
+  rm -f /usr/include/limits.h
+  ln -sfv ../lib/ld-linux-x86-64.so.2 /lib64
+  ln -sfv ../lib/ld-linux-x86-64.so.2 /lib64/ld-lsb-x86-64.so.3
+  #+END_SRC
+    #+BEGIN_SRC sh
+  . PKGBUILD
+  makepkg -fcC --skippgpcheck # on slow pc add --nocheck also
+  for p in ${pkgname[@]};do
+    add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+  done
+  #+END_SRC
+    Split packages: glibc, lib32-glibc and libx32-glibc. Install with ~--force~ to overwrite //lib64/ld-linux-x86-64.so.2/ and //lib64/ld-lsb-x86-64.so.3/
+***** *After Compiling*
+      Set time zone data
+      #+BEGIN_SRC sh :name timezone-config
+      tzselect
+      ln -sfv /usr/share/zoneinfo/<xxx> /etc/localtime
+      locale-gen # with all the minimum set of locales needed by lfs book
+      #+END_SRC
+***** 6.10. [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter06/adjusting.html][Adjusting the Toolchain]]
+      Continue with the instruction from the book.
+**** ~zlib~
+     #+BEGIN_SRC sh :name zlib
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC
+**** ~file~
+     #+BEGIN_SRC sh :name file
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC
+**** ~readline~
+     #+BEGIN_SRC sh :name readline
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC
+**** ~m4~
+     #+BEGIN_SRC sh :name m4
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~bc~
+     #+BEGIN_SRC sh :name bc
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~binutils~
+     #+BEGIN_SRC sh :name binutils
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+
+**** ~gmp~
+     #+BEGIN_SRC sh :name gmp
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC
+
+**** ~mpfr~
+     #+BEGIN_SRC sh :name mpfr
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~libmpc~
+     #+BEGIN_SRC sh :name libmpc
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+
+**** ~isl~
+     This package is not on the /systemd book/, but required by the /multilib-book/.
+     #+BEGIN_SRC sh :name isl
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC
+**** /Optional/ ~cracklib~
+     This package is in blfs repository.
+     #+BEGIN_SRC sh :name cracklib
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+**** ~shadow~
+     #+BEGIN_SRC sh :name shadow
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+     Now you can set root password with ~passwd root~.
+**** ~gcc~
+     This package has several split-packages. The bare minimum is /gcc/,/gcc-libs/,/lib32-gcc-libs/ and /libx32-gcc-libs/, the other optional packages (/gcc-go/, /gcc-ada/, /gcc-objc/ and /gcc-fortran/) can be included or excluded with environment variables (_BUILD_ADA, _BUILD_FORTRAN, _BUILD_GO, and _BUILD_OBJC). The default is include all, but beware for /gcc-ada/ we'll need to bootstrap with /gnat-gpl-2017-x86_64-linux-bin.tar.gz/ which is around 480Mb in size.
+     #+BEGIN_SRC sh :name gcc
+     # if you want only the minimal packages
+     # note: rm -fv /usr/lib/gcc from the root terminal before compiling
+     . PKGBUILD
+     _BUILD_ADA=0 _BUILD_FORTRAN=0 _BUILD_GO=0 _BUILD_OBJC=0 makepkg -fcC --skippgpcheck
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC
+     Install with ~--force~ option to overwrite the symlinks created earlier.
+**** ~bzip2~
+     #+BEGIN_SRC sh :name bzip2
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC
+**** ~pkg-config~
+     #+BEGIN_SRC sh :name pkg-config
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~ncurses~
+     You'll have to install the base /ncurses/ packages first(/ncurses/ and /ncurses5-compat-libs/), then compile again to build the lib32 and libx32 packages.
+     #+BEGIN_SRC sh :name ncurses
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     # install the package via root terminal,then compile again, this time all packages
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC
+**** ~attr~
+     #+BEGIN_SRC sh :name attr
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC
+**** ~acl~
+     #+BEGIN_SRC sh :name acl
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC
+**** TODO ~libcap~
+     - [0/0] Fix build error on multilib packages
+       #+BEGIN_QUOTE :name build-error
+       => making cap_names.list.h from /home/alexforsale/build/libcap/src/lib32-libcap-2.27/libcap/../libcap/include/uapi/linux/capability.h
+       perl -e 'while ($l=<>) { if ($l =~ /^\#define[ \t](CAP[_A-Z]+)[ \t]+([0-9]+)\s+$/) { $tok=$1; $val=$2; $tok =~ tr/A-Z/a-z/; print "{\"$tok\",$val},\n"; } }' /home/alexforsale/build/libcap/src/lib32-libcap-2.27/libcap/../libcap/include/uapi/linux/capability.h | fgrep -v 0x > cap_names.list.h
+       gcc -m32 -D_FORTIFY_SOURCE=2  -march=native -mtune=generic -O2 -pipe -fno-plt -D_FORTIFY_SOURCE=2  -O2 -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -Dlinux -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow -g  -fPIC -I/home/alexforsale/build/libcap/src/lib32-libcap-2.27/libcap/../libcap/include/uapi -I/home/alexforsale/build/libcap/src/lib32-libcap-2.27/libcap/../libcap/include _makenames.c -o _makenames
+       ./_makenames > cap_names.h
+       /bin/sh: ./_makenames: No such file or directory
+       make: *** [Makefile:41: cap_names.h] Error 127
+       #+END_QUOTE
+     #+BEGIN_SRC sh :name libcap
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC
+**** ~sed~
+     #+BEGIN_SRC sh :name sed
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~psmisc~
+     #+BEGIN_SRC sh :name psmisc
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~bison~
+     #+BEGIN_SRC sh :name bison
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~flex~
+     #+BEGIN_SRC sh :name flex
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+
+**** ~grep~
+     #+BEGIN_SRC sh :name grep
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+
+**** ~bash~
+     #+BEGIN_SRC sh :name bash
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+     Install with ~--force~ to overwrite the symlinks created earlier.
+
+**** /Optional/ ~bash-completion~
+     #+BEGIN_SRC sh :name bash-completion
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z extra
+     #+END_SRC
+**** ~libtool~
+     #+BEGIN_SRC sh :name libtool
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~gdbm~
+     #+BEGIN_SRC sh :name gdbm
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~gperf~
+     #+BEGIN_SRC sh :name gperf
+     . PKGBUILD
+     makepkg -fcC
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~expat~
+     #+BEGIN_SRC sh :name expat
+     . PKGBUILD
+     makepkg -fcC
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC
+**** ~inetutils~
+     #+BEGIN_SRC sh :name inetutils
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+
+**** ~berkeley-db~
+     Part of the /blfs/ repository, dependency for /[[*~perl~][perl]]/
+     #+BEGIN_SRC sh :name berkeley-db
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+**** ~perl~
+     Basically the same as in /arch/, because we'll want to package /perl-modules/ with pacman too.
+     Don't forget to [[http://www.linuxfromscratch.org/lfs/view/9.0-systemd-rc1/chapter06/perl.html][set the hosts file in root terminal]].
+     #+BEGIN_SRC sh :name perl
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+     Install with ~--force~ option.
+**** ~perl-xml-parser~
+     #+BEGIN_SRC sh :name perl-xml-parser
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+
+**** ~intltool~
+     #+BEGIN_SRC sh :name intltool
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+
+**** ~autoconf~
+     #+BEGIN_SRC sh :name autoconf
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+
+**** ~automake~
+     #+BEGIN_SRC sh :name automake
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+
+**** ~xz~
+     #+BEGIN_SRC sh :name xz
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC
+
+**** ~kmod~
+     #+BEGIN_SRC sh :name kmod
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC
+
+**** ~gettext~
+     #+BEGIN_SRC sh :name gettext
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~elfutils~
+     #+BEGIN_SRC sh :name elfutils
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC
+     Only libelf and the lib32 and libx32 packages are required according to the /[[http://www.linuxfromscratch.org/~dj/lfs-systemd-multilib/chapter06/libelf.html][multilib book]]/.
+**** ~tcl~
+     From the /blfs/ repo.
+     #+BEGIN_SRC sh :name tcl
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     done
+     #+END_SRC
+**** ~expect~
+     From the /blfs/ repo.
+     #+BEGIN_SRC sh :name expect
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+
+**** ~dejagnu~
+     From the /blfs/ repo.
+     #+BEGIN_SRC sh :name dejagnu
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+
+**** ~libffi~
+     #+BEGIN_SRC sh :name libffi
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC
+
+**** ~openssl~
+     #+BEGIN_SRC sh :name openssl
+     . PKGBUILD
+     makepkg -fcC
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC
+
+**** ~python~
+     #+BEGIN_SRC sh :name python
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+     run ~wget https://bootstrap.pypa.io/get-pip.py~ from host terminals and save it to $LFS home directory. This is needed to bootstrap /setuptools/
+     #+BEGIN_SRC sh :name python-addition
+     python3 ~/get-pip.py --user
+     ~/.local/bin/pip3 install setuptools --user
+     #+END_SRC
+**** ~ninja~
+     #+BEGIN_SRC sh :name ninja
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~meson~
+     #+BEGIN_SRC sh :name meson
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~coreutils~
+     #+BEGIN_SRC sh :name coreutils
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+     Install with ~--force~ to overwrite symlinks created earlier.
+     After installing /coreutils/, log out from both terminals, relogin as root terminal and properly create the standard user using ~useradd~ command. Then relogin to the standard user.
+**** ~check~
+     #+BEGIN_SRC sh :name check
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~diffutils~
+     #+BEGIN_SRC sh :name diffutils
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~gawk~
+     #+BEGIN_SRC sh :name gawk
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~findutils~
+     #+BEGIN_SRC sh :name findutils
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~groff~
+     #+BEGIN_SRC sh :name groff
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** TODO ~grub~                                                     :rework:
+     #+BEGIN_SRC sh :name grub
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~pcre~
+     From /blfs/ repository, dependency for /[[*~less~][less]]/
+     #+BEGIN_SRC sh :name pcre
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z blfs
+     #+END_SRC
+**** ~less~
+     #+BEGIN_SRC sh :name less
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~gzip~
+     #+BEGIN_SRC sh :name gzip
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~iproute2~
+     #+BEGIN_SRC sh :name iproute2
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~kbd~
+     #+BEGIN_SRC sh :name kbd
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~libpipeline~
+     #+BEGIN_SRC sh :name libpipeline
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~make~
+     #+BEGIN_SRC sh :name make
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~ed~
+     From /extra/ repository
+     #+BEGIN_SRC sh :name ed
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z extra
+     #+END_SRC
+
+**** ~patch~
+     #+BEGIN_SRC sh :name patch
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~man-db~
+     #+BEGIN_SRC sh :name man-db
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~tar~
+     #+BEGIN_SRC sh :name tar
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~texinfo~
+     #+BEGIN_SRC sh :name texinfo
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~vim~
+     #+BEGIN_SRC sh :name vim
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~systemd~
+***** *Before Compiling*
+      Make sure to symlink /usr/bin/xsltproc
+      #+BEGIN_SRC sh :name xsltproc symlink
+      ln -sfv /tools/bin/true /usr/bin/xsltproc
+
+      #also create these symlinks
+      for file in /tools/lib/lib{blkid,mount,uuid}.so*; do
+          ln -sf $file /usr/lib/
+      done
+      #+END_SRC
+      #+BEGIN_SRC sh :name systemd
+      . PKGBUILD
+      makepkg -fcC --skippgpcheck
+      for p in ${pkgname[@]};do
+        add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+      done
+      #+END_SRC
+***** *After Installing*
+      #+BEGIN_SRC sh :name post-install-systemd
+      rm -fv /usr/bin/xsltproc
+      systemd-machine-id-setup
+      rm -fv /usr/lib/lib{blkid,uuid,mount}.so*
+      rm -fv /usr/lib/tmpfiles.d/systemd-nologin.conf
+      #+END_SRC
+**** ~dbus~
+     #+BEGIN_SRC sh :name dbus
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC
+**** ~procps-ng~
+     #+BEGIN_SRC sh :name procps-ng
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     add_to_repo $PKGDEST/$pkgname-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     #+END_SRC
+**** ~util-linux~
+     #+BEGIN_SRC sh :name util-linux
+     . PKGBUILD
+     makepkg -fcC --skippgpcheck
+     for p in ${pkgname[@]};do
+       add_to_repo $PKGDEST/$p-$pkgver-$pkgrel-$arch.pkg.tar.?z lfs-base
+     done
+     #+END_SRC

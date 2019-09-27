@@ -1,5 +1,6 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Contributor: Damir Perisa <damir.perisa@bluewin.ch>
+# Contributor: alexforsale@yahoo.com
 pkgname=libksba
 pkgver=1.3.5
 pkgrel=1

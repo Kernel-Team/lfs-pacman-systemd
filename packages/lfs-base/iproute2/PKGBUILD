@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: %s <%s>
+# Maintainer: Christian Hesse <mail@eworm.de>
+# Maintainer: Ronald van Haren <ronald.archlinux.org>
+# Contributor: Judd Vinet <jvinet@zeroflux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=iproute2
 pkgver=5.2.0
 pkgrel=1

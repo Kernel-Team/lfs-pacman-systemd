@@ -1,5 +1,7 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgbase=gobject-introspection
 pkgname=(gobject-introspection gobject-introspection-runtime)
 pkgver=1.62.0
@@ -14,7 +16,6 @@ _makedeps=('cairo' 'gtk-doc')
 makedepends=(git python-sphinx meson bison libffi "glib2=$_glibver")
 options=(!emptydirs)
 _commit=f330f517d8cd0bfbe67c62ba00be85dee2b338ed  # tags/1.62.0^0
-source=("git+https://gitlab.gnome.org/GNOME/gobject-introspection.git#commit=$_commit")
 source=("git+https://gitlab.gnome.org/GNOME/gobject-introspection.git#commit=$_commit"
         "git+https://gitlab.gnome.org/GNOME/glib.git?signed#tag=$_glibver")
 sha512sums=('SKIP'
@@ -39,7 +40,7 @@ done
 if [[ "$(pacman -Qq cairo 2>/dev/null)" ]];then
     _confargs+=( '-D cairo=true')
 fi
-if [[ "$(pacman -Qq cairo 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq gtk-doc 2>/dev/null)" ]];then
     _confargs+=( '-D gtk-doc=true')
 fi
 

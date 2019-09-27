@@ -1,0 +1,65 @@
+#-*-mode:sh-*-
+# Maintainer: Tobias Powalowski <tpowa@archlinux.org>
+# Contributor: Tom Gundersen <teg@jklm.no>
+# Contributor: Judd Vinet <jvinet@zeroflux.org>
+# Contributor: Curtis Campbell <curtisjamescampbell@hotmail.com>
+# Contributor: alexforsale@yahoo.com
+pkgname=usbutils
+pkgver=012
+pkgrel=1
+pkgdesc="USB Device Utilities"
+arch=(x86_64)
+license=('GPL')
+groups=('blfs' 'lfs-base' 'system-utilities')
+depends=('libusb' 'hwids')
+optdepends=('python: for lsusb.py usage'
+            'coreutils: for lsusb.py usage')
+url="http://linux-usb.sourceforge.net/"
+source=("https://www.kernel.org/pub/linux/utils/usb/usbutils/${pkgname}-${pkgver}.tar"{.xz,.sign})
+md5sums=('0da98eb80159071fdbb00905390509d9'
+         'SKIP')
+validpgpkeys=('647F28654894E3BD457199BE38DBBDC86092693E') # Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
+prepare(){
+    cd $srcdir/$pkgname-$pkgver
+    ./autogen.sh
+    ./configure --prefix=/usr --datadir=/usr/share/hwdata --disable-zlib
+}
+
+build() {
+    cd $srcdir/$pkgname-$pkgver
+    make
+}
+
+package() {
+    cd $srcdir/$pkgname-$pkgver
+    make DESTDIR=$pkgdir install
+    # this is now in the hwids package
+    rm -rf $pkgdir/usr/{share/hwdata,sbin}
+
+    install -vdm755 ${pkgdir}/lib/systemd/system
+    cat > ${pkgdir}/lib/systemd/system/update-usbids.service << "EOF"
+[Unit]
+Description=Update usb.ids file
+Documentation=man:lsusb(8)
+DefaultDependencies=no
+After=local-fs.target network-online.target
+Before=shutdown.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/wget http://www.linux-usb.org/usb.ids -O /usr/share/hwdata/usb.ids
+EOF
+    cat > ${pkgdir}/lib/systemd/system/update-usbids.timer << "EOF"
+[Unit]
+Description=Update usb.ids file weekly
+
+[Timer]
+OnCalendar=Sun 03:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+}

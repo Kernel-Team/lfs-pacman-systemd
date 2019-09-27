@@ -2,7 +2,7 @@
 # Maintainer: alexforsale@yahoo.com
 BRANCH=master
 pkgname=emacs
-pkgver=27.0.50.138484
+pkgver=27.0.50.138508
 pkgrel=1
 pkgdesc="GNU Emacs. Development."
 arch=('x86_64')
@@ -196,12 +196,17 @@ package_emacs(){
     chown -R root:60 "$pkgdir"/var/games
 
     install -Dm644 $srcdir/games.sysusers  ${pkgdir}/usr/lib/sysusers.d/games.conf
+
+    install -vdm755 ${pkgdir}/lib/systemd
+    mv -v ${pkgdir}/usr/lib/systemd/* ${pkgdir}/lib/systemd/
+    rm -rfv ${pkgdir}/usr/lib/systemd
 }
 
 package_emacs-docs() {
     pkgdesc="GNU Emacs, built from git sources — HTML and PDF documentation package."
     provides=('emacs-docs')
     conflicts=('emacs-docs')
+    depends=('emacs')
 
     cd "$srcdir/emacs-git"
 

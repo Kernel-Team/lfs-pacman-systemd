@@ -1,0 +1,39 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+_pkgname=libXcomposite
+pkgname=libxcomposite
+pkgver=0.4.5.r0.gfd7d02c
+pkgrel=1
+pkgdesc="X11 Composite extension library"
+arch=('x86_64')
+url="https://xorg.freedesktop.org/"
+license=('custom')
+depends=('libxfixes' 'compositeproto')
+makedepends=('xorg-util-macros')
+source=("xorg/lib/libXcomposite::git://anongit.freedesktop.org/git/xorg/lib/libXcomposite")
+sha512sums=('SKIP')
+groups=('blfs' 'xorg')
+
+pkgver() {
+    cd "$_pkgname"
+    git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g' | sed "s/$_pkgname.//g"
+}
+
+prepare(){
+    cd "$_pkgname"
+    NOCONFIGURE=1 ./autogen.sh
+    ./configure --prefix=/usr --sysconfdir=/etc --disable-static
+}
+
+build() {
+    cd "$_pkgname"
+    make
+}
+
+package() {
+    cd "$_pkgname"
+    make DESTDIR="${pkgdir}" install
+
+    install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+    install -m644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/"
+}

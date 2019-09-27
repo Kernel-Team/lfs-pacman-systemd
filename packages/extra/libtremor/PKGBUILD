@@ -1,0 +1,45 @@
+#-*-mode:sh-*-
+# Maintainer: willemw <willemw12@gmail.com>
+# Contributor: josephgbr <rafael.f.f1@gmail.com>
+# Contributor: rabyte <rabyteNOSPAM_at_moonblade.dot.org>
+# Contributor: alexforsale@yahoo.com
+_pkgname=libtremor
+pkgname=$_pkgname-git
+pkgver=r19674
+pkgrel=1
+pkgdesc="Integer-only, fully Ogg Vorbis compliant software decoder library"
+arch=('x86_64')
+url="http://www.xiph.org/vorbis/"
+license=('BSD')
+depends=('libogg')
+makedepends=('git')
+provides=($_pkgname)
+conflicts=($_pkgname)
+options=('!libtool')
+source=($pkgname::git+https://git.xiph.org/tremor.git)
+md5sums=('SKIP')
+groups=('extra')
+
+pkgver() {
+    cd $pkgname
+    git describe --long | sed 's/^foo-//;s/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+prepare() {
+    cd $pkgname
+    # Fix for automake 1.13
+    sed -i "s/AM_CONFIG_HEADER/AC_CONFIG_HEADERS/" configure.in
+    autoreconf -fvi
+    ./configure --prefix=/usr
+}
+
+build() {
+    cd $pkgname
+    make
+}
+
+package() {
+    cd $pkgname
+    make DESTDIR="$pkgdir" install
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}

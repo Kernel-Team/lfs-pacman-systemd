@@ -1,0 +1,56 @@
+#-*-mode:sh-*-
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: alexforsale@yahoo.com
+pkgname=glib-networking
+pkgver=2.62.0
+pkgrel=1
+pkgdesc="Network extensions for GLib"
+url="https://gitlab.gnome.org/GNOME/glib-networking"
+arch=(x86_64)
+license=(GPL2)
+depends=(glib2 gnutls gsettings-desktop-schemas)
+_deps=(libproxy)
+makedepends=(meson git openssl)
+checkdepends=(make-ca)
+optdepends=('openssl: Alternative backend')
+_commit=99aaecc6bfef6118efcd1b39475a7f8ed831551c  # tags/2.62.0^0
+source=("git+https://gitlab.gnome.org/GNOME/glib-networking.git#commit=$_commit")
+sha256sums=('SKIP')
+groups=('blfs' 'networking-libraries')
+
+for d in ${_deps[@]};do
+    if [[ $(pacman -Qq $d 2>/dev/null) ]];then
+        depends+=( $d)
+        pkgrel=$((pkgrel+1))
+    else
+        case $d in
+            libproxy)
+                _confargs+=( '-D libproxy=disabled');;
+        esac
+        optdepends+=( $d)
+    fi
+done
+
+pkgver() {
+    cd $pkgname
+    git describe --tags | sed 's/-/+/g'
+}
+
+prepare() {
+    cd $pkgname
+}
+
+build() {
+    meson-helper $pkgname build -D openssl=enabled ${_confargs[@]}
+    ninja -C build
+}
+
+check() {
+    meson test -C build --print-errorlogs
+}
+
+package() {
+    DESTDIR="$pkgdir" meson install -C build
+}
+
+# vim:set ts=2 sw=2 et:

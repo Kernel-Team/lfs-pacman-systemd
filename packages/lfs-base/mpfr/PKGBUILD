@@ -1,5 +1,7 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Contributor: alexforsale@yahoo.com
+# Maintainer: Allan McRae <allan@archlinux.org>
+# Contributor: damir <damir@archlinux.org>
 pkgname=mpfr
 pkgver=4.0.2
 pkgrel=1

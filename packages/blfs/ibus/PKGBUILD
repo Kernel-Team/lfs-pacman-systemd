@@ -1,0 +1,91 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+# Maintainer: Felix Yan <felixonmars@archlinux.org>
+pkgbase=ibus
+pkgname=(ibus libibus)
+pkgver=1.5.21
+pkgrel=1
+pkgdesc="Next Generation Input Bus for Linux"
+arch=('x86_64')
+url="https://github.com/ibus/ibus/wiki"
+license=('LGPL')
+depends=('iso-codes' 'dconf')
+makedepends=('vala')
+_deps=('gtk2' 'gtk3' 'hicolor-icon-theme' 'libnotify' 'python-dbus' 'python-gobject'
+       'python2-gobject2' 'python2-dbus' 'python2-gobject' 'librsvg' 'libxkbcommon' 'wayland')
+_makedeps=('gobject-introspection' 'intltool' 'gnome-common' 'gtk-doc' 'qt5-base'
+           'cldr-emoji-annotation' 'unicode-character-database' 'unicode-emoji')
+options=('!emptydirs')
+source=("$pkgbase-$pkgver.tar.gz::https://github.com/ibus/ibus/archive/$pkgver.tar.gz")
+sha512sums=('39f5ffe0727af3254e060b82cc99a60126489271863272775e5b1d0e26f31d42d2f9a0cbfe1cb797854f2ae66d5b6c8cdf83bab800af8576b82250ec1e6fb33f')
+groups=('blfs' 'general-utilities')
+
+for _d in "${_deps[@]}";do
+    if [[ "$(pacman -Qq "^${_d}$" 2>/dev/null)" ]];then
+        depends+=( "${_d}")
+        pkgrel=$((pkgrel+1))
+    else
+        case $_d in
+            gtk2)
+                _confargs+=( '--disable-gtk2');;
+            gtk3)
+                _confargs+=( '--disable-gtk3');;
+        esac
+        optdepends+=( "${_d}")
+    fi
+done
+for _m in "${_makedeps[@]}";do
+    if [[ "$(pacman -Qq "^${_m}$" 2>/dev/null)" ]];then
+        makedepends+=( "${_m}")
+        pkgrel=$((pkgrel+1))
+        case $_m in
+            gtk-doc)
+                _confargs+=( '--enable-gtk-doc');;
+            cldr-emoji-annotation|unicode-character-database|unicode-emoji)
+                _confargs+=( '--with-ucd-dir=/usr/share/unicode/')
+        esac
+    else
+        optdepends+=( "${_m}")
+    fi
+done
+
+prepare() {
+    cd ibus-$pkgver
+    sed -i 's|$(libibus) $(libibus_emoji_dialog)|$(libibus_emoji_dialog) $(libibus)|' ui/gtk3/Makefile.am
+    ./autogen.sh \
+        --prefix=/usr \
+        --libexecdir=/usr/lib/ibus \
+        --sysconfdir=/etc \
+        --enable-dconf \
+        --disable-memconf \
+        --enable-python-library \
+        --with-python=python3 \
+        ${_confargs[@]}
+}
+
+build() {
+    cd ibus-$pkgver
+    make
+}
+
+package_ibus() {
+    depends+=("libibus=$pkgver")
+    install=ibus.install
+
+    cd ibus-$pkgver
+    make DESTDIR="$pkgdir" install
+    make -C src DESTDIR="$pkgdir" uninstall
+    make -C bindings DESTDIR="$pkgdir" uninstall
+    rm -r "$pkgdir"/usr/lib/python2.7/site-packages/gi # compiled pyc/pyo files were not cleaned
+    make DESTDIR="$pkgdir" uninstall-pkgconfigDATA
+}
+
+package_libibus() {
+    pkgdesc="IBus support library"
+    depends=('glib2')
+
+    cd ibus-$pkgver
+    make -C src DESTDIR="$pkgdir" install
+    make -C bindings DESTDIR="$pkgdir" install
+    make DESTDIR="$pkgdir" install-pkgconfigDATA
+}

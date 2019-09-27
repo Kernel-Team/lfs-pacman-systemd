@@ -1,5 +1,6 @@
 # -*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Thomas Bächler <thomas@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgbase=attr
 pkgname=($pkgbase lib{,x}32-$pkgbase)
 pkgver=2.4.48
@@ -15,8 +16,9 @@ validpgpkeys=('600CD204FBCEA418BD2CA74F154343260542DF34' # Brandon Philips
 _makedeps=('gcc-multilib' 'gettext')
 
 for m in ${_makedeps[@]};do
-    if [[ $(pacman -Ss ^"${m}"$ 2>/dev/null) ]];then
+    if [[ $(pacman -Qq "${m}" 2>/dev/null) ]];then
         makedepends+=( "$m")
+        pkgrel=$((pkgrel+1))
     fi
 done
 

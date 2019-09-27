@@ -1,5 +1,7 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Contributor: dorphell <dorphell@archlinux.org>
+# Contributor: Judd Vinet <jvinet@zeroflux.org>
+# Contributor: alexforsale@yahoo.com
 _vers=(4.{2..5})
 
 pkgname=docbook-xml

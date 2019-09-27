@@ -1,5 +1,7 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Maintainer: Eric Bélanger <eric@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=wget
 pkgver=1.20.3
 pkgrel=1
@@ -20,7 +22,7 @@ validpgpkeys=('AC404C1C0BF735C63FF4D562263D6DF2E163E1EA'
 groups=('blfs' 'networking-programs')
 
 for d in ${_deps[@]};do
-    if [[ $(pacman -Ss ^"${d}$" 2>/dev/null) ]];then
+    if [[ $(pacman -Qq "${d}" 2>/dev/null) ]];then
         depends+=( "$d")
         pkgrel=$((pkgrel+1))
     else
@@ -36,43 +38,43 @@ if [[ "$(pacman -Qq perl-io-socket-ssl 2>/dev/null)" ]];then
 fi
 
 _confargs=()
-if [[ $(pacman -Ss ^zlib$ 2>/dev/null) ]];then
+if [[ $(pacman -Qq zlib 2>/dev/null) ]];then
     _confargs+=( '--with-zlib')
 else
     _confargs+=( '--without-zlib')
 fi
-if [[ $(pacman -Ss ^libpsl$ 2>/dev/null) ]];then
+if [[ $(pacman -Qq libpsl 2>/dev/null) ]];then
     _confargs+=( '--with-libpsl')
 else
     _confargs+=( '--without-libpsl')
 fi
-if [[ $(pacman -Ss ^c-ares$ 2>/dev/null) ]];then
+if [[ $(pacman -Qq c-ares 2>/dev/null) ]];then
     _confargs+=( '--with-cares')
 else
     _confargs+=( '--without-cares')
 fi
-if [[ $(pacman -Ss ^gnutls$ 2>/dev/null) ]];then
+if [[ $(pacman -Qq gnutls 2>/dev/null) ]];then
     _confargs+=( ' --with-ssl=gnutls')
 else
     _confargs+=( ' --with-ssl=openssl')
 fi
-if [[ $(pacman -Ss ^aria2$ 2>/dev/null) ]];then
+if [[ $(pacman -Qq aria2 2>/dev/null) ]];then
     _confargs+=( ' --with-metalink')
 else
     _confargs+=( ' --without-metalink')
 fi
-if [[ $(pacman -Ss ^libunistring$ 2>/dev/null) ]];then
+if [[ $(pacman -Qq libunistring 2>/dev/null) ]];then
     _confargs+=( ' --with-libunistring-prefix=/usr')
 else
     _confargs+=( ' --with-included-libunistring')
 fi
-if [[ $(pacman -Ss ^libidn2$ 2>/dev/null) ]];then
+if [[ $(pacman -Qq libidn2 2>/dev/null) ]];then
     _confargs+=( ' --with-libidn=/usr')
 fi
-if [[ $(pacman -Ss ^gpgme$ 2>/dev/null) ]];then
+if [[ $(pacman -Qq gpgme 2>/dev/null) ]];then
     _confargs+=( ' --with-gpgme-prefix=/usr')
 fi
-if [[ $(pacman -Ss ^pcre$ 2>/dev/null) ]];then
+if [[ $(pacman -Qq pcre 2>/dev/null) ]];then
     _confargs+=( ' --enable-pcre')
 fi
 
@@ -87,7 +89,7 @@ EOF
     ./configure \
         --prefix=/usr \
         --sysconfdir=/etc \
-        --with-ssl=openssl
+        --with-ssl=openssl ${_confargs[@]}
 }
 
 build() {

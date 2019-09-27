@@ -100,6 +100,7 @@ package() {
     if [[ -n ${PACKAGER} ]];then
         echo "VERSION_CODENAME=\"${PACKAGER}\"" >> usr/lib/os-release
     fi
+    ln -sv ../usr/lib/os-release $pkgdir/etc/os-release 
 
     # {,b}lfs books
     install -vdm755 srv/http/{lfs,blfs,lfs-multilib}-systemd
@@ -121,7 +122,7 @@ md5sums=('fb3976f942e00d20efb9b6f00f893a29'
          'a78cd8d7f8240a8448edee82f503c34e'
          '681bb095a3a5e128ac1e8bdc3a38f9b2'
          'a1315ea3e2b64d197b6efaf9c14ff778'
-         'af45e35d17a807d0bc30cdb44849935c'
+         'd8cc687337d86e378a300c72e74e164a'
          '4841c465036c0adee45cc44422b55ebe'
          '2bd23a7b6e47c421a67c3096f7d3e5fc'
          '04f58df723db35595f5dcff86f7a09c0'

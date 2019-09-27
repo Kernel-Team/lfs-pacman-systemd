@@ -1,5 +1,7 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Tobias Powalowski <tpowa@archlinux.org>
+# Maintainer: Gaetan Bisson <bisson@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=pinentry
 pkgver=1.1.0
 pkgrel=1

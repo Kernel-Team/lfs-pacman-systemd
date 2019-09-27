@@ -1,5 +1,8 @@
 # -*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Contributor: alexforsale@yahoo.com
+# Maintainer: Sébastien Luttringer <seblu@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
 pkgbase=file
 pkgname=($pkgbase lib32-$pkgbase libx32-$pkgbase)
 pkgver=5.37
@@ -14,10 +17,11 @@ prepare() {
     mkdir -pv build-{$pkgbase,lib{,x}32-$pkgbase}
     
     cd $srcdir/build-$pkgbase
-    $srcdir/$pkgname-$pkgver/configure --prefix=/usr \
-                                       --datadir=/usr/share/file \
-                                       --enable-fsect-man5 \
-                                       --disable-libseccomp
+    CFLAGS+=" -pthread" \
+           $srcdir/$pkgname-$pkgver/configure --prefix=/usr \
+           --datadir=/usr/share/file \
+           --enable-fsect-man5 \
+           --disable-libseccomp
     sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
 
     cd $srcdir/build-lib32-$pkgbase

@@ -1,5 +1,6 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: judd <jvinet@zeroflux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=cpio
 pkgver=2.12
 pkgrel=1
@@ -14,7 +15,9 @@ groups=('blfs' 'system-utilities')
 
 prepare(){
     cd ${srcdir}/${pkgname}-${pkgver}
-    ./configure --prefix=/usr --mandir=/usr/share/man
+    ./configure --prefix=/usr --bindir=/bin \
+                --mandir=/usr/share/man \
+                --enable-mt --with-rmt=/usr/libexec/rmt
 }
 build() {
     cd ${srcdir}/${pkgname}-${pkgver}
@@ -30,7 +33,6 @@ package() {
     cd ${srcdir}/${pkgname}-${pkgver}
     make DESTDIR=${pkgdir} install
     rm -f ${pkgdir}/usr/bin/mt ${pkgdir}/pkg/usr/share/man/man1/mt.1
-    rm -rf ${pkgdir}/usr/libexec
     rm -f ${pkgdir}/usr/share/man/man8/rmt.8
     # remove infodir
     rm $pkgdir/usr/share/info/dir

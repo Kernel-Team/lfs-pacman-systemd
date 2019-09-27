@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer:  Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Hugo Doria <hugo@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgbase=libcap
 pkgname=($pkgbase)
 pkgver=2.27
@@ -22,9 +25,6 @@ prepare() {
     sed -i "s/CFLAGS :=/CFLAGS += \$(CPPFLAGS) /" Make.Rules
     sed -i "s/LDFLAGS :=/LDFLAGS +=/" Make.Rules
 
-    # Prevent a static library from being installed
-    sed -i '/install.*STALIBNAME/d' libcap/Makefile
-
     cd $srcdir
     cp -rv $pkgbase-$pkgver lib32-$pkgbase-$pkgver
     cp -rv $pkgbase-$pkgver libx32-$pkgbase-$pkgver
@@ -36,11 +36,11 @@ build() {
     if [[ $(pacman -Qq "$pkgbase" 2>/dev/null) ]];then
         cd $srcdir/lib32-$pkgbase-$pkgver
         export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"
-        make -C libcap CC="gcc -m32" prefix=/usr lib=lib32
+        make CC="gcc -m32" -C libcap
 
         cd $srcdir/libx32-$pkgbase-$pkgver
         export PKG_CONFIG_PATH="/usr/libx32/pkgconfig"
-        make -C libcap CC="gcc -mx32" prefix=/usr lib=libx32
+        make CC="gcc -mx32" -C libcap
     fi
 }
 

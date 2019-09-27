@@ -10,7 +10,9 @@ license=(GPL3)
 makedepends=('wget' 'p11-kit')
 install=make-ca.install
 groups=('blfs' 'security')
-source=("$url/releases/download/v$pkgver/$pkgname-$pkgver.tar.xz")
+source=("$url/releases/download/v$pkgver/$pkgname-$pkgver.tar.xz"
+        "http://www.cacert.org/certs/root.crt"
+        "http://www.cacert.org/certs/class3.crt")
 
 build(){
   cd $pkgname-$pkgver
@@ -21,15 +23,15 @@ package(){
   cd $pkgname-$pkgver
   make DESTDIR="$pkgdir" install
 
-  install -vdm755 "$pkgdir"/etc/ssl/local &&
-    wget http://www.cacert.org/certs/root.crt &&
-    wget http://www.cacert.org/certs/class3.crt &&
-    openssl x509 -in root.crt -text -fingerprint -setalias "CAcert Class 1 root" \
-            -addtrust serverAuth -addtrust emailProtection -addtrust codeSigning \
-            > "$pkgdir"/etc/ssl/local/CAcert_Class_1_root.pem &&
-    openssl x509 -in class3.crt -text -fingerprint -setalias "CAcert Class 3 root" \
-            -addtrust serverAuth -addtrust emailProtection -addtrust codeSigning \
-            > "$pkgdir"/etc/ssl/local/CAcert_Class_3_root.pem
+  install -vdm755 "$pkgdir"/etc/ssl/local
+  openssl x509 -in ../root.crt -text -fingerprint -setalias "CAcert Class 1 root" \
+          -addtrust serverAuth -addtrust emailProtection -addtrust codeSigning \
+          > "$pkgdir"/etc/ssl/local/CAcert_Class_1_root.pem
+  openssl x509 -in ../class3.crt -text -fingerprint -setalias "CAcert Class 3 root" \
+          -addtrust serverAuth -addtrust emailProtection -addtrust codeSigning \
+          > "$pkgdir"/etc/ssl/local/CAcert_Class_3_root.pem
 }
 
-md5sums=('0d50d9e0c9ebd6059fe4116353f2d5be')
+md5sums=('0d50d9e0c9ebd6059fe4116353f2d5be'
+         'fb262d55709427e2e9acadf2c1298c99'
+         '95c1c1820c0ed1de88d512cb10e25182')

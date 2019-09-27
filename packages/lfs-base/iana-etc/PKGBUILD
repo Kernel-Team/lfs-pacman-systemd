@@ -1,5 +1,7 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Contributor: alexforsale@yahoo.com
+# Contributor: Thomas Bächler <thomas@archlinux.org>
+# Maintainer: Gaetan Bisson <bisson@archlinux.org>
 pkgname=iana-etc
 pkgver=20190826
 pkgrel=1

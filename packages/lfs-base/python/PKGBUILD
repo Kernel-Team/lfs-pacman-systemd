@@ -1,5 +1,10 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Angel Velasquez <angvp@archlinux.org>
+# Maintainer: Felix Yan <felixonmars@archlinux.org>
+# Contributor: Stéphane Gaudreault <stephane@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Jason Chu <jason@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=python
 pkgver=3.7.4
 pkgrel=1
@@ -31,7 +36,7 @@ source=("https://www.python.org/ftp/python/${pkgver%rc*}/Python-${pkgver}.tar.xz
 validpgpkeys=('0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D')  # Ned Deily (Python release signing key) <nad@python.org>
 
 for _d in "${_deps[@]}";do
-    if [[ "$(pacman -Ss "^${_d}$" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_d}" 2>/dev/null)" ]];then
         depends+=( "${_d}")
         pkgrel=$((pkgrel+1))
     else
@@ -39,7 +44,7 @@ for _d in "${_deps[@]}";do
     fi
 done
 for _m in "${_makedeps[@]}";do
-    if [[ "$(pacman -Ss "^${_m}$" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
         makedepends+=( "${_m}")
         pkgrel=$((pkgrel+1))
     else
@@ -56,6 +61,18 @@ prepare() {
     # FS#23997
     sed -i -e "s|^#.* /usr/local/bin/python|#!/usr/bin/python|" Lib/cgi.py
 
+    # Ensure that we are using the system copy of various libraries (expat, libffi, and libmpdec),
+    # rather than copies shipped in the tarball
+    if [[ $(pacman -Qq expat 2>/dev/null) ]];then
+        rm -r Modules/expat
+    fi
+    if [[ $(pacman -Qq libffi 2>/dev/null) ]];then
+        rm -r Modules/_ctypes/{darwin,libffi}*
+    fi
+    if [[ $(pacman -Qq mpdecimal 2>/dev/null) ]];then
+        rm -r Modules/_decimal/libmpdec
+    fi
+    
     # Disable bundled pip & setuptools
     ./configure --prefix=/usr \
                 --enable-shared \

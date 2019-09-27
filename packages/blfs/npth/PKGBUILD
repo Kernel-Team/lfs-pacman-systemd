@@ -1,5 +1,6 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Gaetan Bisson <bisson@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=npth
 pkgver=1.6
 pkgrel=1
@@ -15,6 +16,7 @@ validpgpkeys=('D8692123C4065DEA5E0F3AB5249B39D24F25E3B6'
 source=("ftp://ftp.gnupg.org/gcrypt/${pkgname}/${pkgname}-${pkgver}.tar.bz2"{,.sig})
 sha256sums=('1393abd9adcf0762d34798dc34fdcf4d0d22a8410721e76f1e3afcd1daa4e2d1'
             'SKIP')
+groups=('blfs' 'general-libraries')
 
 prepare(){
     cd "${srcdir}/${pkgname}-${pkgver}"

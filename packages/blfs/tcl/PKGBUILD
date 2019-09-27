@@ -1,5 +1,6 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Eric Bélanger <eric@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgbase=tcl
 pkgname=(tcl lib{,x}32-tcl)
 pkgver=8.6.9

@@ -1,0 +1,60 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=apr
+pkgver=1.7.0
+pkgrel=1
+pkgdesc='The Apache Portable Runtime'
+arch=('x86_64')
+url='http://apr.apache.org/'
+depends=('util-linux')
+makedepends=('python2')
+license=('APACHE')
+source=(https://www.apache.org/dist/apr/apr-$pkgver.tar.bz2{,.asc}
+        fix_apr-config.patch
+        ship_find_apr.m4.patch
+        fix-apr.pc.patch
+        omit_extra_libs.patch
+        dont_override_external_buildflags)
+validpgpkeys=('5B5181C2C0AB13E59DA3F7A3EC582EB639FF092C'  # Jeff Trawick
+              'B1B96F45DFBDCCF974019235193F180AB55D9977') # Nick Kew <niq@apache.org>
+groups=('blfs' 'general-libraries')
+
+prepare() {
+    cd apr-$pkgver
+    patch -Np1 -i ../fix_apr-config.patch
+    patch -Np1 -i ../ship_find_apr.m4.patch
+    patch -Np1 -i ../fix-apr.pc.patch
+    patch -Np1 -i ../omit_extra_libs.patch
+    patch -Np1 -i ../dont_override_external_buildflags
+    sed -e 's/env python/env python2/' -i build/gen-build.py
+    sed -e 's/python/python2/g' -i build/buildcheck.sh
+    ./buildconf
+    ./configure --prefix=/usr --includedir=/usr/include/apr-1 \
+                --with-installbuilddir=/usr/share/apr-1/build \
+                --enable-nonportable-atomics \
+                --with-devrandom=/dev/urandom --disable-static
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+}
+
+build() {
+    cd apr-$pkgver
+    make
+}
+
+check() {
+    cd apr-$pkgver
+    make -j1 check
+}
+
+package() {
+    cd apr-$pkgver
+    make DESTDIR="$pkgdir" install
+}
+
+md5sums=('7a14a83d664e87599ea25ff4432e48a7'
+         'SKIP'
+         '401b022aabfd9bd591bddb3b565177c0'
+         '2d15340804eb9b28988a860ca4e6299d'
+         '8bd9cc0831f11176213758d3a8da1b15'
+         '89d541cff24c980960f22cb0906dfacc'
+         'c11e419816ca54042597839030b22a2d')

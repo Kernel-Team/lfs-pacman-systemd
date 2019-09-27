@@ -1,5 +1,6 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Eric Bélanger <eric@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=inetutils
 pkgver=1.9.4
 pkgrel=1
@@ -19,7 +20,7 @@ validpgpkeys=('4FBD67621082C4C502448E3B180551BAD95A3C35')
 
 _confargs=()
 
-if [[ "$(pacman -Ss ^linux-pam$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq linux-pam 2>/dev/null)" ]];then
     depends+=( 'linux-pam')
     _confargs+=( '--with-pam')
     pkgrel=$((pkgrel+1))
@@ -27,7 +28,7 @@ else
     _confargs=( '--without-pam')
     optdepends+=( 'linux-pam')
 fi
-if [[ -n "$(pacman -Ss ^help2man$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq help2man 2>/dev/null)" ]];then
     makedepends+=( 'help2man')
     pkgrel=$((pkgrel+1))
 else

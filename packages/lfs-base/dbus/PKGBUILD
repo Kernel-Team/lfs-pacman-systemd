@@ -1,5 +1,9 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: Tom Gundersen <teg@jklm.no>
+# Contributor: Link Dupont <link@subpop.net>
+# Contributor: alexforsale@yahoo.com
 pkgbase=dbus
 pkgname=(dbus dbus-docs)
 pkgver=1.12.16
@@ -103,6 +107,11 @@ package_dbus() {
 
     # Split docs
     mv "$pkgdir/usr/share/doc" "$srcdir"
+
+    install -vdm755 ${pkgdir}/lib/systemd
+    mv -v ${pkgdir}/usr/lib/systemd/* ${pkgdir}/lib/systemd/
+    rm -rfv ${pkgdir}/usr/lib/systemd
+
 }
 
 package_dbus-docs() {

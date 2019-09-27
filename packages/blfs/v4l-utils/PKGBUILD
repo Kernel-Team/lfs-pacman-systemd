@@ -1,0 +1,54 @@
+#-*-mode:sh-*-
+# Maintainer: Thomas Bächler <thomas@archlinux.org>
+# Contributor: alexforsale@yahoo.com
+pkgname=v4l-utils
+pkgver=1.16.7
+pkgrel=1
+pkgdesc="Userspace tools and conversion library for Video 4 Linux"
+arch=('x86_64')
+url="https://linuxtv.org/"
+provides=("libv4l=$pkgver")
+replaces=('libv4l')
+conflicts=('libv4l')
+backup=(etc/rc_maps.cfg)
+license=('LGPL')
+makedepends=('alsa-lib')
+optdepends=('qt5-base' 'alsa-lib')
+depends=()
+_deps=('hicolor-icon-theme' 'gcc-libs' 'sysfsutils' 'libjpeg-turbo')
+_makedeps=('qt5-base' 'doxygen')
+source=(https://linuxtv.org/downloads/v4l-utils/${pkgname}-${pkgver}.tar.bz2{,.asc})
+sha256sums=('ee917a7e1af72c60c0532d9fdb9e48baf641d427aa7b009a9b2ca821f9e8e0d9'
+            'SKIP')
+validpgpkeys=('05D0169C26E41593418129DF199A64FADFB500FF') # Gregor Jasny <gjasny@googlemail.com>
+groups=('blfs' 'multimedia-libraries-drivers')
+
+for d in ${_deps[@]};do
+    if [[ $(pacman -Qq $d 2>/dev/null) ]];then
+        depends+=( $d)
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( $d)
+    fi
+done
+for m in ${_makedeps[@]};do
+    if [[ $(pacman -Qq $m 2>/dev/null) ]];then
+        makedepends+=( $m)
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( $m)
+    fi
+done
+
+build() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+
+    ./configure --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin
+    make
+}
+
+package() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    MAKEFLAGS="-j1" make install DESTDIR="${pkgdir}/"
+    rm "${pkgdir}/usr/bin/ivtv-ctl"
+}

@@ -1,5 +1,7 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: Ionut Biru <ibiru@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=p11-kit
 pkgver=0.23.16.1
 pkgrel=1
@@ -17,7 +19,7 @@ validpgpkeys=('C0F67099B808FB063E2C81117BFB1108D92765AF'  # Stef Walter
 groups=('blfs' 'security')
 
 for _m in ${_makedeps[@]};do
-    if [[ -n "$(pacman -Ss "^${_m}$" 2>/dev/null)" ]];then
+    if [[ -n "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
         makedepends+=( "${_m}")
         pkgrel=$((pkgrel+1))
     fi

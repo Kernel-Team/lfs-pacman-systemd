@@ -1,5 +1,7 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Allan McRae <allan@archlinux.org>
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=autoconf
 pkgver=2.69
 pkgrel=1
@@ -14,32 +16,32 @@ groups=('lfs-base')
 source=(ftp://ftp.gnu.org/pub/gnu/${pkgname}/${pkgname}-${pkgver}.tar.xz{,.sig})
 validpgpkeys=('71C2CC22B1C4602927D2F3AAA7A16B4A2527436A')
 
-if [[ "$(pacman -Ss ^awk$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq awk 2>/dev/null)" ]];then
     depends+=( 'awk')
     pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'awk')
 fi
 
-if [[ "$(pacman -Ss ^m4$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq m4 2>/dev/null)" ]];then
     depends+=( 'm4')
     pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'm4')
 fi
-if [[ -n "$(pacman -Ss ^diffutils$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq diffutils 2>/dev/null)" ]];then
     depends+=( 'diffutils')
     pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'diffutils')
 fi
-if [[ -n "$(pacman -Ss ^help2man$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq help2man 2>/dev/null)" ]];then
     makedepends+=( 'help2man')
     pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'help2man')
 fi
-if [[ -n "$(pacman -Ss ^gcc-fortran$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq gcc-fortran 2>/dev/null)" ]];then
     checkdepends+=( 'gcc-fortran')
 else
     optdepends+=( 'gcc-fortran')

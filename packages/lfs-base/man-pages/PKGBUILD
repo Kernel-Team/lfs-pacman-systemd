@@ -1,5 +1,6 @@
 #-*-mode:sh-*-
 # Maintainer: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=man-pages
 pkgver=5.02
 _posixver=2013-a

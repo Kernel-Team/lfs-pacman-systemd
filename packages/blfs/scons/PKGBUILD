@@ -1,0 +1,68 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=scons
+pkgver=3.1.1
+pkgrel=1
+pkgdesc="Extensible Python-based build utility"
+arch=('any')
+url="https://scons.org"
+license=('MIT')
+depends=('python')
+makedepends=('docbook2x' 'epydoc' 'texlive-bin' 'graphviz' 'ghostscript'
+             'lynx' 'python-lxml' 'python-setuptools' 'texlive-latexextra')
+_makedeps=('fop')
+# potential additions include ipkg, rpm
+checkdepends=('clang' 'gdc' 'dmd' 'ldc' 'lib32-glibc' 'nasm' 'python-pytest'
+              'python-virtualenv' 'swig' 'zip')
+source=("$pkgname-$pkgver.tar.gz::https://github.com/${pkgname}/${pkgname}/archive/${pkgver}.tar.gz")
+groups=('blfs' 'programming')
+
+for _m in "${_makedeps[@]}";do
+    if [[ "$(pacman -Ss "^${_m}$" 2>/dev/null)" ]];then
+        makedepends+=( "${_m}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_m}")
+    fi
+done
+
+prepare() {
+    cd "${pkgname}-${pkgver}"
+
+    sed -i 's/env python/&3/' script/scons*
+}
+
+build() {
+    cd "${pkgname}-${pkgver}"
+    (
+        python3 setup.py build
+    )
+}
+
+check() {
+    cd "${pkgname}-${pkgver}"
+    python runtest.py -a -t || msg "Tests passing with 'NO RESULT' count as failed."
+}
+
+package() {
+    local py_ver=$(python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
+    cd "${pkgname}-${pkgver}"
+    python setup.py install --prefix=/usr \
+           --skip-build \
+           --optimize=1 \
+           --standard-lib \
+           --install-data=/usr/share \
+           --root="$pkgdir"
+    # strip $pkgdir from embedded paths:
+    python -m compileall -d "/usr/lib/python${py_ver}" \
+           "${pkgdir}/usr/lib/python${py_ver}"
+    python -O -m compileall -d "/usr/lib/python${py_ver}" \
+           "${pkgdir}/usr/lib/python${py_ver}"
+    install -vDm 644 LICENSE.txt -t "${pkgdir}/usr/share/licenses/${pkgname}/"
+    install -vDm 644 {CHANGES,README,RELEASE}.txt \
+            -t "${pkgdir}/usr/share/doc/${pkgname}/"
+    # removing Windows only script
+    rm -vf "${pkgdir}/usr/bin/scons"*.bat
+}
+
+sha512sums=('2e80b45571679d8acc0554273538f56163488df5aa9007c7c9c3a6deb2698909ab05da8df91502ea287c0cc0ff0a98f226454f67fcfb7a943570f673f4bd8f54')

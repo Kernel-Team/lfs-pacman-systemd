@@ -1,0 +1,44 @@
+#-*-mode:sh-*-
+# Maintainer: Christian Hesse <mail@eworm.de>
+# Contributor: Judd Vinet <judd@archlinux.org>
+# Contributor: alexforsale@yahoo.com
+pkgname=bridge-utils
+pkgver=1.6
+pkgrel=1
+pkgdesc="Utilities for configuring the Linux ethernet bridge"
+arch=('x86_64')
+url='https://wiki.linuxfoundation.org/networking/bridge'
+license=('GPL')
+depends=('glibc')
+validpgpkeys=('9F6FC345B05BE7E766B83C8F80A77F6095CDE47E')	# Stephen Hemminger (Microsoft corporate) <sthemmin@microsoft.com>
+source=("https://www.kernel.org/pub/linux/utils/net/${pkgname}/${pkgname}-${pkgver}.tar."{xz,sign}
+        "$pkgname.config")
+groups=('blfs' 'networking-programs')
+
+prepare(){
+    cd "${srcdir}/${pkgname}-${pkgver}"
+
+    aclocal
+    autoconf
+    ./configure \
+        --prefix=/usr \
+        --sysconfdir=/etc
+}
+
+build() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    make
+}
+
+package() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+
+    make DESTDIR="${pkgdir}" install
+
+    install -vdm755 $pkgdir/usr/local/share/linuxfromscratch/kernel_configs
+    install -m644 ../$pkgname.config $pkgdir/usr/local/share/linuxfromscratch/kernel_configs
+}
+
+sha256sums=('cc67efb5d5fb8928a6569b3fade2b4042ec17da04678dab127d96b46489e26c8'
+            'SKIP'
+            '7ef6528e2c39e0536a9816387aebe6b9866a1377ff74f6eab11d284741bc76e6')

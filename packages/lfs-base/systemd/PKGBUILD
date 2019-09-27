@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Christian Hesse <mail@eworm.de>
+# Maintainer: Dave Reisner <dreisner@archlinux.org>
+# Maintainer: Tom Gundersen <teg@jklm.no>
+# Contributor: alexforsale@yahoo.com
 pkgbase=systemd
 pkgname=('systemd' 'systemd-libs' 'systemd-sysvcompat' 'systemd-resolvconf')
 pkgver=241
@@ -8,7 +11,7 @@ arch=('x86_64')
 url="https://www.github.com/systemd/systemd"
 _deps=( 'cryptsetup' 'docbook-xsl' 'gperf' 'lz4' 'xz' 'linux-pam' 'iptables' 'libidn' 'libidn2' 'libgcrypt'
         'libmicrohttpd' 'libxslt' 'util-linux' 'python-lxml' 'quota-tools' 'gnu-efi-libs' 'libseccomp'
-        'pcre2' 'curl' 'qrencode' 'hwids' 'dbus' 'kbd' 'git' 'bash-completion' 'libxkbcommon' 'kexec-tools')
+        'pcre2' 'curl' 'qrencode' 'hwids' 'dbus' 'kbd' 'git' 'bash-completion' 'libxkbcommon' 'kexec-tools' 'audit')
 depends=('acl'
          'libelf'
          'intltool'
@@ -44,7 +47,7 @@ groups=('lfs-base' 'system-utilities')
 noextract=(systemd-man-pages-${pkgver}.tar.xz)
 
 for _d in ${_deps[@]};do
-    if [[ -n "$(pacman -Ss ^${_d}$ 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq ${_d} 2>/dev/null)" ]];then
         depends+=( "${_d}")
         pkgrel=$((pkgrel+1))
     else
@@ -192,8 +195,8 @@ package_systemd() {
     rm -v "$pkgdir"/sbin/{halt,init,poweroff,reboot,runlevel,shutdown,telinit}
 
     # files shipped with systemd-resolvconf
-    rm "$pkgdir"/sbin/resolvconf
-    rm "$pkgdir"/usr/share/man/man1/resolvconf.1
+    rm -rfv "$pkgdir"/sbin/resolvconf
+    rm -rfv "$pkgdir"/usr/share/man/man1/resolvconf.1
 
     # avoid a potential conflict with [core]/filesystem
     rm -v "$pkgdir"/usr/share/factory/etc/nsswitch.conf
@@ -224,6 +227,10 @@ package_systemd() {
 
     # script to allow unprivileged user logins without systemd-logind
     #install -Dm644 systemd-user-sessions "$pkgdir"/lib/systemd/systemd-user-sessions
+
+    install -vdm755 ${pkgdir}/lib/systemd
+    mv -v ${pkgdir}/usr/lib/systemd/* ${pkgdir}/lib/systemd/
+    rm -rfv ${pkgdir}/usr/lib/systemd
 }
 
 package_systemd-libs() {
@@ -278,7 +285,7 @@ md5sums=('6942e1a9032e19da6639f9705241d119'
          'b93ecc3e0a95aebe63c69188840e29fd'
          '80fd2a6ec5ade81ebe4ea7ecce0f9b1b'
          '981d3730f7d14ac9459aba2753ce6a97'
-         '11d703a47115c3ad4530fe78ae6036d1'
+         '7982d669d7054eb8d8e53f8524ac1787'
          'ce4c85b7eba8d857ac994b9e6f56c614'
          '3da33b055e52e6d34361b43b66b70f2e'
          'e2eb21708d789c44a0c21d47e2aa6d88'

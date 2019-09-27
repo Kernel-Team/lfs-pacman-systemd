@@ -1,5 +1,13 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Contributor: Anatol Pomozov <anatol.pomozov@gmail.com>
+# Contributor: Thomas Dziedzic <gostrc@gmail.com>
+# Contributor: Jan "heftig" Steffens <jan.steffens@gmail.com>
+# Contributor: tobias [ tobias at archlinux org ]
+# Contributor: Daniel J Griffiths <ghost1227@archlinux.us>
+# Contributor: Christian Hesse <mail@eworm.de>
+# Contributor: Eli Schwartz <eschwartz@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=vim
 pkgver=8.1
 pkgrel=1

@@ -1,5 +1,10 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer:  Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: Sergej Pupykin <pupykin.s+arch@gmail.com>
+# Contributor: Emmanuel 'guinness' Boudreault
+# Contributor: Patrick McCarty <pnorcks at gmail dot com>
+# Contributor: alexforsale@yahoo.com
 pkgname=libunistring
 pkgver=0.9.10
 pkgrel=1
@@ -13,6 +18,7 @@ validpgpkeys=('462225C3B46F34879FC8496CD605848ED7E69871') # Daiki Ueno <ueno@uni
 md5sums=('db08bb384e81968957f997ec9808926e'
          'SKIP')
 groups=('blfs' 'general-libraries')
+
 prepare(){
     cd $pkgname-$pkgver
     ./configure --prefix=/usr --disable-static --docdir=/usr/share/doc/${pkgname}-${pkgver}

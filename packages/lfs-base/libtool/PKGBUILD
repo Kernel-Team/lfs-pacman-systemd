@@ -1,5 +1,10 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer:  Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+# Contributor: alexforsale@yahoo.com
+
+# NOTE: requires rebuilt with each new gcc version
 pkgname=libtool
 pkgver=2.4.6
 pkgrel=1
@@ -17,13 +22,13 @@ replaces=(libltdl libtool-multilib)
 groups=('lfs-base')
 source=(http://ftp.gnu.org/gnu/libtool/libtool-${pkgver}.tar.xz)
 
-if [[ "$(pacman -Ss ^tar$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq tar 2>/dev/null)" ]];then
     depends+=( 'tar')
     pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'tar')
 fi
-if [[ "$(pacman -Ss ^help2man$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq help2man 2>/dev/null)" ]];then
     makedepends+=( 'help2man')
     pkgrel=$((pkgrel+1))
 else
@@ -32,7 +37,7 @@ fi
 
 prepare() {
     cd ${pkgname}-${pkgver}
-    M4=/usr/bin/m4 ./configure --prefix=/usr lt_cv_sys_lib_dlsearch_path_spec="/usr/lib /usr/lib32 /usr/libx32"
+    M4=/usr/bin/m4 ./configure --prefix=/usr lt_cv_sys_lib_dlsearch_path_spec="/usr/lib /usr/lib32 /usr/libx32 /usr/local/lib /usr/local/lib32 /usr/local/libx32"
 }
 
 build() {

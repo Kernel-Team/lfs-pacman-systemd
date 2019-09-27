@@ -1,0 +1,62 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: David Herrmann <dh.herrmann@gmail.com>
+pkgname=dbus-broker
+pkgver=21
+pkgrel=1
+pkgdesc="Linux D-Bus Message Broker"
+url="https://groups.google.com/forum/#!forum/bus1-devel"
+arch=(x86_64)
+license=(Apache)
+depends=(systemd-libs expat audit)
+makedepends=(git meson systemd python-docutils)
+_commit=d03c640cf52c74688881c46f171c526ba707016f  # tags/v21^0
+source=("git+https://github.com/bus1/dbus-broker#commit=$_commit"
+        git+https://github.com/c-util/c-{rbtree,list,dvar,utf8,shquote,ini,stdaux})
+sha256sums=('SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP')
+groups=('extra')
+
+pkgver() {
+    cd $pkgname
+    git describe --tags | sed 's/^v//;s/-/+/g'
+}
+
+prepare() {
+    cd $pkgname
+
+    git submodule init
+
+    local sm
+    for sm in c-{rbtree,list,dvar,utf8,shquote,ini,stdaux}; do
+        git config --local submodule.subprojects/$sm.url "$srcdir/$sm"
+    done
+
+    git submodule update
+
+    cd $srcdir
+    meson-helper $pkgname build -D docs=true -D audit=true
+}
+
+build() {
+    ninja -C build
+}
+
+check() {
+    meson test -C build --print-errorlogs
+}
+
+package() {
+    DESTDIR="$pkgdir" meson install -C build
+
+    install -vdm755 ${pkgdir}/lib/systemd
+    mv -v ${pkgdir}/usr/lib/systemd/* ${pkgdir}/lib/systemd
+    rm -rfv ${pkgdir}/usr/lib/systemd
+}

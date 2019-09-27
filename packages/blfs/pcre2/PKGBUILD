@@ -1,5 +1,11 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Felix Yan <felixonmars@archlinux.org>
+# Contributor: Mateusz 'mrlemux' Lemusisk mrlemux at gmail dotcom
+# Based on the pcre package by Sébastien "Seblu" Luttringer
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Eric Belanger <eric@archlinux.org>
+# Contributor: John Proctor <jproctor@prium.net>
+# Contributor: alexforsale@yahoo.com
 pkgname=pcre2
 pkgver=10.33
 pkgrel=1
@@ -16,6 +22,7 @@ prepare(){
     cd $pkgname-$pkgver
     ./configure \
         --prefix=/usr \
+        --enable-unicode \
         --enable-pcre2-16 \
         --enable-pcre2-32 \
         --enable-jit \

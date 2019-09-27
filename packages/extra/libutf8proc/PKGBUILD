@@ -1,0 +1,53 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=libutf8proc
+pkgver=2.4.0
+_sover=2.3.1
+pkgrel=1
+pkgdesc='C library for processing UTF-8 encoded Unicode strings'
+arch=('x86_64')
+url='https://git.netsurf-browser.org/libutf8proc.git/'
+license=('MIT' 'custom')
+_makedeps=('git')
+makedepends=('cmake' 'ninja')
+source=("git+https://github.com/JuliaStrings/utf8proc#tag=v$pkgver"
+        'libutf8proc.pc.in')
+groups=('extra')
+
+for _m in "${_makedeps[@]}";do
+    if [[ "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
+        makedepends+=( "${_m}")
+        pkgrel=$((pkgrel+1))
+    fi
+done
+
+prepare() {
+    sed "s#@VERSION@#$pkgver#" libutf8proc.pc.in > libutf8proc.pc
+
+    mkdir -p build
+    cd build
+    cmake ../utf8proc \
+          -DCMAKE_INSTALL_PREFIX=/usr \
+          -DBUILD_SHARED_LIBS=ON \
+          -G Ninja
+}
+
+build() {
+    cd build
+    ninja
+}
+
+package() {
+    cd utf8proc
+    install -Dm644 utf8proc.h "$pkgdir/usr/include/utf8proc.h"
+    install -Dm644 LICENSE.md "$pkgdir/usr/share/licenses/$pkgname/LICENSE.md"
+    install -Dm644 "$srcdir/libutf8proc.pc" \
+            "$pkgdir/usr/lib/pkgconfig/libutf8proc.pc"
+    install -Dm644 ../build/libutf8proc.so.$_sover \
+            "$pkgdir/usr/lib/libutf8proc.so.$_sover"
+    ln -s /usr/lib/libutf8proc.so.$_sover "$pkgdir/usr/lib/libutf8proc.so"
+    /sbin/ldconfig -n "$pkgdir/usr/lib"
+}
+
+md5sums=('SKIP'
+         'bfcff22a2cbb13f7709f15dc9e268ff4')

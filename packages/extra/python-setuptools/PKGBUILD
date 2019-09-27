@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Angel Velasquez <angvp@archlinux.org>
+# Maintainer: Felix Yan <felixonmars@archlinux.org>
+# Contributor: Eli Schwartz <eschwartz@archlinux.org>
+# Contributors: alexforsale@yahoo.com
 pkgbase=python-setuptools
 pkgname=('python-setuptools' 'python2-setuptools')
 pkgver=41.2.0
@@ -8,7 +11,7 @@ pkgdesc="Easily download, build, install, upgrade, and uninstall Python packages
 arch=('any')
 license=('PSF')
 url="https://pypi.org/project/setuptools/"
-_deps=('appdirs' 'packaging' 'pip')
+_deps=('appdirs' 'packaging' 'pip' 'pyparsing')
 makedepends=('python-six' 'python2-six')
 _checkdeps=('mock' 'pip' 'pytest-fixture-config' 'pytest-flake8'
             'pytest-runner' 'pytest-virtualenv' 'wheel')
@@ -18,16 +21,18 @@ source=("$pkgbase-$pkgver.tar.gz::https://github.com/pypa/setuptools/archive/v$p
 sha512sums=('9ddaae9d530cb5580566abba4b9aec19d5bbbc9bd571eb121ce597d311e99c8f766fd905d856419355fa9a676040c41703c0d7fbe7e6d068e701dd89df4280e1')
 groups=('extra' 'python-extra')
 
-if [[ "$(pacman -Ss ^git$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq git 2>/dev/null)" ]];then
     makedepends+=( 'git')
     checkdepends+=( 'git')
+    pkgrel=$((pkgrel+1))
 fi
 for _d in ${_deps[@]};do
-    if [[ -n "$(pacman -Ss ^"${_d[@]/#/python-}"$ 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_d[@]/#/python-}" 2>/dev/null)" ]];then
         makedepends+=( "${_d[@]/#/python-}")
+        pkgrel=$((pkgrel+1))
         depends+=( "${_d[@]/#/python-}")
     fi
-    if [[ -n "$(pacman -Ss ^"${_d[@]/#/python2-}"$ 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_d[@]/#/python2-}" 2>/dev/null)" ]];then
         makedepends+=( "${_d[@]/#/python2-}")
         depends+=( "${_d[@]/#/python2-}")
     fi

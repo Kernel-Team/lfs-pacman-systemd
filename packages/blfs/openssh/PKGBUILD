@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Gaetan Bisson <bisson@archlinux.org>
+# Contributor: Aaron Griffin <aaron@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=openssh
 pkgver=8.0p1
 pkgrel=1
@@ -29,7 +32,6 @@ prepare(){
 
     ./configure \
         --prefix=/usr \
-        --sbindir=/usr/bin \
         --libexecdir=/usr/lib/ssh \
         --sysconfdir=/etc/ssh \
         --with-ldns \
@@ -86,13 +88,14 @@ package() {
         -e '/^#PrintMotd yes$/c PrintMotd no # pam does that' \
         -e '/^#UsePAM no$/c UsePAM yes' \
         -i "${pkgdir}"/etc/ssh/sshd_config
+    chmod -v 644 "${pkgdir}"/etc/ssh/sshd_config
 }
 
 sha256sums=('bd943879e69498e8031eb6b7f44d08cdc37d59a7ab689aa0b437320c3481fd68'
             'SKIP'
             '4031577db6416fcbaacf8a26a024ecd3939e5c10fe6a86ee3f0eea5093d533b7'
-            '3a0845737207f4eda221c9c9fb64e766ade9684562d8ba4f705f7ae6826886e5'
-            'c5ed9fa629f8f8dbf3bae4edbad4441c36df535088553fe82695c52d7bde30aa'
+            '30a112da84b35470ad539949bdc1aca0c19c19ba492f949c3aff9535b909caf9'
+            '4bd118a199671f73086f55b5ae6d66c9242460bfe4f344fce4c3a7dd73e1049c'
             'de14363e9d4ed92848e524036d9e6b57b2d35cc77d377b7247c38111d2a3defd'
             '4effac1186cc62617f44385415103021f72f674f8b8e26447fc1139c670090f6'
             '64576021515c0a98b0aaf0a0ae02e0f5ebe8ee525b1e647ab68f369f81ecd846'

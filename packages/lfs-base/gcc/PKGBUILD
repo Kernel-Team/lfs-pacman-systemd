@@ -1,5 +1,9 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Contributor: alexforsale@yahoo.com
+# Maintainer:  Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# toolchain build order: linux-api-headers->glibc->binutils->gcc->binutils->glibc
+# NOTE: libtool requires rebuilt with each new gcc version
 pkgbase=gcc
 pkgname=(gcc gcc-libs lib32-gcc-libs libx32-gcc-libs)
 pkgver=9.2.0
@@ -9,7 +13,7 @@ pkgdesc="GNU compiler collection, which includes the C and C++ compilers"
 arch=(x86_64)
 license=(GPL LGPL FDL custom)
 url='http://gcc.gnu.org'
-_makedeps=('gcc-ada' 'doxygen' 'lib32-glibc' 'libx32-glibc' 'python')
+_makedeps=('gcc-ada' 'doxygen' 'python')
 makedepends=('binutils'
              'libmpc'
             )
@@ -26,19 +30,29 @@ validpgpkeys=(F3691687D867B81B51CE07D9BBE43771487328A9  # bpiotrowski@archlinux.
               33C235A34C46AA3FFB293709A328C3A2C3C45C06) # Jakub Jelinek <jakub@redhat.com>
 
 for _m in "${_makedeps[@]}";do
-    if [[ "$(pacman -Ss "^${_m}$" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
         makedepends+=( "${_m}")
+        pkgrel=$((pkgrel+1))
     else
         optdepends+=( "${_m}")
     fi
 done
 for _c in "${_checkdeps[@]}";do
-    if [[ "$(pacman -Ss "^${_c}$" 2>/dev/null)" ]];then
+    if [[ "$(pacman -Qq "${_c}" 2>/dev/null)" ]];then
         checkdepends+=( "${_c}")
     else
         optdepends+=( "${_c}")
     fi
 done
+
+if [[ $(pacman -Qq 'lib32-glibc' 2>/dev/null) ]];then
+    _32_makedeps=( 'lib32-glibc')
+    pkgrel=$((pkgrel+1))
+fi
+if [[ $(pacman -Qq 'libx32-glibc' 2>/dev/null) ]];then
+    _x32_makedeps=( 'lib32-glibc')
+    pkgrel=$((pkgrel+1))
+fi
 
 _confargs=""
 _languages="c,c++,lto"
@@ -140,7 +154,6 @@ EOF
           --enable-install-libiberty \
           --enable-shared \
           --enable-threads=posix \
-          --with-isl \
           --enable-__cxa_atexit \
           --disable-libunwind-exceptions \
           --enable-clocale=gnu \
@@ -150,6 +163,7 @@ EOF
           --enable-plugin \
           --with-linker-hash-style=gnu \
           --enable-gnu-indirect-function \
+          --enable-install-libiberty \
           --enable-checking=release \
           --enable-default-pie \
           --enable-default-ssp \
@@ -467,6 +481,7 @@ package_gcc-go() {
 package_lib32-gcc-libs() {
     pkgdesc='32-bit runtime libraries shipped by GCC'
     depends=('lib32-glibc>=2.27')
+    makedepends=( "${_32_makedeps[@]}")
     provides=(libubsan.so libasan.so)
     if [[ "x${_BUILD_GO}" == "x1" ]]; then
         provides+=( 'libgo.so')
@@ -510,6 +525,7 @@ package_lib32-gcc-libs() {
 package_libx32-gcc-libs() {
     pkgdesc="Runtime libraries shipped by GCC (x32 ABI)"
     depends=('libx32-glibc>=2.23')
+    makedepends=( "${_x32_makedeps[@]}")
     options=('!emptydirs' '!strip')
     groups=('lfs-base' 'lfs-multilib')
 

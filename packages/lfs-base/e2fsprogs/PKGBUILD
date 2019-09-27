@@ -1,5 +1,7 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Ronald van Haren <ronald.archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=e2fsprogs
 pkgver=1.45.3
 pkgrel=1
@@ -12,7 +14,8 @@ makedepends=()
 backup=('etc/mke2fs.conf')
 options=('staticlibs')
 validpgpkeys=('3AB057B7E78D945C8C5591FBD36F769BC11804F0') # Theodore Ts'o <tytso@mit.edu>
-source=("https://www.kernel.org/pub/linux/kernel/people/tytso/${pkgname}/v${pkgver}/${pkgname}-${pkgver}.tar."{xz,sign})
+source=("https://www.kernel.org/pub/linux/kernel/people/tytso/${pkgname}/v${pkgver}/${pkgname}-${pkgver}.tar."{xz,sign}
+        'MIT-LICENSE')
 groups=('lfs-base')
 
 if [[ "$(pacman -Qq libutil-linux 2>/dev/null)" ]];then
@@ -20,6 +23,7 @@ if [[ "$(pacman -Qq libutil-linux 2>/dev/null)" ]];then
 fi
 if [[ "$(pacman -Qq util-linux 2>/dev/null)" ]];then
     makedepends+=( 'util-linux')
+    pkgrel=$((pkgrel+1))
 fi
 
 prepare() {
@@ -68,7 +72,12 @@ package() {
 
     # remove static libraries with a shared counterpart
     rm "${pkgdir}"/usr/lib/lib{com_err,e2p,ext2fs,ss}.a
+
+    # install MIT license
+    install -Dm644 "${srcdir}/MIT-LICENSE" \
+            "${pkgdir}/usr/share/licenses/${pkgname}/MIT-LICENSE"
 }
 
 md5sums=('9bbf7ce425dfe58d3d54f1bb679aaf07'
-         'SKIP')
+         'SKIP'
+         '035b7c69b7a2cecf996a4708c262245e')

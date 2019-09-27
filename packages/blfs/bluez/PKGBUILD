@@ -2,8 +2,8 @@
 # Maintainer: alexforsale@yahoo.com
 pkgbase=bluez
 pkgname=('bluez' 'bluez-utils' 'bluez-libs' 'bluez-hid2hci' 'bluez-plugins')
-pkgver=5.50
-pkgrel=3
+pkgver=5.51
+pkgrel=1
 url="http://www.bluez.org/"
 arch=('x86_64')
 license=('GPL2')
@@ -11,9 +11,11 @@ makedepends=('dbus' 'libical' 'systemd' 'alsa-lib' 'ell' 'json-c')
 source=(https://www.kernel.org/pub/linux/bluetooth/${pkgname}-${pkgver}.tar.{xz,sign}
         bluetooth.modprobe
         refresh_adv_manager_for_non-LE_devices.diff
-        bluez-5.50-signal-signature-btpclient.patch)
+        bluez-5.50-signal-signature-btpclient.patch
+        "$pkgname.config")
 # see https://www.kernel.org/pub/linux/bluetooth/sha256sums.asc
 validpgpkeys=('E932D120BC2AEC444E558F0106CA9F5D1DCF2659') # Marcel Holtmann <marcel@holtmann.org>
+groups=('blfs' 'system-utilities')
 
 if [[ "$(pacman -Qq cups 2>/dev/null)" ]];then
     pkgname+=( "${pkgbase}-cups")
@@ -24,7 +26,7 @@ prepare() {
     cd ${pkgname}-${pkgver}
     patch -Np1 -i ../refresh_adv_manager_for_non-LE_devices.diff
     # fix build error with recent gcc/glibc
-    patch -Np1 -i ../bluez-5.50-signal-signature-btpclient.patch
+    #patch -Np1 -i ../bluez-5.50-signal-signature-btpclient.patch
     ./configure \
         --prefix=/usr \
         --mandir=/usr/share/man \
@@ -60,7 +62,7 @@ package_bluez() {
 
     cd ${pkgbase}-${pkgver}
     make DESTDIR=${pkgdir} \
-         install-libexecPROGRAMS \
+         install-pkglibexecPROGRAMS \
          install-dbussessionbusDATA \
          install-systemdsystemunitDATA \
          install-systemduserunitDATA \
@@ -85,6 +87,9 @@ package_bluez() {
     
     # fix obex file transfer - https://bugs.archlinux.org/task/45816
     ln -fs /usr/lib/systemd/user/obex.service ${pkgdir}/usr/lib/systemd/user/dbus-org.bluez.obex.service
+
+    install -vdm755 $pkgdir/usr/local/share/linuxfromscratch/kernel_configs
+    install -m644 ../$pkgname.config $pkgdir/usr/local/share/linuxfromscratch/kernel_configs
 }
 
 package_bluez-utils() {
@@ -122,7 +127,7 @@ package_bluez-libs() {
 
     cd ${pkgbase}-${pkgver}
     make DESTDIR=${pkgdir} \
-         install-includeHEADERS \
+         install-pkgincludeHEADERS \
          install-libLTLIBRARIES \
          install-pkgconfigDATA
 }
@@ -157,8 +162,9 @@ package_bluez-plugins() {
          install-pluginLTLIBRARIES
 }
 
-md5sums=('8e35c67c81a55d3ad4c9f22280dae178'
+md5sums=('a2f269c9f9a943394043ac1de69eb5b0'
          'SKIP'
          '671c15e99d7154c2df987b71c5851b3d'
          '71a3ae1126bf23df3cd1ad6e305de650'
-         'b4551369b94d3f633af18d0ac069045b')
+         'b4551369b94d3f633af18d0ac069045b'
+         '3f37fe1a04821e77a89851b9c5c5acd2')

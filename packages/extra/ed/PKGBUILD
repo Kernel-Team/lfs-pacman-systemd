@@ -1,5 +1,7 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Dave Reisner <dreisner@archlinux.org>
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=ed
 pkgver=1.15
 pkgrel=1

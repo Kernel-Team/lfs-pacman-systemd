@@ -1,5 +1,6 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Contributor: alexforsale@yahoo.com
+# Maintainer: Pierre Schmitz <pierre@archlinux.de>
 pkgbase=zlib
 pkgname=($pkgbase lib32-$pkgbase libx32-$pkgbase)
 pkgver=1.2.11
@@ -11,130 +12,130 @@ source=("https://zlib.net/zlib-${pkgver}.tar.gz"{,.asc})
 validpgpkeys=('5ED46A6721D365587791E2AA783FCD8E58BCAFBA')
 
 if [[ $(command -v autoreconf) ]];then
-  pkgname+=( 'minizip')
-  _minizip=1
-  pkgrel=$((pkgrel+1))
+    pkgname+=( 'minizip')
+    _minizip=1
+    pkgrel=$((pkgrel+1))
 fi
 
 prepare() {
-  mkdir -pv build-{zlib,lib{,x}32-zlib} build-minizip
+    mkdir -pv build-{zlib,lib{,x}32-zlib} build-minizip
 
-  cd ${srcdir}/zlib-$pkgver
-  grep -A 24 '^  Copyright' zlib.h > LICENSE
+    cd ${srcdir}/zlib-$pkgver
+    grep -A 24 '^  Copyright' zlib.h > LICENSE
 
-  cd ${srcdir}/build-zlib
-  $srcdir/$pkgname-$pkgver/configure --prefix=/usr
+    cd ${srcdir}/build-zlib
+    $srcdir/$pkgname-$pkgver/configure --prefix=/usr
 
-  if [[ $_minizip -eq 1 ]];then
-    cd $srcdir/$pkgname-$pkgver/contrib/minizip
-    cp Makefile Makefile.orig
-    cp Makefile.orig $srcdir/build-minizip
-    cp ../README.contrib readme.txt
-    autoreconf --install
-    cd $srcdir/build-minizip
-    $srcdir/$pkgname-$pkgver/contrib/minizip/configure \
-      --prefix=/usr --enable-static=no
-  fi
+    if [[ $_minizip -eq 1 ]];then
+        cd $srcdir/$pkgname-$pkgver/contrib/minizip
+        cp Makefile Makefile.orig
+        cp Makefile.orig $srcdir/build-minizip
+        cp ../README.contrib readme.txt
+        autoreconf --install
+        cd $srcdir/build-minizip
+        $srcdir/$pkgname-$pkgver/contrib/minizip/configure \
+            --prefix=/usr --enable-static=no
+    fi
 
-  cd ${srcdir}/build-lib32-zlib
-  CC="gcc -m32 -march=i686" \
-    CXX="g++ -m32 -march=i686" \
-    PKG_CONFIG_PATH="/usr/lib32/pkgconfig" \
-    ${srcdir}/zlib-$pkgver/configure --prefix=/usr \
-    --libdir=/usr/lib32
+    cd ${srcdir}/build-lib32-zlib
+    CC="gcc -m32 -march=i686" \
+      CXX="g++ -m32 -march=i686" \
+      PKG_CONFIG_PATH="/usr/lib32/pkgconfig" \
+      ${srcdir}/zlib-$pkgver/configure --prefix=/usr \
+      --libdir=/usr/lib32
 
-  cd ${srcdir}/build-libx32-zlib
-  CC="gcc -mx32" \
-    CXX="g++ -mx32" \
-    PKG_CONFIG_PATH="/usr/libx32/pkgconfig" \
-    ${srcdir}/zlib-$pkgver/configure --prefix=/usr \
-    --libdir=/usr/libx32
+    cd ${srcdir}/build-libx32-zlib
+    CC="gcc -mx32" \
+      CXX="g++ -mx32" \
+      PKG_CONFIG_PATH="/usr/libx32/pkgconfig" \
+      ${srcdir}/zlib-$pkgver/configure --prefix=/usr \
+      --libdir=/usr/libx32
 }
 
 build() {
-  cd $srcdir/build-zlib
-  make
-
-  if [[ $_minizip -eq 1 ]];then
-    cd ${srcdir}/build-minizip
+    cd $srcdir/build-zlib
     make
-  fi
 
-  cd ${srcdir}/build-lib32-zlib
-  make
+    if [[ $_minizip -eq 1 ]];then
+        cd ${srcdir}/build-minizip
+        make
+    fi
 
-  cd ${srcdir}/build-libx32-zlib
-  make
+    cd ${srcdir}/build-lib32-zlib
+    make
+
+    cd ${srcdir}/build-libx32-zlib
+    make
 }
 
 check() {
-  cd $srcdir/build-zlib
-  make test
+    cd $srcdir/build-zlib
+    make test
 
-  if [[ $_minizip -eq 1 ]];then
-    cd contrib/minizip
-    make -f Makefile.orig test
-  fi
+    if [[ $_minizip -eq 1 ]];then
+        cd contrib/minizip
+        make -f Makefile.orig test
+    fi
 
-  cd $srcdir/build-lib32-zlib
-  make test
+    cd $srcdir/build-lib32-zlib
+    make test
 
-  cd $srcdir/build-libx32-zlib
-  make test
+    cd $srcdir/build-libx32-zlib
+    make test
 }
 
 package_zlib() {
-  pkgdesc='Compression library implementing the deflate compression method found in gzip and PKZIP'
-  groups=('lfs-base')
-  depends=('glibc')
+    pkgdesc='Compression library implementing the deflate compression method found in gzip and PKZIP'
+    groups=('lfs-base')
+    depends=('glibc')
 
-  cd $srcdir/build-zlib
-  make install DESTDIR=$pkgdir
+    cd $srcdir/build-zlib
+    make install DESTDIR=$pkgdir
 
-  install -v -d -m755 ${pkgdir}/lib
-  mv -v ${pkgdir}/usr/lib/libz.so.* ${pkgdir}/lib
-  ln -sfv ../../lib/$(readlink ${pkgdir}/usr/lib/libz.so) ${pkgdir}/usr/lib/libz.so
-  ln -sv ../../lib/$(readlink ${pkgdir}/lib/libz.so.1) ${pkgdir}/usr/lib/libz.so.1
+    install -v -d -m755 ${pkgdir}/lib
+    mv -v ${pkgdir}/usr/lib/libz.so.* ${pkgdir}/lib
+    ln -sfv ../../lib/$(readlink ${pkgdir}/usr/lib/libz.so) ${pkgdir}/usr/lib/libz.so
+    ln -sv ../../lib/$(readlink ${pkgdir}/lib/libz.so.1) ${pkgdir}/usr/lib/libz.so.1
 
-  install -D -m644 $srcdir/$pkgname-$pkgver/LICENSE ${pkgdir}/usr/share/licenses/zlib/LICENSE
+    install -D -m644 $srcdir/$pkgname-$pkgver/LICENSE ${pkgdir}/usr/share/licenses/zlib/LICENSE
 }
 
 package_minizip() {
-  pkgdesc='Mini zip and unzip based on zlib'
-  makedepends=('autoconf')
-  depends=('zlib')
-  groups=('extra')
+    pkgdesc='Mini zip and unzip based on zlib'
+    makedepends=('autoconf')
+    depends=('zlib')
+    groups=('extra')
 
     cd ${srcdir}/build-minizip
-  make install DESTDIR=$pkgdir
-  install -D -m644 ${srcdir}/zlib-${pkgver}/LICENSE ${pkgdir}/usr/share/licenses/minizip/LICENSE
+    make install DESTDIR=$pkgdir
+    install -D -m644 ${srcdir}/zlib-${pkgver}/LICENSE ${pkgdir}/usr/share/licenses/minizip/LICENSE
 
-  # https://github.com/madler/zlib/pull/229
-  rm ${pkgdir}/usr/include/minizip/crypt.h
+    # https://github.com/madler/zlib/pull/229
+    rm ${pkgdir}/usr/include/minizip/crypt.h
 }
 
 package_lib32-zlib(){
-  pkgdesc='Compression library implementing the deflate compression method found in gzip and PKZIP (32-bit)'
-  depends=('lib32-glibc' "$pkgbase")
-  groups=('lfs-base' 'lfs-multilib')
+    pkgdesc='Compression library implementing the deflate compression method found in gzip and PKZIP (32-bit)'
+    depends=('lib32-glibc' "$pkgbase")
+    groups=('lfs-base' 'lfs-multilib')
 
-  cd $srcdir/build-lib32-zlib
-  make install DESTDIR=${pkgdir}
-  rm -rf "${pkgdir}"/usr/{include,share,bin}
-  mkdir -p "$pkgdir/usr/share/licenses"
-  ln -s $pkgbase "$pkgdir/usr/share/licenses/$pkgname"
+    cd $srcdir/build-lib32-zlib
+    make install DESTDIR=${pkgdir}
+    rm -rf "${pkgdir}"/usr/{include,share,bin}
+    mkdir -p "$pkgdir/usr/share/licenses"
+    ln -s $pkgbase "$pkgdir/usr/share/licenses/$pkgname"
 }
 
 package_libx32-zlib(){
-  pkgdesc='Compression library implementing the deflate compression method found in gzip and PKZIP (x32 ABI)'
-  depends=('libx32-glibc' "$pkgbase")
-  groups=('lfs-base' 'lfs-multilib')
+    pkgdesc='Compression library implementing the deflate compression method found in gzip and PKZIP (x32 ABI)'
+    depends=('libx32-glibc' "$pkgbase")
+    groups=('lfs-base' 'lfs-multilib')
 
-  cd $srcdir/build-libx32-zlib
-  make install DESTDIR=${pkgdir}
-  rm -rf "${pkgdir}"/usr/{include,share,bin}
-  mkdir -p "$pkgdir/usr/share/licenses"
-  ln -s $pkgbase "$pkgdir/usr/share/licenses/$pkgname"
+    cd $srcdir/build-libx32-zlib
+    make install DESTDIR=${pkgdir}
+    rm -rf "${pkgdir}"/usr/{include,share,bin}
+    mkdir -p "$pkgdir/usr/share/licenses"
+    ln -s $pkgbase "$pkgdir/usr/share/licenses/$pkgname"
 }
 
 md5sums=('1c9f62f0778697a09d36121ead88e08e'

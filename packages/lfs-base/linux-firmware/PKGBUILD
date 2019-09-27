@@ -1,5 +1,6 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Thomas Bächler <thomas@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgbase=linux-firmware
 pkgname=(linux-firmware amd-ucode)
 _commit=07b925b450bfb4cf3e141c612ec5b104658cd020 # master
@@ -17,7 +18,7 @@ md5sums=('SKIP')
 
 for _m in "${_makedeps[@]}";do
     if [[ "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
-        depends+=( "${_m}")
+        makedepends+=( "${_m}")
         pkgrel=$((pkgrel+1))
     else
         optdepends+=( "${_m}")

@@ -1,5 +1,6 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Dave Reisner <dreisner@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgbase=kmod
 pkgname=($pkgbase lib{,x}32-$pkgbase)
 pkgver=26
@@ -15,7 +16,7 @@ source=("https://www.kernel.org/pub/linux/utils/kernel/$pkgname/$pkgname-$pkgver
         "depmod-search.conf")
 
 _confargs=()
-if [[ "$(pacman -Ss ^gtk-doc$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq gtk-doc 2>/dev/null)" ]];then
     makedepends+=( 'gtk-doc')
     pkgrel=$((pkgrel+1))
 else

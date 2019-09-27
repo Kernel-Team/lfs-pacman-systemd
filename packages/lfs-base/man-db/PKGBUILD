@@ -1,5 +1,7 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: Sergej Pupykin <sergej@aur.archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=man-db
 pkgver=2.8.7
 pkgrel=1
@@ -41,6 +43,7 @@ done
 for _m in ${_makedeps[@]};do
     if [[ -n "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
         makedepends+=( "${_m}")
+        pkgrel=$((pkgrel+1))
     else
         optdepends+=( "${_m}")
     fi

@@ -1,5 +1,6 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Tobias Powalowski <tpowa@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=pciutils
 pkgver=3.6.2
 pkgrel=1
@@ -14,22 +15,22 @@ source=(#ftp://ftp.kernel.org/pub/software/utils/${pkgname}/${pkgname}-${pkgver}
 validpgpkeys=(
     '5558F9399CD7836850553C6EC28E7847ED70F82D' # Martin Mares <mj@ucw.cz>
 )
-groups=('blfs' 'system-utilities')
+groups=('blfs' 'system-utilities' 'lfs-base')
 
 md5sums=('a1c5ec13f81a1c9cf380c93623959005'
          'SKIP')
 
 build() {
     cd "${srcdir}/${pkgname}-${pkgver}"
-    make OPT="${CFLAGS} -fPIC -DPIC" ZLIB=no SHARED=no PREFIX=/usr SHAREDIR=/usr/share/hwdata MANDIR=/usr/share/man SBINDIR=/usr/bin lib/libpci.a 
+    make OPT="${CFLAGS} -fPIC -DPIC" ZLIB=no SHARED=no PREFIX=/usr SHAREDIR=/usr/share/hwdata MANDIR=/usr/share/man lib/libpci.a 
     cp lib/libpci.a "${srcdir}/"
     make clean
-    make OPT="${CFLAGS}" ZLIB=no SHARED=yes PREFIX=/usr SBINDIR=/usr/bin SHAREDIR=/usr/share/hwdata MANDIR=/usr/share/man all
+    make OPT="${CFLAGS}" ZLIB=no SHARED=yes PREFIX=/usr SHAREDIR=/usr/share/hwdata MANDIR=/usr/share/man all
 }
 
 package() {
     cd "${srcdir}/${pkgname}-${pkgver}"
-    make SHARED=yes PREFIX=/usr SBINDIR=/usr/bin SHAREDIR=/usr/share/hwdata MANDIR=/usr/share/man DESTDIR="${pkgdir}" install install-lib
+    make SHARED=yes PREFIX=/usr SHAREDIR=/usr/share/hwdata MANDIR=/usr/share/man DESTDIR="${pkgdir}" install install-lib
     # this is now supplied by the hwids package
     rm -rf $pkgdir/usr/{sbin/update-pciids,share/{man/man8/update-pciids.8,hwdata}}
 }

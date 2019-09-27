@@ -1,0 +1,62 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+pkgname=libgudev
+pkgver=233
+pkgrel=1
+pkgdesc="GObject bindings for libudev"
+url="https://wiki.gnome.org/Projects/libgudev"
+arch=(x86_64)
+license=(LGPL2.1)
+depends=(libsystemd glib2)
+_makedeps=(gtk-doc)
+makedepends=(systemd gobject-introspection git gnome-common)
+provides=(libgudev-1.0.so)
+_commit=f76d04cbb66f9c0ef7f744ebc12f0336a4dc9170  # tags/233^0
+source=("git+https://git.gnome.org/browse/libgudev#commit=$_commit")
+sha256sums=('SKIP')
+groups=('blfs' 'general-libraries')
+
+for _m in "${_makedeps[@]}";do
+    if [[ "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
+        makedepends+=( "${_m}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_m}")
+    fi
+done
+
+pkgver() {
+    cd $pkgname
+    git describe --tags | sed 's/-/+/g'
+}
+
+check() {
+    cd $pkgname
+    make check
+}
+
+_confargs=()
+if [[ "$(pacman -Qq "gtk-doc" 2>/dev/null)" ]];then
+    _confargs+=( "--enable-gtk-doc")
+else
+    _confargs+=( "--disable-gtk-doc")
+fi
+
+prepare(){
+    cd $pkgname
+    NOCONFIGURE=1 ./autogen.sh
+    ./configure \
+        --prefix=/usr \
+        --disable-umockdev ${_confargs[@]}
+    sed -i 's/ -shared / -Wl,-O1,--as-needed\0/g' -i libtool
+}
+
+build() {
+    cd $pkgname
+    make
+}
+
+package() {
+    cd $pkgname
+    make DESTDIR="$pkgdir" install
+}

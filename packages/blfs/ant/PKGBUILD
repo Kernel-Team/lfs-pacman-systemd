@@ -15,9 +15,6 @@ license=('APACHE')
 makedepends=('bash' 'java-environment' 'junit' 'java-hamcrest')
 source=(https://www.apache.org/dist/ant/source/apache-${pkgbase}-${pkgver}-src.tar.bz2{,.asc}
         ant.conf)
-sha256sums=('39882eff327f4a056d77605f0a973d4f30d003083e54fa0885ddab6055b6c8de'
-            'SKIP'
-            '23bbef577b56d48adb1985dbd9795e5533146646f1e8bb879dd061a4014ffcf2')
 validpgpkeys=(
     'CE8075A251547BEE249BC151A2115AE15F6B8B72' # Stefan Bodewig
     '8DA70C00DF7AF1B0D2F9DC74DDBCC1270A29D081' # jaikiran@apache <jaikiran@apache.org>
@@ -32,12 +29,13 @@ _replace_lib() {
 
 prepare() {
     cd apache-${pkgbase}-${pkgver}
+    sed -i 's/--add-modules java.activation/-html4/' build.xml
     sed -i 's|/usr/bin/python|/usr/bin/python2|' src/script/runant.py
 }
 
 build() {
     cd apache-${pkgbase}-${pkgver}
-    export JAVA_HOME=/usr/lib/jvm/default
+    #export JAVA_HOME=/usr/lib/jvm/default
     ./bootstrap.sh
     bootstrap/bin/ant -Ddest=optional -f fetch.xml
     _replace_lib /usr/share/java/junit.jar lib/optional/junit-4.12.jar
@@ -53,24 +51,38 @@ package_ant() {
     replaces=('apache-ant')
     provides=('apache-ant')
     conflicts=('apache-ant')
-    backup=('etc/ant.conf')
+    backup=('etc/ant/ant.conf')
 
-    cd apache-${pkgbase}-${pkgver}/apache-${pkgbase}-${pkgver}
-    local _ant_home=/usr/share/ant
+    local _ant_home=/opt/ant
+
+    cd apache-${pkgbase}-${pkgver}
+    ./build.sh -Ddist.dir=${pkgdir}/opt/ant dist
+
+    cd ../apache-${pkgbase}-${pkgver}/apache-${pkgbase}-${pkgver}
 
     install -d "${pkgdir}${_ant_home}"
     cp -Rp etc "${pkgdir}${_ant_home}"
 
     find bin -type f -a ! -name \*.bat -a ! -name \*.cmd \
          -exec install -Dm 755 {} -t "${pkgdir}${_ant_home}/bin" \;
-    install -d "${pkgdir}/usr/bin"
-    ln -s /usr/share/ant/bin/ant "${pkgdir}/usr/bin/ant"
+    #install -d "${pkgdir}/usr/bin"
+    #ln -s /usr/share/ant/bin/ant "${pkgdir}/usr/bin/ant"
 
-    install -Dm 644 "${srcdir}/ant.conf" -t "${pkgdir}/etc"
-    install -Dm 644 lib/*.jar -t "${pkgdir}/usr/share/java/ant"
-    ln -s /usr/share/java/ant "${pkgdir}${_ant_home}/lib"
+    install -Dm 644 "${srcdir}/ant.conf" -t "${pkgdir}/etc/ant"
+    install -Dm 644 lib/*.jar -t "${pkgdir}/opt/ant/lib"
+    #ln -s /usr/share/java/ant "${pkgdir}${_ant_home}/lib"
 
     install -Dm 644 ../{LICENSE,NOTICE} -t "${pkgdir}/usr/share/licenses/${pkgname}"
+
+    install -vdm755 ${pkgdir}/etc/profile.d/
+    cat > ${pkgdir}/etc/profile.d/ant.sh << EOF
+# Begin /etc/profile.d/ant.sh
+
+pathappend /opt/ant/bin
+export ANT_HOME=/opt/ant
+
+# End /etc/profile.d/ant.sh
+EOF
 }
 
 package_ant-doc() {
@@ -79,7 +91,11 @@ package_ant-doc() {
     provices=('apache-ant-doc')
     conflicts=('apache-ant-doc')
 
-    install -d "${pkgdir}/usr/share/doc/ant"
+    install -d "${pkgdir}/opt/doc/ant"
     cp -r apache-${pkgbase}-${pkgver}/apache-${pkgbase}-${pkgver}/manual/* \
-       "${pkgdir}/usr/share/doc/ant"
+       "${pkgdir}/opt/doc/ant"
 }
+
+sha256sums=('39882eff327f4a056d77605f0a973d4f30d003083e54fa0885ddab6055b6c8de'
+            'SKIP'
+            '6c9954ced9812ed727b374617f5e5a34646a3a93acac94f56d6e0ffe9feb9157')

@@ -1,5 +1,6 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Contributor: Tom Newsom <Jeepster@gmx.co.uk>
+# Contributor: alexforsale@yahoo.com
 pkgname=gawk
 pkgver=5.0.1
 pkgrel=1

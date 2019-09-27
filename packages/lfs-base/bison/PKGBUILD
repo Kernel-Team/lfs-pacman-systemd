@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Lukas Fleischer <lfleischer@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Eric Belanger <eric@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=bison
 pkgver=3.4.1
 pkgrel=1
@@ -12,7 +15,7 @@ groups=('lfs-base')
 source=("ftp://ftp.gnu.org/gnu/bison/${pkgname}-${pkgver}.tar.xz"{,.sig})
 validpgpkeys=('7DF84374B1EE1F9764BBE25D0DDCAA3278D5264E')  # Akim Demaille
 
-if [[ "$(pacman -Ss ^sh$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq sh 2>/dev/null)" ]];then
     depends+=( 'sh')
     pkgrel=$((pkgrel+1))
 else

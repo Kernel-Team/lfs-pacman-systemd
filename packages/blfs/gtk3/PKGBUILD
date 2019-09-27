@@ -1,0 +1,118 @@
+#-*-mode:sh-*-
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: Ionut Biru <ibiru@archlinux.org>
+# Contributor: alexforsale@yahoo.com
+pkgbase=gtk3
+pkgname=(gtk3 gtk-update-icon-cache)
+pkgver=3.24.11
+pkgrel=1
+pkgdesc="GObject-based multi-platform GUI toolkit"
+arch=(x86_64)
+url="https://www.gtk.org/"
+_deps=(libcanberra cantarell-fonts rest libcups cairo libxcursor
+       libxinerama libxrandr libxi dconf libxcomposite libxdamage pango
+       shared-mime-info adwaita-icon-theme desktop-file-utils
+       mesa json-glib librsvg libxkbcommon wayland-protocols wayland gstreamer
+       gst-plugins-bad iso-codes colord graphene)
+depends=(atk gdk-pixbuf2 at-spi2-atk libepoxy)
+_makedeps=(colord)
+makedepends=(gobject-introspection gtk-doc git glib2-docs sassc python-six)
+license=(LGPL)
+_commit=622111f1caf9104251de79bfa27ccfba9614cc90  # tags/3.24.11^0
+source=("git+https://gitlab.gnome.org/GNOME/gtk.git#commit=$_commit"
+        settings.ini
+        gtk-query-immodules-3.0.hook
+        gtk-update-icon-cache.hook
+        gtk-update-icon-cache.script)
+sha256sums=('SKIP'
+            '01fc1d81dc82c4a052ac6e25bf9a04e7647267cc3017bc91f9ce3e63e5eb9202'
+            'de46e5514ff39a7a65e01e485e874775ab1c0ad20b8e94ada43f4a6af1370845'
+            '496064a9dd6214bd58f689dd817dbdc4d7f17d42a8c9940a87018c3f829ce308'
+            'f1d3a0dbfd82f7339301abecdbe5f024337919b48bd0e09296bb0e79863b2541')
+groups=('blfs' 'xorg-libraries')
+
+_confargs=('-D broadway-backend=true')
+for _d in "${_deps[@]}";do
+    if [[ "$(pacman -Ss "^${_d}$" 2>/dev/null)" ]];then
+        depends+=( "${_d}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_d}")
+    fi
+done
+for _m in "${_makedeps[@]}";do
+    if [[ "$(pacman -Ss "^${_m}$" 2>/dev/null)" ]];then
+        makedepends+=( "${_m}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_m}")
+    fi
+done
+
+if [[ "$(pacman -Ss ^gtk-doc$ 2>/dev/null)" ]];then
+    _confargs+=( '-D man-pages=true')
+fi
+
+if [[ "$(pacman -Ss ^gobject-inrospection$ 2>/dev/null)" ]];then
+    _confargs+=( '-D introspection=true')
+fi
+if [[ "$(pacman -Ss ^colord$ 2>/dev/null)" ]];then
+    _confargs+=( '-D colord=yes')
+fi
+if [[ "$(pacman -Ss ^wayland$ 2>/dev/null)" ]] &&
+         [[ "$(pacman -Ss ^wayland-protocols$ 2>/dev/null)" ]];then
+    _confargs+=( '-D wayland-backend=true')
+fi
+#if [[ "$(pacman -Ss ^gst-plugins-bad$ 2>/dev/null)" ]];then
+#    _confargs+=( '-D media=gstreamer')
+#fi
+#if [[ "$(pacman -Ss ^libxinerama$ 2>/dev/null)" ]] &&
+#         [[ "$(pacman -Ss ^libxrandr$ 2>/dev/null)" ]] &&
+#         [[ "$(pacman -Ss ^libxi$ 2>/dev/null)" ]] &&
+#         [[ "$(pacman -Ss ^libxcomposite$ 2>/dev/null)" ]] &&
+#         [[ "$(pacman -Ss ^libxdamage$ 2>/dev/null)" ]] &&
+#         [[ "$(pacman -Ss ^libxkbcommon$ 2>/dev/null)" ]];then
+#    _confargs+=( '-D x11-backend=true')
+#fi
+
+pkgver() {
+    cd gtk
+    git describe --tags | sed 's/-/+/g'
+}
+
+prepare() {
+    meson-helper gtk build ${_confargs[@]}
+    #https://bugzilla.gnome.org/show_bug.cgi?id=655517
+}
+
+build() {
+    ninja -C build
+}
+
+check(){
+    meson test build
+}
+
+package_gtk3() {
+    depends+=(gtk-update-icon-cache)
+    provides=(gtk3-print-backends)
+    conflicts=(gtk3-print-backends)
+    replaces=("gtk3-print-backends<=3.22.26-1")
+    install=gtk3.install
+
+    DESTDIR="$pkgdir" meson install -C build
+
+    install -Dt "$pkgdir/usr/share/gtk-3.0" -m644 settings.ini
+    install -Dt "$pkgdir/usr/share/libalpm/hooks" -m644 gtk-query-immodules-3.0.hook
+
+    # split this out to use with gtk2 too
+    mv "$pkgdir/usr/bin/gtk-update-icon-cache" "$srcdir"
+}
+
+package_gtk-update-icon-cache() {
+    pkgdesc="GTK+ icon cache updater"
+
+    install -Dt "$pkgdir/usr/bin" gtk-update-icon-cache
+    install -Dt "$pkgdir/usr/share/libalpm/hooks" -m644 gtk-update-icon-cache.hook
+    install -D gtk-update-icon-cache.script "$pkgdir/usr/share/libalpm/scripts/gtk-update-icon-cache"
+}

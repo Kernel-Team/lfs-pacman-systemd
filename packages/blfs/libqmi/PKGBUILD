@@ -1,0 +1,43 @@
+#-*-mode:sh-*-
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: alexforsale@yahoo.com
+pkgname=libqmi
+pkgver=1.24.0
+pkgrel=1
+pkgdesc="QMI modem protocol helper library"
+arch=(x86_64)
+url="https://www.freedesktop.org/wiki/Software/libqmi/"
+license=(GPL2)
+depends=(libmbim libgudev)
+makedepends=(gtk-doc python git help2man)
+_commit=49abf405f5e9f16542476dceeb20de6029edcf1c  # tags/1.24.0
+source=("git+https://gitlab.freedesktop.org/mobile-broadband/libqmi.git#commit=$_commit")
+sha256sums=('SKIP')
+groups=('blfs' 'general-libraries')
+
+pkgver() {
+    cd $pkgname
+    git describe --tags | sed 's/-/+/g'
+}
+
+prepare() {
+    cd $pkgname
+    NOCONFIGURE=1 ./autogen.sh
+    ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
+                --libexecdir=/usr/lib --disable-static --enable-gtk-doc
+}
+
+build() {
+    cd $pkgname
+    make
+}
+
+check() {
+    cd $pkgname
+    make check
+}
+
+package() {
+    cd $pkgname
+    make DESTDIR="$pkgdir" install
+}

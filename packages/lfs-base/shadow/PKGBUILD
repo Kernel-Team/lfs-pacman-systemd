@@ -1,5 +1,7 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Contributor: alexforsale@yahoo.com
+# Maintainer: Dave Reisner <dreisner@archlinux.org>
+# Maintainer: Aaron Griffin <aaron@archlinux.org>
 pkgname=shadow
 pkgver=4.7
 pkgrel=1
@@ -26,7 +28,7 @@ source=(https://github.com/shadow-maint/shadow/releases/download/${pkgver}/${pkg
        )
 
 for d in ${_deps[@]};do
-    if [[ $(pacman -Ss ^${d}$ 2>/dev/null) ]];then
+    if [[ $(pacman -!1 ${d} 2>/dev/null) ]];then
         depends+=( "$d")
         pkgrel=$((pkgrel+1))
     else
@@ -43,7 +45,7 @@ if [[ "$(pacman -Qq linux-pam 2>/dev/null)" ]];then
 fi
 
 for m in ${_makedeps[@]};do
-    if [[ $(pacman -Ss ^${m}$ 2>/dev/null) ]];then
+    if [[ $(pacman -Qq ${m} 2>/dev/null) ]];then
         makedepends+=( "$m")
         pkgrel=$((pkgrel+1))
     else

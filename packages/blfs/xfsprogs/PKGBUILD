@@ -1,0 +1,50 @@
+#-*-mode:sh-*-
+# Contributor: alexforsale@yahoo.com
+pkgname=xfsprogs
+pkgver=5.2.1
+pkgrel=1
+pkgdesc="XFS filesystem utilities"
+arch=('x86_64')
+license=('LGPL')
+url="https://xfs.org"
+groups=('blfs' 'filesystems-disk-managements' 'lfs-base')
+depends=('sh' 'libutil-linux' 'readline' 'icu' 'device-mapper')
+makedepends=('git')
+options=('!makeflags')
+source=("git+https://git.kernel.org/pub/scm/fs/xfs/xfsprogs-dev.git#tag=v${pkgver}"
+        "$pkgname.config")
+
+prepare(){
+    cd "${srcdir}/${pkgname}-dev"
+    make configure
+    OPTIMIZER="-march=${CARCH/_/-} -O1" \
+             DEBUG=-DNDEBUG \
+             INSTALL_USER=root \
+             INSTALL_GROUP=root \
+             ./configure --prefix=/usr --enable-readline
+}
+
+build() {
+    cd "${srcdir}/${pkgname}-dev"
+    make
+}
+
+package() {
+    cd "${srcdir}/${pkgname}-dev"
+    make DIST_ROOT="${pkgdir}" install install-dev
+
+    rm -rfv ${pkgdir}/usr/lib/libhandle.a
+    rm -rfv ${pkgdir}/lib/libhandle.{a,la,so}
+    ln -sfv ../../lib/libhandle.so.1 ${pkgdir}/usr/lib/libhandle.so
+    sed -i "s@libdir='/lib@libdir='/usr/lib@" ${pkgdir}/usr/lib/libhandle.la
+    chmod  644 ${pkgdir}/usr/lib/libhandle.la
+
+    chown -R root $pkgdir
+    chgrp -R root $pkgdir
+
+    install -vdm755 $pkgdir/usr/local/share/linuxfromscratch/kernel_configs
+    install -m644 ../$pkgname.config $pkgdir/usr/local/share/linuxfromscratch/kernel_configs
+}
+
+md5sums=('SKIP'
+         '3f9900d3b422aca76fec8b49eb253737')

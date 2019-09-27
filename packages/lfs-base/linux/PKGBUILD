@@ -7,10 +7,11 @@ pkgrel=1
 arch=(x86_64)
 url="kernel.org"
 license=(GPL2)
+_deps=('dracut')
 _makedeps=('python-sphinx' 'graphviz')
 options=('!strip')
 source=(https://www.kernel.org/pub/linux/kernel/v4.x/linux-${pkgver}.tar.{xz,sign}
-        "config" "60-linux.hook" "90-linux.hook")
+        "config" "60-linux.hook" "90-linux.hook" "lfs-base.config")
 validpgpkeys=(
     'ABAF11C65A2970B130ABE3C479BE3E4300411886'  # Linus Torvalds
     '647F28654894E3BD457199BE38DBBDC86092693E')  # Greg Kroah-Hartman
@@ -22,6 +23,15 @@ if [[ "$(pacman -Qq "python-sphinx" 2>/dev/null)" ]] &&
     pkgname+=( "$pkgbase-docs")
     pkgrel=$((pkgrel+1))
 fi
+
+for _d in "${_deps[@]}";do
+    if [[ "$(pacman -Qq "${_d}" 2>/dev/null)" ]];then
+        depends+=( "${_d}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_d}")
+    fi
+done
 
 for _m in "${_makedeps[@]}";do
     if [[ "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
@@ -54,7 +64,20 @@ prepare() {
     msg2 "Setting config..."
     cp ../config arch/x86/configs/linuxfromscratch_defconfig
     make linuxfromscratch_defconfig
-    
+
+    # needed config by lfs (chapter 8).
+    msg2 "merging lfs-base.config..."
+    ./scripts/kconfig/merge_config.sh .config ${srcdir}/lfs-base.config
+
+    # merge all config files found in /usr/local/share/linuxfromscratch/kernel_configs/
+    if [[ -d /usr/local/share/linuxfromscratch/kernel_configs ]];then
+        msg2 "merging blfs kernel configurations..."
+        for configs in /usr/local/share/linuxfromscratch/kernel_configs/*.config;do
+            msg2 "merging $(basename $configs) configuration file..."
+            ./scripts/kconfig/merge_config.sh .config $configs
+        done
+    fi
+
     make -s kernelrelease > ../version
     msg2 "Prepared %s version %s" "$pkgbase" "$(<../version)"
 }
@@ -230,4 +253,5 @@ md5sums=('d7162b4421327c756b1d548204fd8fb1'
          'SKIP'
          '47d32aeb1bb75b47f949817599330e19'
          'e0d72f1162d1f86c48acfd32db8ad154'
-         '3ad191a1db71366de70d34f62c4408ca')
+         '3ad191a1db71366de70d34f62c4408ca'
+         '4811c3c4d5a217ab1e89e0d4cf1781ee')

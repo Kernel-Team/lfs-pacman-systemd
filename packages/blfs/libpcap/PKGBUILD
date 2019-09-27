@@ -1,5 +1,7 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer:  Bartłomiej Piotrowski <bpiotrowski@mirantis.com>
+# Contributor: Thomas Bächler <thomas@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=libpcap
 pkgver=1.9.0
 pkgrel=1

@@ -3,9 +3,6 @@
 exec meson setup \
      --prefix         /usr \
      --libdir         /usr/lib \
-     --libexecdir     /usr/lib \
-     --bindir         /usr/bin \
-     --sbindir        /usr/bin \
      --includedir     /usr/include \
      --datadir        /usr/share \
      --mandir         /usr/share/man \

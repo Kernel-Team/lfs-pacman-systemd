@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Laurent Carlier <lordheavym@gmail.com>
+# Contributor: Stéphane Gaudreault <stephane@archlinux.org>
+# Contributor: Andrej Gelenberg <andrej.gelenberg@udo.edu>
+# Contributor: alexforsale@yahoo.com
 pkgbase=elfutils
 pkgname=(elfutils libelf lib{,x}32-libelf)
 pkgver=0.177

@@ -1,0 +1,48 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+_pkgname=libXcursor
+pkgname=libxcursor
+pkgver=1.2.0.r0.gb84b5d1
+pkgrel=1
+pkgdesc="X cursor management library"
+arch=(x86_64)
+url="https://xorg.freedesktop.org/"
+license=('custom')
+depends=('libxfixes' 'libxrender')
+optdepends=('gnome-themes-standard: fallback icon theme')
+makedepends=('xorg-util-macros')
+backup=(usr/share/icons/default/index.theme)
+source=(xorg/lib/$_pkgname::git://anongit.freedesktop.org/git/xorg/lib/$_pkgname
+        index.theme)
+validpgpkeys=('C41C985FDCF1E5364576638B687393EE37D128F8') # "Matthieu Herrb <matthieu.herrb@laas.fr>"
+groups=('blfs' 'xorg')
+
+pkgver() {
+    cd "$_pkgname"
+    git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g' | sed "s/$_pkgname.//g"
+}
+
+prepare(){
+    cd "$_pkgname"
+    NOCONFIGURE=1 ./autogen.sh
+    ./configure --prefix=/usr --sysconfdir=/etc --disable-static
+}
+
+build() {
+    cd "$_pkgname"
+    make
+}
+
+package() {
+    cd "$_pkgname"
+    make DESTDIR="${pkgdir}" install
+
+    install -m755 -d "${pkgdir}/usr/share/icons/default"
+    install -m644 "$srcdir"/index.theme "${pkgdir}/usr/share/icons/default/"
+
+    install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+    install -m644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/"
+}
+
+md5sums=('SKIP'
+         '1a9667ab2fb40b97c346b46ca5abc49c')

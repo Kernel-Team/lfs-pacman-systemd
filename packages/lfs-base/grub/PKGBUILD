@@ -1,5 +1,9 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer : Christian Hesse <mail@eworm.de>
+# Maintainer : Ronald van Haren <ronald.archlinux.org>
+# Contributor: Tobias Powalowski <tpowa@archlinux.org>
+# Contributor: Keshav Amburay <(the ddoott ridikulus ddoott rat) (aatt) (gemmaeiil) (ddoott) (ccoomm)>
+# Contributor: alexforsale@yahoo.com
 
 ## "1" to enable IA32-EFI build, "0" to disable
 _IA32_EFI_IN_ARCH_X64="1"

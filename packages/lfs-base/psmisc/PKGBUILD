@@ -1,5 +1,6 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Eric Bélanger <eric@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=psmisc
 pkgver=23.2
 pkgrel=1
@@ -29,4 +30,5 @@ package() {
     mv -v ${pkgdir}/usr/bin/fuser ${pkgdir}/bin
     mv -v ${pkgdir}/usr/bin/killall ${pkgdir}/bin
 }
+
 md5sums=('0524258861f00be1a02d27d39d8e5e62')

@@ -1,0 +1,39 @@
+#-*-mode:sh-*-
+# Maintainer: alexforsale@yahoo.com
+# Maintainer: Laurent Carlier <lordheavym@gmail.com>
+pkgname=vulkan-headers
+_pkgname=Vulkan-Headers
+pkgver=1.1.123
+pkgrel=1
+pkgdesc="Vulkan header files"
+arch=(any)
+url="https://www.khronos.org/vulkan/"
+license=('APACHE')
+makedepends=(cmake git)
+provides=("vulkan-hpp=${pkgver}")
+groups=(vulkan-devel)
+source=("${pkgname}-${pkgver}.tar.gz::https://github.com/KhronosGroup/Vulkan-Headers/archive/v${pkgver}.tar.gz")
+#source=("git+https://github.com/KhronosGroup/Vulkan-Headers.git#commit=5f1ceaad4c22d08f4fcac9db3046afbd64358249")
+sha256sums=('aa58ddcf972f05d26bdfa50ac689022b77baf101317258ac146393ef47741581')
+
+#pkgver() {
+#  cd Vulkan-Headers*
+#
+#  echo 1.1.107+$(git rev-list --count HEAD)+$(git rev-parse --short HEAD)
+#}
+
+build() {
+    cd Vulkan-Headers*
+
+    rm -rf build ; mkdir build ; cd build
+    cmake -DCMAKE_INSTALL_PREFIX=/usr \
+          -DCMAKE_BUILD_TYPE=Release \
+          ..
+    make
+}
+
+package() {
+    cd Vulkan-Headers*/build
+    
+    make DESTDIR="${pkgdir}" install
+}

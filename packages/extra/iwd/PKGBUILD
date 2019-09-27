@@ -1,0 +1,42 @@
+#-*-mode:sh-*-
+# Maintainer: Christian Rebischke <chris.rebischke@archlinux.org>
+# Contributor: alexforsale@yahoo.com
+pkgname=iwd
+pkgver=0.21
+pkgrel=1
+pkgdesc='Internet Wireless Daemon'
+arch=('x86_64')
+url='https://git.kernel.org/cgit/network/wireless/iwd.git/'
+license=('LGPL')
+depends=('glibc')
+source=("https://www.kernel.org/pub/linux/network/wireless/iwd-${pkgver}.tar"{.xz,.sign})
+sha512sums=('eca8847cb68bc52f33a2f50ce4cba9ee4cbd37ad989292a21d613afd3307b0dc974da56df49dc97aa65c9647e3497849d696d5a9fdc5c0d0443a141a0887b324'
+            'SKIP')
+validpgpkeys=('E932D120BC2AEC444E558F0106CA9F5D1DCF2659')
+changelog=ChangeLog
+install=iwd.install
+groups=('extra')
+
+prepare(){
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    ./configure --prefix=/usr \
+	        --sysconfdir=/etc \
+	        --libexecdir=/usr/lib/iwd \
+	        --enable-wired \
+	        --localstatedir=/var
+}
+
+build() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    make
+}
+
+package() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    make install DESTDIR="${pkgdir}"
+    # This fixes #62874: include docs and autotests file for easier configuration
+    install -Dm644 "doc/iwmon.txt" "${pkgdir}/usr/share/iwd/doc/iwmon.txt"
+    install -Dm644 "doc/main.conf" "${pkgdir}/usr/share/iwd/doc/main.conf"
+}
+
+# vim: set ts=2 sw=2 ft=sh noet:

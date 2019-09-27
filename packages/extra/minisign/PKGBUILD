@@ -1,5 +1,6 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Felix Yan <felixonmars@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=minisign
 pkgver=0.8
 pkgrel=1

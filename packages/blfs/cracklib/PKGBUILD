@@ -1,5 +1,7 @@
 # -*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Contributor: alexforsale@yahoo.com
+# Maintainer: Tobias Powalowski <tpowa@archlinux.org>
+# Contributor: Federico Quagliata (quaqo) <quaqo@despammed.com>
 pkgname=cracklib
 pkgver=2.9.7
 pkgrel=1

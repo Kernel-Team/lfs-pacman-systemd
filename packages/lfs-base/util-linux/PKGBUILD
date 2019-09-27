@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Tom Gundersen <teg@jklm.no>
+# Maintainer: Dave Reisner <dreisner@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+# Contributor: alexforsale@yahoo.com
 pkgbase=util-linux
 pkgname=(util-linux libutil-linux lib{,x}32-util-linux)
 _pkgmajor=2.34
@@ -30,6 +33,7 @@ done
 
 if [[ "$(pacman -Qq "libcap-ng" 2>/dev/null)" ]];then
     _deps=( 'libcap-ng')
+    pkgrel=$((pkgrel+1))
 fi
 
 _confargs=("ADJTIME_PATH=/var/lib/hwclock/adjtime" "--docdir=/usr/share/doc/util-linux-${pkgver}" "--disable-chfn-chsh"

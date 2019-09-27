@@ -1,5 +1,10 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+# Contributor: Baptiste Daroussin <baptiste.daroussin@gmail.com>
+# Contributor: Grigorios Bouzakis <grbzks[at]gmail[dot]com>
+# Contributor: mightyjaym <jm.ambrosino@free.fr>
+# Contributor: alexforsale@yahoo.com
 pkgname=giflib
 pkgver=5.2.1
 pkgrel=1
@@ -14,6 +19,7 @@ source=(http://downloads.sourceforge.net/sourceforge/giflib/${pkgname}-${pkgver}
         giflib-5.1.9-make-flags.patch)
 md5sums=('2c171ced93c0e83bb09e6ccad8e3ba2b')
 groups=('blfs' 'graphics-font-libraries')
+provides=('libgif.so')
 
 prepare(){
     cd ${pkgname}-${pkgver}

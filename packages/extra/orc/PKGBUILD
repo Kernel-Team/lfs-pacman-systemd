@@ -1,0 +1,40 @@
+#-*-mode:sh-*-
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+# Contributor: Ionut Biru <ibiru@archlinux.org>
+# Contributor: alexforsale@yahoo.com
+pkgname=orc
+pkgver=0.4.30
+pkgrel=1
+pkgdesc="Optimized Inner Loop Runtime Compiler"
+url="https://gitlab.freedesktop.org/gstreamer/orc"
+arch=(x86_64)
+license=(custom)
+depends=(glibc)
+makedepends=(valgrind git gtk-doc meson)
+_commit=ec359cbad8b554985b1b38c665b9db01ef29619a  # tags/0.4.30^0
+source=("git+https://gitlab.freedesktop.org/gstreamer/orc.git#commit=$_commit")
+sha256sums=('SKIP')
+groups=('extra')
+
+pkgver() {
+    cd $pkgname
+    git describe --tags | sed 's/^orc-//;s/-/+/g'
+}
+
+prepare() {
+    meson-helper $pkgname build
+}
+
+build() {
+    ninja -C build
+}
+
+check() {
+    meson test -C build --print-errorlogs
+}
+
+package() {
+    DESTDIR="$pkgdir" meson install -C build
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 $pkgname/COPYING
+}

@@ -1,5 +1,5 @@
 #-*-mode:sh-*-
-# Maintainer: %s <%s>
+# Maintainer: alexforsale@yahoo.com
 pkgname=findutils
 pkgver=4.6.0
 pkgrel=1

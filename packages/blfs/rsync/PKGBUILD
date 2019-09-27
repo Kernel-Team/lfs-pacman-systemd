@@ -55,9 +55,9 @@ package() {
     make DESTDIR="$pkgdir" install
     install -Dm644 ../rsyncd.conf "$pkgdir/etc/rsyncd.conf"
     install -Dm644 ../rsync.xinetd "$pkgdir/etc/xinetd.d/rsync"
-    install -Dm644 ../rsyncd.service "$pkgdir/usr/lib/systemd/system/rsyncd.service"
-    install -m644 ../rsyncd.socket "$pkgdir/usr/lib/systemd/system/rsyncd.socket"
-    install -m644 ../rsyncd@.service "$pkgdir/usr/lib/systemd/system/rsyncd@.service"
+    install -Dm644 ../rsyncd.service "$pkgdir/lib/systemd/system/rsyncd.service"
+    install -m644 ../rsyncd.socket "$pkgdir/lib/systemd/system/rsyncd.socket"
+    install -m644 ../rsyncd@.service "$pkgdir/lib/systemd/system/rsyncd@.service"
     install -Dm755 support/rrsync "$pkgdir/usr/lib/rsync/rrsync"
     install -Dm755 ../rsyncd.sysusers "$pkgdir/usr/lib/sysusers.d/rsyncd.conf"
 

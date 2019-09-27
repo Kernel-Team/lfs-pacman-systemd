@@ -1,0 +1,39 @@
+#-*-mode:sh-*-
+# Maintainer: Maxime Gauduin <alucryd@archlinux.org>
+# Contributor: PelPix <kylebloss@pelpix.info>
+# Contributor: DrZaius <lou[at]fakeoutdoorsman[dot]com>
+# Contributor: alexforsale@yahoo.com
+pkgname=libfdk-aac
+pkgver=2.0.0
+pkgrel=1
+pkgdesc='Fraunhofer FDK AAC codec library'
+arch=(x86_64)
+url='https://sourceforge.net/projects/opencore-amr/'
+license=(custom)
+makedepends=(git)
+provides=(libfdk-aac.so)
+source=(git+https://github.com/mstorsjo/fdk-aac.git#tag=v${pkgver})
+sha256sums=('SKIP')
+groups=('blfs' 'multimedia-libraries-drivers')
+
+prepare() {
+    cd fdk-aac
+    ./autogen.sh
+    ./configure \
+        --prefix='/usr' \
+        --disable-static
+}
+
+build() {
+    cd fdk-aac
+    make
+}
+
+package () {
+    cd fdk-aac
+
+    make DESTDIR="${pkgdir}" install
+    install -Dm 644 NOTICE -t "${pkgdir}"/usr/share/licenses/libfdk-aac/
+}
+
+# vim: ts=2 sw=2 et:

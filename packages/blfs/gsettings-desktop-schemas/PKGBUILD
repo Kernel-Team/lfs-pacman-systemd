@@ -1,0 +1,50 @@
+#-*-mode:sh-*-
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: Ionut Biru <ibiru@archlinux.org>
+# Contributor: Jaroslav Lichtblau <dragonlord@aur.archlinux.org>
+# Contributor: Adam Hani Schakaki (krzd) <krzd@krzd.net>
+# Contributor: alexforsale@yahoo.com
+pkgname=gsettings-desktop-schemas
+pkgver=3.34.0
+pkgrel=1
+pkgdesc="Shared GSettings schemas for the desktop"
+arch=(any)
+url="https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas"
+license=(GPL)
+depends=(glib2)
+_deps=(dconf cantarell-fonts adobe-source-code-pro-fonts)
+makedepends=(gobject-introspection git meson)
+_commit=56d24d47b9699ac6c877b93ae0e863f178c17dab  # tags/3.34.0^0
+source=("git+https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas.git#commit=$_commit")
+sha256sums=('SKIP')
+groups=('blfs' 'gnome-libraries-desktop')
+
+for d in ${_deps[@]};do
+    if [[ $(pacman -Qq $d 2>/dev/null) ]];then
+        depends+=( $d)
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( $d)
+    fi
+done
+
+pkgver() {
+    cd $pkgname
+    git describe --tags | sed 's/-/+/g'
+}
+
+prepare() {
+    meson-helper $pkgname build
+}
+
+build() {
+    ninja -C build
+}
+
+check() {
+    meson test -C build --print-errorlogs
+}
+
+package() {
+    DESTDIR="$pkgdir" meson install -C build
+}

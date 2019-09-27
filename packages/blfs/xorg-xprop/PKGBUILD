@@ -1,0 +1,40 @@
+#-*-mode:sh-*-
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+# Contributor: alexforsale@yahoo.com
+_pkgname=xprop
+pkgname=xorg-xprop
+pkgver=1.2.4.r0.ge81642b
+pkgrel=1
+pkgdesc="Property displayer for X"
+arch=(x86_64)
+url="https://xorg.freedesktop.org/"
+license=('custom')
+depends=('libx11')
+makedepends=('xorg-util-macros')
+groups=('blfs' 'xorg')
+source=(xorg/app/${_pkgname}::git://anongit.freedesktop.org/git/xorg/app/${_pkgname})
+sha512sums=('SKIP')
+
+pkgver() {
+    cd "$_pkgname"
+    git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g' | sed "s/$_pkgname.//g"
+}
+
+prepare(){
+    cd "$_pkgname"
+    NOCONFIGURE=1 ./autogen.sh
+    ./configure --prefix=/usr --sysconfdir=/etc --disable-static
+}
+
+build() {
+    cd "$_pkgname"
+    make
+}
+
+package() {
+    cd "$_pkgname"
+    make DESTDIR="${pkgdir}" install
+
+    install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+    install -m644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/"
+}

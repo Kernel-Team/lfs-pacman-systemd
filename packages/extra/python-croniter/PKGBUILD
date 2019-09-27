@@ -1,0 +1,33 @@
+#-*-mode:sh-*-
+# Maintainer: Thomas Andrejak <thomas.andrejak@gmail.com>
+# Contributor: alexforsale@yahoo.com
+pkgbase=croniter
+pkgname=(python{,2}-croniter)
+pkgver=0.3.30
+pkgrel=1
+pkgdesc="python-croniter"
+arch=('x86_64')
+url="https://pypi.org/project/croniter/"
+license=('MIT')
+depends=(python{,2})
+source=("https://files.pythonhosted.org/packages/2c/ad/1cf1dba43cd3740b07879671c6c9c9870941bf78356ac432d24529da8913/croniter-${pkgver}.tar.gz")
+groups=('extra' 'python-extra')
+
+build() {
+    cd "$srcdir"/croniter-$pkgver
+
+    python setup.py build
+    python2 setup.py build
+}
+
+package_python2-croniter() {
+    cd "$srcdir"/croniter-$pkgver
+    python2 setup.py install --prefix=/usr --root="$pkgdir"
+}
+
+package_python-croniter() {
+    cd "$srcdir"/croniter-$pkgver
+    python setup.py install --prefix=/usr --root="$pkgdir"
+}
+
+md5sums=('e4a8987521b144c4c2149d4adde8f55c')

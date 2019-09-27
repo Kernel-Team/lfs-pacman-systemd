@@ -1,7 +1,9 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Eric Bélanger <eric@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=gpm
-pkgver=1.20.7.r29.g631aa6f
+pkgver=1.20.7.r27.g1fd1941
+_commit='1fd19417b8a4dd9945347e98dfa97e4cfd798d77'
 pkgrel=1
 pkgdesc="A mouse server for the console and xterm"
 arch=('x86_64')
@@ -11,9 +13,10 @@ depends=('bash' 'procps-ng')
 makedepends=('git')
 options=('!makeflags')
 source=("git+https://github.com/telmich/gpm.git#commit=${_commit}"
-        #'0001-glibc-sigemptyset.patch'
+        '0001-glibc-sigemptyset.patch'
         'gpm.sh'
-        'gpm.service')
+        'gpm.service'
+        "$pkgname.config")
 groups=('blfs' 'system-utilities')
 
 pkgver() {
@@ -28,7 +31,9 @@ pkgver() {
 
 prepare(){
     cd "${srcdir}/${pkgname}"
-    #patch -Np1 < ../0001-glibc-sigemptyset.patch
+    patch -Np1 < ../0001-glibc-sigemptyset.patch
+    sed -i -e 's:<gpm.h>:"headers/gpm.h":' src/prog/{display-buttons,display-coords,get-versions}.c
+    #patch -Np1 -i ../gpm-1.20.7-glibc_2.26-1.patch
     ./autogen.sh
     ./configure --prefix=/usr --sysconfdir=/etc
 }
@@ -48,8 +53,13 @@ package() {
     cd "${pkgdir}/usr/lib/"
     ln -s libgpm.so.2.* libgpm.so
     chmod 755 "${pkgdir}"/usr/lib/libgpm.so.*
+
+    install -vdm755 $pkgdir/usr/local/share/linuxfromscratch/kernel_configs
+    install -m644 $srcdir/$pkgname.config $pkgdir/usr/local/share/linuxfromscratch/kernel_configs
 }
 
 md5sums=('SKIP'
+         '169f867170dd13a8ae89890a05a97e48'
          'd73dd7e579192a58e5af72be206ce3c8'
-         'febb59e1f2047728b50c808cd940fdfc')
+         'febb59e1f2047728b50c808cd940fdfc'
+         'f39bb7c967733425f9543d1ce38c83df')

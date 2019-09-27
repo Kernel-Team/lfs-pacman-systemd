@@ -1,0 +1,119 @@
+#-*-mode:sh-*-
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: Gaetan Bisson <bisson@archlinux.org>
+# Contributor: Douglas Soares de Andrade <douglas@archlinux.org>
+# Contributor: alexforsale@yahoo.com
+pkgname=avahi
+pkgver=0.7+18+g1b5f401
+pkgrel=1
+pkgdesc='Service Discovery for Linux using mDNS/DNS-SD -- compatible with Bonjour'
+url='https://github.com/lathiat/avahi'
+license=(LGPL)
+arch=(x86_64)
+depends=(glib2 gdbm dbus expat libcap)
+_deps=(libdaemon)
+makedepends=(git intltool gobject-introspection)
+_makedeps=(pygtk mono gtk-sharp-2 gtk3 qt5-base
+           xmltoman python-dbus python-gobject doxygen graphviz)
+optdepends=('gtk3: avahi-discover, avahi-discover-standalone, bshell, bssh, bvnc'
+            'gtk2: gtk2 bindings'
+            'qt5-base: qt5 bindings'
+            'pygtk: avahi-bookmarks'
+            'python2-twisted: avahi-bookmarks'
+            'mono: mono bindings'
+            'nss-mdns: NSS support for mDNS'
+            'python-gobject: avahi-discover'
+            'python-dbus: avahi-discover')
+backup=(etc/avahi/{hosts,avahi-daemon.conf,avahi-{autoip,dnsconf}d.action}
+        usr/lib/avahi/service-types.db)
+_commit=1b5f401f64d7bed40c4335b0327acf4125da3086  # pull/115/merge~2
+source=("git+https://github.com/lathiat/avahi#commit=$_commit")
+sha512sums=('SKIP')
+groups=('blfs' 'networking-utilities')
+
+for _d in "${_deps[@]}";do
+    if [[ "$(pacman -Qq "${_d}" 2>/dev/null)" ]];then
+        depends+=( "${_d}")
+        pkgrel=$((pkgrel+1))
+    else
+        optdepends+=( "${_d}")
+    fi
+done
+for _m in "${_makedeps[@]}";do
+    if [[ "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then
+        makedepends+=( "${_m}")
+        pkgrel=$((pkgrel+1))
+    else
+        case $_m in
+            qt5-base)
+                _confargs+=( '--disable-qt5');;
+            libdaemon)
+                _confargs+=( '--disable-libdaemon');;
+            mono)
+                _confargs+=( '--disable-mono');;
+        esac
+        optdepends+=( "${_m}")
+    fi
+done
+
+pkgver() {
+    cd $pkgname
+    git describe --tags | sed 's/^v//;s/-/+/g'
+}
+
+prepare() {
+    cd $pkgname
+
+    # CVE-2017-6519 CVE-2018-100084
+    git cherry-pick -n e111def44a7df4624a4aa3f85fe98054bffb6b4f
+
+    NOCONFIGURE=1 ./autogen.sh
+    export PYTHON=/usr/bin/python3
+
+    ./configure \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        with_dbus_sys=/usr/share/dbus-1/system.d \
+        --disable-monodoc \
+        --disable-qt4 \
+        --enable-compat-libdns_sd \
+        --with-distro=none \
+        --with-avahi-priv-access-group=network \
+        --with-autoipd-user=avahi \
+        --with-autoipd-group=avahi \
+        --with-systemdsystemunitdir=/lib/systemd/system ${_confargs[@]}
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+
+    cp -a avahi-python/avahi avahi-python/avahi2
+
+}
+
+build() {
+    cd $pkgname
+    make
+    make -C avahi-python/avahi2 PYTHON=/usr/bin/python2
+}
+
+package() {
+    cd $pkgname
+    make DESTDIR="$pkgdir" install
+    make DESTDIR="$pkgdir" -C avahi-python/avahi2 install \
+         PYTHON=/usr/bin/python2 pythondir=/usr/lib/python2.7/site-packages
+
+    rmdir "$pkgdir/run"
+
+    # this isn't ported
+    sed -i '1s|python3|python2|' "$pkgdir/usr/bin/avahi-bookmarks"
+
+    # mdnsresponder compat
+    ln -s avahi-compat-libdns_sd/dns_sd.h "$pkgdir/usr/include/dns_sd.h"
+
+    # move example services https://bugs.archlinux.org/task/47822
+    install -d "$pkgdir/usr/share/doc/$pkgname"
+    mv "$pkgdir"/etc/avahi/services/{,sftp-}ssh.service \
+       "$pkgdir/usr/share/doc/$pkgname/"
+
+    echo 'u avahi 84 "Avahi mDNS/DNS-SD daemon"' |
+        install -Dm644 /dev/stdin "$pkgdir/usr/lib/sysusers.d/$pkgname.conf"
+}

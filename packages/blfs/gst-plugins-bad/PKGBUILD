@@ -1,0 +1,181 @@
+#-*-mode:sh-*-
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: alexforsale@yahoo.com
+pkgname=gst-plugins-bad
+pkgver=1.16.1
+pkgrel=1
+pkgdesc="GStreamer open-source multimedia framework bad plugins"
+url="https://gstreamer.freedesktop.org/"
+arch=(x86_64)
+license=(LGPL)
+depends=('gst-plugins-good' 'gst-plugins-base-libs' 'curl' 'gnutls' 'mjpegtools')
+_deps=(chromaprint libmms faad2 celt libdca libdvdnav libmodplug libgme wayland
+       libofa openjpeg2 libwebp libsrtp sbc rtmpdump libgudev libexif libdvdread libvdpau
+       libmpeg2 wildmidi ladspa openal libusb vulkan-icd-loader libfdk-aac faac soundtouch
+       spandsp neon webrtc-audio-processing libdc1394 libmpcdec zvbi openexr libbs2b libnice
+       lcms2 bluez-libs glu srt aom x265 liblrdf libde265 zbar libass nettle
+      )
+makedepends=('python' 'git' 'meson')
+_makedeps=(gtk-doc gobject-introspection gtk3 vulkan-headers vulkan-validation-layers
+           librsvg libtiger fluidsynth lilv)
+_commit=c3c54aad2d45fb246a9b9e8a5e05488c15c27173  # tags/1.16.1^0
+source=("git+https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad.git#commit=$_commit"
+        'gst-common::git+https://gitlab.freedesktop.org/gstreamer/common.git')
+sha256sums=('SKIP'
+            'SKIP')
+groups=('blfs' 'multimedia-libraries-drivers')
+
+for d in ${_deps[@]};do
+    if [[ $(pacman -Qq $d 2>/dev/null) ]];then
+        depends+=( $d)
+        pkgrel=$((pkgrel+1))
+    else
+        case $d in
+            libvdpau)
+                _confargs+=( '-D vdpau=disabled');;
+            wayland)
+                _confargs+=( '-D wayland=disabled');;
+            aom)
+                _confargs+=( '-D aom=disabled');;
+            bluez-libs)
+                _confargs+=( '-D bluez=disabled');;
+            chromaprint)
+                _confargs+=( '-D chromaprint=disabled');;
+            libdc1394)
+                _confargs+=( '-D dc1394=disabled');;
+            faac)
+                _confargs+=( '-D faac=disabled');;
+            faad2)
+                _confargs+=( '-D faad=disabled');;
+            ladspa)
+                _confargs+=( '-D ladspa=disabled');;
+            libde265)
+                _confargs+=( '-D libde265=disabled');;
+            libmodplug)
+                _confargs+=( '-D modplug=disabled');;
+            libgme)
+                _confargs+=( '-D gme=disabled');;
+            libmms)
+                _confargs+=( '-D libmms=disabled');;
+            libbs2b)
+                _confargs+=( '-D bs2b=disabled');;
+            libofa)
+                _confargs+=( '-D ofa=disabled');;
+            openal)
+                _confargs+=( '-D openal=disabled');;
+            openexr)
+                _confargs+=( '-D openexr=disabled');;
+            openjpeg2)
+                _confargs+=( '-D openjpeg=disabled');;
+            rtmpdump)
+                _confargs+=( '-D rtmp=disabled');;
+            sbc)
+                _confargs+=( '-D sbc=disabled');;
+            spandsp)
+                _confargs+=( '-D spandsp=disabled');;
+            srt)
+                _confargs+=( '-D srt=disabled');;
+            libsrtp)
+                _confargs+=( '-D srtp=disabled');;
+            libvdpau)
+                _confargs+=( '-D vdpau=disabled');;
+            vulkan-icd-loader)
+                _confargs+=( '-D vulkan=disabled');;
+            libwebp)
+                _confargs+=( '-D webp=disabled');;
+            webrtc-audio-processing)
+                _confargs+=( '-D webrtcdsp=disabled');;
+            wildmidi)
+                _confargs+=( '-D wildmidi=disabled');;
+            x265)
+                _confargs+=( '-D x265=disabled');;
+            zbar)
+                _confargs+=( '-D zbar=disabled');;
+            libdca)
+                _confargs+=( '-D dts=disabled');;
+            neon)
+                _confargs+=( '-D neon=disabled');;
+            libmpcdec)
+                _confargs+=( '-D musepack=disabled');;
+            libdvdnav)
+                _confargs+=( '-D resindvd=disabled');;
+            soundtouch)
+                _confargs+=( '-D soundtouch=disabled');;
+            zvbi)
+                _confargs+=( '-D teletext=disabled');;
+        esac
+        optdepends+=( $d)
+    fi
+done
+for m in ${_makedeps[@]};do
+    if [[ $(pacman -Qq $m 2>/dev/null) ]];then
+        makedepends+=( $m)
+        pkgrel=$((pkgrel+1))
+    else
+        case $m in
+            librsvg)
+                _confargs+=( '-D rsvg=disabled');;
+            fluidsynth)
+                _confargs+=( '-D fluidsynth=disabled');;
+            libtiger)
+                _confargs+=( '-D kate=disabled');;
+            lilv)
+                _confargs+=( '-D lv2=disabled');;
+            gtk3)
+                _confargs+=( '-D examples=disabled' '-D tests=disabled');;
+        esac
+        optdepends+=( $m)
+    fi
+done
+
+pkgver() {
+    cd $pkgname
+    git describe --tags | sed 's/-/+/g'
+}
+
+prepare() {
+    cd $pkgname
+
+    git submodule init
+    git config --local submodule.common.url "$srcdir/gst-common"
+    git submodule update
+
+    cd ..
+    meson-helper $pkgname build \
+                 -D directfb=disabled \
+                 -D flite=disabled \
+                 -D gsm=disabled \
+                 -D iqa=disabled \
+                 -D msdk=disabled \
+                 -D nvdec=disabled \
+                 -D nvenc=disabled \
+                 -D opencv=disabled \
+                 -D openh264=disabled \
+                 -D openmpt=disabled \
+                 -D openni2=disabled \
+                 -D opensles=disabled \
+                 -D sctp=disabled \
+                 -D tinyalsa=disabled \
+                 -D voaacenc=disabled \
+                 -D voamrwbenc=disabled \
+                 -D wasapi=disabled \
+                 -D wpe=disabled \
+                 -D gobject-cast-checks=disabled \
+                 -D glib-asserts=disabled \
+                 -D glib-checks=disabled \
+                 -D package-name="GStreamer ${pkgver} BLFS" \
+                 -D package-origin="http://www.linuxfromscratch.org/blfs/view/svn/" ${_confargs[@]}
+}
+
+build() {
+    ninja -C build
+}
+
+check() {
+    meson test -C build --print-errorlogs
+}
+
+package() {
+    DESTDIR="$pkgdir" meson install -C build
+}

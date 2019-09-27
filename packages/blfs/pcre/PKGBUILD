@@ -1,5 +1,9 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Sébastien "Seblu" Luttringer
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Eric Belanger <eric@archlinux.org>
+# Contributor: John Proctor <jproctor@prium.net>
+# Contributor: alexforsale@yahoo.com
 pkgname=pcre
 pkgver=8.43
 pkgrel=1

@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: %s <%s>
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: Jaroslav Lichtblau <dragonlord@aur.archlinux.org>
+# Contributor: Jeremy Cowgar <jeremy@cowgar.com>
+# Contributor: alexforsale@yahoo.com
 pkgname=check
 pkgver=0.12.0
 pkgrel=1
@@ -10,7 +13,7 @@ license=(LGPL)
 depends=()
 makedepends=()
 groups=('lfs-base')
-source=("https://github.com/libcheck/check/releases/download/0.12.0/check-$pkgver.tar.gz")
+source=("https://github.com/libcheck/check/releases/download/$pkgver/check-$pkgver.tar.gz")
 md5sums=('31b17c6075820a434119592941186f70')
 
 if [[ -n "$(pacman -Qq awk 2>/dev/null)" ]];then

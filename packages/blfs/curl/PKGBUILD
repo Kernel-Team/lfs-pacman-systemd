@@ -1,5 +1,10 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Dave Reisner <dreisner@archlinux.org>
+# Contributor: Angel Velasquez <angvp@archlinux.org>
+# Contributor: Eric Belanger <eric@archlinux.org>
+# Contributor: Lucien Immink <l.immink@student.fnt.hvu.nl>
+# Contributor: Daniel J Griffiths <ghost1227@archlinux.us>
+# Contributor: alexforsale@yahoo.com
 pkgname=curl
 pkgver=7.66.0
 pkgrel=1
@@ -26,7 +31,7 @@ if [[ "$(pacman -Qq libssh2 2>/dev/null)" ]];then
 else
     optdepends+=( 'libssh2: optional depend')
 fi
-if [[ "$(pacman -Ss ^libpsl$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq libpsl 2>/dev/null)" ]];then
     depends+=( 'libpsl')
     pkgrel=$((pkgrel+1))
     _confargs+=( '--with-libpsl')
@@ -34,7 +39,7 @@ else
     optdepends+=( 'libpsl: optional depend')
     _confargs+=( '--without-libpsl')
 fi
-if [[ "$(pacman -Ss ^libidn2$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq libidn2 2>/dev/null)" ]];then
     depends+=( 'libidn2')
     pkgrel=$((pkgrel+1))
     _confargs+=( '--with-libidn2')
@@ -42,7 +47,7 @@ else
     optdepends+=( 'libidn2: optional depend')
     _confargs+=( '--without-libidn2')
 fi
-if [[ "$(pacman -Ss ^aria2$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq aria2 2>/dev/null)" ]];then
     depends+=( 'aria2')
     pkgrel=$((pkgrel+1))
     _confargs+=( '--with-libmetalink')
@@ -50,7 +55,7 @@ else
     optdepends+=( 'aria2: optional depend')
     _confargs+=( '--without-libmetalink')
 fi
-if [[ "$(pacman -Ss ^brotli$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq brotli 2>/dev/null)" ]];then
     depends+=( 'brotli')
     pkgrel=$((pkgrel+1))
     _confargs+=( '--with-brotli=/usr')
@@ -58,7 +63,7 @@ else
     optdepends+=( 'brotli: optional depend')
     _confargs+=( '--without-brotli')
 fi
-if [[ "$(pacman -Ss ^libnghttp2$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq libnghttp2 2>/dev/null)" ]];then
     depends+=( 'libnghttp2')
     pkgrel=$((pkgrel+1))
     _confargs+=( '--with-nghttp2=/usr')
@@ -66,7 +71,7 @@ else
     optdepends+=( 'libnghttp2: optional depend')
     _confargs+=( '--without-nghttp2')
 fi
-if [[ "$(pacman -Ss ^krb5$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq krb5 2>/dev/null)" ]];then
     depends+=( 'krb5')
     pkgrel=$((pkgrel+1))
     _confargs+=( '--with-gssapi')

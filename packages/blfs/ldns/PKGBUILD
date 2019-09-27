@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Gaetan Bisson <bisson@archlinux.org>
+# Contributor: mathieui <mathieui@mathieui.net>
+# Contributor: jiribb <jiribb@gmail.com>
+# Contributor: alexforsale@yahoo.com
 pkgname=ldns
 pkgver=1.7.1
 pkgrel=1

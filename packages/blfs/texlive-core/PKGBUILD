@@ -161,12 +161,12 @@ package() {
     rm -rf "$pkgdir"/usr/local/share/tlpkg/tlpobj
 
     ## install pacman hooks
-    install -D -m644 ${srcdir}/mktexlsr.hook "$pkgdir/usr/local/share/libalpm/hooks/mktexlsr.hook"
-    install -D -m644 ${srcdir}/texlive-updmap.hook "$pkgdir/usr/local/share/libalpm/hooks/texlive-updmap.hook"
-    install -D -m644 ${srcdir}/texlive-fmtutil.hook "$pkgdir/usr/local/share/libalpm/hooks/texlive-fmtutil.hook"
-    install -D -m755 ${srcdir}/mktexlsr.script "$pkgdir/usr/local/share/libalpm/scripts/mktexlsr"
-    install -D -m755 ${srcdir}/texlive-updmap.script "$pkgdir/usr/local/share/libalpm/scripts/texlive-updmap"
-    install -D -m755 ${srcdir}/texlive-fmtutil.script "$pkgdir/usr/local/share/libalpm/scripts/texlive-fmtutil"
+    install -D -m644 ${srcdir}/mktexlsr.hook "$pkgdir/usr/share/libalpm/hooks/mktexlsr.hook"
+    install -D -m644 ${srcdir}/texlive-updmap.hook "$pkgdir/usr/share/libalpm/hooks/texlive-updmap.hook"
+    install -D -m644 ${srcdir}/texlive-fmtutil.hook "$pkgdir/usr/share/libalpm/hooks/texlive-fmtutil.hook"
+    install -D -m755 ${srcdir}/mktexlsr.script "$pkgdir/usr/share/libalpm/scripts/mktexlsr"
+    install -D -m755 ${srcdir}/texlive-updmap.script "$pkgdir/usr/share/libalpm/scripts/texlive-updmap"
+    install -D -m755 ${srcdir}/texlive-fmtutil.script "$pkgdir/usr/share/libalpm/scripts/texlive-fmtutil"
 
     # copy config file to texmf-config
     #mkdir -p $pkgdir/etc/local/texmf/tex/context/config
@@ -344,7 +344,7 @@ sha256sums=('f7587a2bee24418494bb1ee8143c0ea7e057da91ca60ba7b380d1d5b6414cb54'
             '738553f7477bb5aa05575a88dac06565fb72e6ab330e8dc336fd45eb2741a5c7'
             '92be41b0c7f6480eb9fa69952de9415094f26314d9e513b972d239cbe3b319a4'
             '593f58379475f6bff7c270a3ff2f8d465a6bbd472c36849b234c379272d374c1'
-            '35d1825716f4f2a19e77c66fa243aceb4413e024c1ef2f25532ba5a2d0ce1282'
+            'caa883fed70887a5ca5715d957ce6312af287018a959419808e9fd2b4b8a628a'
             '63fd22ec1f004d983936da6c2768f5a86ca0f52dff70326d1caef53e322cb5fb'
             '744d44711048d485edd5d83e40d974e871b7f331c2638e37d44dff977bb016d1'
             '42c2d4e1df8ac8d1603a817301d8b5b9a9375e88b68a5cc676be4f29eaac0451'

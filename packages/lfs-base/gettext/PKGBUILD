@@ -15,50 +15,50 @@ source=(https://ftp.gnu.org/pub/gnu/gettext/$pkgname-$pkgver.tar.gz{,.sig})
 validpgpkeys=('68D94D8AAEEAD48AE7DC5B904F494A942E4616C2')
 
 _confargs=()
-if [[ "$(pacman -Ss ^glib2$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq glib2 2>/dev/null)" ]];then
     depends+=( 'glib2')
     pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'glib2')
 fi
-if [[ "$(pacman -Ss ^libunistring$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq libunistring 2>/dev/null)" ]];then
     depends+=( 'libunistring')
     pkgrel=$((pkgrel+1))
     _confargs+=( '--with-libunistring-prefix=/usr')
 else
     optdepends+=( 'libunistring')
 fi
-if [[ "$(pacman -Ss ^libcroco$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq libcroco 2>/dev/null)" ]];then
     depends+=( 'libcroco')
     pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'libcroco')
 fi
-if [[ "$(pacman -Ss ^gettext$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq gettext 2>/dev/null)" ]];then
     makedepends+=( 'gettext')
     pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'gettext')
 fi
-if [[ "$(pacman -Ss ^emacs$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq emacs 2>/dev/null)" ]];then
     makedepends+=( 'emacs')
     pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'emacs')
 fi
-if [[ "$(pacman -Ss ^git$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq git 2>/dev/null)" ]];then
     makedepends+=( 'git')
     pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'git')
 fi
-if [[ "$(pacman -Ss ^java-environment$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq java-environment 2>/dev/null)" ]];then
     makedepends+=( 'java-environment')
     pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'java-environment')
 fi
-if [[ "$(pacman -Ss ^libxml2$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq libxml2 2>/dev/null)" ]];then
     makedepends+=( 'libxml2')
     _confargs+=( '--with-libxml2-prefix=/usr')
     pkgrel=$((pkgrel+1))

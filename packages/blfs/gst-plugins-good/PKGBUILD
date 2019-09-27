@@ -1,0 +1,124 @@
+#-*-mode:sh-*-
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+# Contributor: alexforsale@yahoo.com
+pkgname=gst-plugins-good
+pkgver=1.16.1
+pkgrel=1
+pkgdesc="GStreamer open-source multimedia framework good plugins"
+url="https://gstreamer.freedesktop.org/"
+arch=(x86_64)
+license=(LGPL)
+depends=('gst-plugins-base-libs')
+_deps=(libpulse libsoup gst-plugins-base-libs wavpack aalib taglib libdv libshout libvpx
+         gdk-pixbuf2 libcaca libavc1394 libiec61883 libxdamage v4l-utils cairo libgudev speex flac
+         libraw1394 lame mpg123 twolame)
+makedepends=(python gtk-doc git meson)
+_makedeps=(gtk3 qt5-declarative qt5-x11extras qt5-wayland jack2)
+checkdepends=(gst-plugins-base)
+_commit=d7d290b64c1282398f3265522a33e093b7233310  # tags/1.16.1^0
+source=("git+https://gitlab.freedesktop.org/gstreamer/gst-plugins-good.git#commit=$_commit"
+        "gst-common::git+https://gitlab.freedesktop.org/gstreamer/common.git")
+sha256sums=('SKIP'
+            'SKIP')
+groups=('blfs' 'multimedia-libraries-drivers')
+
+for d in ${_deps[@]};do
+    if [[ $(pacman -Qq $d 2>/dev/null) ]];then
+        depends+=( $d)
+        pkgrel=$((pkgrel+1))
+    else
+        case $d in
+            v4l-utils)
+                _confargs+=( '-D v4l2=disabled');;
+            aalib)
+                _confargs+=( '-D aalib=disabled');;
+            flac)
+                _confargs+=( '-D flac=disabled');;
+            lame)
+                _confargs+=( '-D lame=disabled');;
+            libcaca)
+                _confargs+=( '-D libcaca=disabled');;
+            cairo)
+                _confargs+=( '-D cairo=disabled');;
+            twolame)
+                _confargs+=( '-D twolame=disabled');;
+            wavpack)
+                _confargs+=( '-D wavpack=disabled');;
+            libgudev)
+                _confargs+=( '-D v4l2-gudev=disabled');;
+            libxdamage)
+                _confargs+=( '-D ximagesrc-xdamage=disabled');;
+            mpg123)
+                _confargs+=( '-D mpg123=disabled');;
+            libraw1394)
+                _confargs+=( '-D dv1394=disabled');;
+            libdv)
+                _confargs+=( '-D dv=disabled');;
+            libpulse)
+                _confargs+=( '-D pulse=disabled');;
+            libsoup)
+                _confargs+=( '-D soup=disabled');;
+            libvpx)
+                _confargs+=( '-D vpx=disabled');;
+            libshout)
+                _confargs+=( '-D shout2=disabled');;
+            speex)
+                _confargs+=( '-D speex=disabled');;
+            taglib)
+                _confargs+=( '-D taglib=disabled');;
+        esac
+        optdepends+=( $d)
+    fi
+done
+for m in ${_makedeps[@]};do
+    if [[ $(pacman -Qq $m 2>/dev/null) ]];then
+        makedepends+=( $m)
+        pkgrel=$((pkgrel+1))
+    else
+        case $m in
+            gtk3)
+                _confargs+=( '-D gtk3=disabled');;
+            jack2)
+                _confargs+=( '-D jack=disabled');;
+            qt5-declarative|qt5-x11extras|qt5-wayland)
+                _confargs+=( '-D qt5=disabled' '-D tests=disabled' '-D examples=disabled');;
+        esac
+        optdepends+=( $m)
+    fi
+done
+
+_confargs=($(printf "%s\n" "${_confargs[@]}" | sort -u | tr '\n' ' '))
+
+pkgver() {
+    cd $pkgname
+    git describe --tags | sed 's/-/+/g'
+}
+
+prepare() {
+    cd $pkgname
+
+    git submodule init
+    git config --local submodule.common.url "$srcdir/gst-common"
+    git submodule update
+
+    cd ..
+    meson-helper $pkgname build \
+               -D gobject-cast-checks=disabled \
+               -D glib-asserts=disabled \
+               -D glib-checks=disabled \
+               -D package-name="GStreamer ${pkgver} BLFS" \
+               -D package-origin="http://www.linuxfromscratch.org/blfs/view/svn/" ${_confargs[@]}
+}
+
+build() {
+    ninja -C build
+}
+
+check() {
+    meson test -C build --print-errorlogs
+}
+
+package() {
+    DESTDIR="$pkgdir" meson install -C build
+}

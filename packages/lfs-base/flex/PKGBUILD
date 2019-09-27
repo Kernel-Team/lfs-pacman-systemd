@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Lukas Fleischer <lfleischer@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+# Contributor: alexforsale@yahoo.com
 pkgname=flex
 pkgver=2.6.4
 pkgrel=1
@@ -13,13 +16,13 @@ groups=('lfs-base')
 source=("https://github.com/westes/flex/releases/download/v$pkgver/flex-$pkgver.tar.gz")
 md5sums=('2882e3179748cc9f9c23ec593d6adc8d')
 
-if [[ "$(pacman -Ss ^sh$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq sh 2>/dev/null)" ]];then
     depends+=( 'sh')
     pkgrel=$((pkgrel+1))
 else
     optdepends+=( 'sh')
 fi
-if [[ -n "$(pacman -Ss ^help2man$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq help2man 2>/dev/null)" ]];then
     makedepends+=( 'help2man')
 else
     optdepends+=( 'help2man')

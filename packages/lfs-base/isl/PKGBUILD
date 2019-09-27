@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Contributor: alexforsale@yahoo.com
+# Maintainer: Kritias     <theodoridisgr@gmail.com>
+# Contributor: sudokode    <sudokode@gmail.com>
+# Contributor: Allan McRae <allan@archlinux.org>
 pkgbase=isl
 pkgname=($pkgbase lib32-$pkgbase libx32-$pkgbase)
 pkgver=0.21

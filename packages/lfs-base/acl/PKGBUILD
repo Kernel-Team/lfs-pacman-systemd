@@ -1,5 +1,6 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Maintainer: Thomas Bächler <thomas@archlinux.org>
+# Contributor: alexforsale@yahoo.com
 pkgbase=acl
 pkgname=($pkgbase lib{,x}32-$pkgbase)
 pkgver=2.2.53

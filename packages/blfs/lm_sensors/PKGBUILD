@@ -43,8 +43,8 @@ package() {
     install -D -m644 "${srcdir}/healthd.conf" "${pkgdir}/etc/healthd.conf"
     install -D -m644 "${srcdir}/sensord.conf" "${pkgdir}/etc/conf.d/sensord"
     
-    install -D -m644 "${srcdir}/healthd.service" "${pkgdir}/usr/lib/systemd/system/healthd.service"
-    install -D -m644 prog/init/*.service "${pkgdir}/usr/lib/systemd/system/"
+    install -D -m644 "${srcdir}/healthd.service" "${pkgdir}/lib/systemd/system/healthd.service"
+    install -D -m644 prog/init/*.service "${pkgdir}/lib/systemd/system/"
 }
 sha256sums=('f671c1d63a4cd8581b3a4a775fd7864a740b15ad046fe92038bcff5c5134d7e0'
             '0ac9afb2a9155dd74ab393756ed552cd542dde1081149beb2ab4ec7ff55b8f4a'

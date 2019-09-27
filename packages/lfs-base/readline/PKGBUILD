@@ -1,5 +1,8 @@
 #-*-mode:sh-*-
-# Maintainer: alexforsale@yahoo.com
+# Contributor: alexforsale@yahoo.com
+# Maintainer:  Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
 pkgbase=readline
 pkgname=($pkgbase lib32-$pkgbase libx32-$pkgbase)
 _basever=8.0
@@ -15,18 +18,18 @@ source=(https://ftp.gnu.org/gnu/readline/readline-$_basever.tar.gz{,.sig}
         readline.sh)
 validpgpkeys=('7C0135FB088AAF6C66C650B9BB5869F064EA74AB') # Chet Ramey
 
-if [[ "$(pacman -Ss ncurses$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq ncurses$ 2>/dev/null)" ]];then
     readline_depends+=( 'ncurses' 'libncursesw.so')
     pkgrel=$((pkgrel+1))
 else
     readline_optdepends+=( 'ncurses')
 fi
-if [[ "$(pacman -Ss lib32-ncurses$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq lib32-ncurses$ 2>/dev/null)" ]];then
     lib32_readline_depends+=( 'lib32-ncurses')
 else
     lib32_readline_optdepends+=( 'lib32-ncurses')
 fi
-if [[ "$(pacman -Ss lib32-ncurses$ 2>/dev/null)" ]];then
+if [[ "$(pacman -Qq lib32-ncurses$ 2>/dev/null)" ]];then
     libx32_readline_depends+=( 'libx32-ncurses')
 else
     libx32_readline_optdepends+=( 'libx32-ncurses')
