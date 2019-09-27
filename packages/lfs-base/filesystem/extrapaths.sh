@@ -33,3 +33,10 @@ fi
 if [ -d /opt/lib/pkgconfig ]; then
         pathappend /opt/lib/pkgconfig PKG_CONFIG_PATH
 fi
+
+# aclocal path
+pathappend /usr/share/aclocal ACLOCAL_PATH
+
+if [ -d /usr/local/share/aclocal ]; then
+        pathappend /usr/local/share/aclocal ACLOCAL_PATH
+fi

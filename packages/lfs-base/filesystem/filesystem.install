@@ -1,4 +1,4 @@
-#-*-mode:sh-*-
+#!/bin/sh
 post_install() {
     echo ">>> lfs systemd book can be viewed from /srv/http/lfs-systemd"
     echo ">>> lfs systemd multilib book can be viewed from /srv/http/lfs-multilib-systemd"
