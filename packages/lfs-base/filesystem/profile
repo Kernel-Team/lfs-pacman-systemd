@@ -40,10 +40,9 @@ pathappend () {
 export -f pathremove pathprepend pathappend
 
 # Set the initial path
-export PATH=/bin:/usr/bin
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 
 if [ $EUID -eq 0 ] ; then
-        pathappend /sbin:/usr/sbin
         unset HISTFILE
 fi
 
@@ -73,5 +72,22 @@ for script in /etc/profile.d/*.sh ; do
 done
 
 unset script RED GREEN NORMAL
+
+if [[ -z "$BASH_COMPLETION_VERSINFO" ]];then
+    # enable programmable completion features (you don't need to enable
+    # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+    # sources /etc/bash.bashrc).
+    if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
+        . /etc/bash_completion
+    elif [ -f /usr/share/bash-completion/bash_completion ] && ! shopt -oq posix; then
+        . /usr/share/bash-completion/bash_completion
+    elif [ -f /usr/share/bash_completion/bash_completion ] && ! shopt -oq posix; then
+        . /usr/share/bash_completion/bash_completion
+    elif [ -f /usr/local/share/bash_completion/bash_completion ] && ! shopt -oq posix; then
+        . /usr/local/share/bash_completion/bash_completion
+    elif [ -f /etc/bash/bashrc.d/bash_completion.sh ] && ! shopt -oq posix; then
+        . /etc/bash/bashrc.d/bash_completion.sh
+    fi
+fi
 
 # End /etc/profile

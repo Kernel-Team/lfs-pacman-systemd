@@ -14,7 +14,7 @@ depends=('iana-etc')
 backup=('etc/nsswitch.conf' 'etc/profile.d/dircolors.sh' 'etc/skel/.profile'
         'etc/profile.d/extrapaths.sh' 'etc/profile.d/umask.sh'
         'etc/profile.d/i18n.sh' 'etc/profile' 'etc/fstab' 'etc/passwd'
-        'etc/group' 'etc/shells' 'etc/hosts' 'etc/os-release')
+        'etc/group' 'etc/shells' 'etc/hosts' 'usr/lib/os-release')
 source=('nsswitch.conf' 'dircolors.sh' 'dotprofile' 'extrapaths.sh' 'umask.sh'
         'i18n.sh' 'profile' 'fstab' 'passwd' 'group' 'shells' 'ld.so.conf'
         'hosts' 'makepkg-helper.sh' 'os-release'
@@ -115,7 +115,7 @@ md5sums=('fb3976f942e00d20efb9b6f00f893a29'
          '366c9b357057eab82746432984ea016e'
          'f1dd87922e8fddfe73ef20ae76c2f777'
          '9ac887b370aa53cbcd0a7b8e0ec7a828'
-         '2a9c0f61b70f19b17cb4a5af9b9a23a4'
+         '4f6d152819bd0ab477b86f974978601a'
          '6b4a8d275c3e50bd08cb7af74bc25f6f'
          'ca2b6f93f0f43a1c42cf6c7fd2c50f76'
          '53b4e6d69c451b7fca26f272513a76c9'
