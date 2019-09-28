@@ -19,7 +19,7 @@ groups=('extra')
 
 prepare(){
     cd "${srcdir}/${pkgname}-${pkgver}"
-    ./configure --prefix=/usr --enable-shared
+    ./configure --prefix=/usr/local --enable-shared
 }
 build() {
     cd "${srcdir}/${pkgname}-${pkgver}"

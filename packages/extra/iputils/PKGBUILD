@@ -18,7 +18,7 @@ optdepends=('xinetd: for tftpd')
 makedepends=('perl-sgmls' 'git' 'docbook-xsl' 'meson')
 conflicts=('netkit-base' 'arping' 'netkit-tftpd')
 replaces=('netkit-base')
-backup=(etc/xinetd.d/tftp)
+backup=(etc/local/xinetd.d/tftp)
 install=${pkgname}.install
 source=("git+https://github.com/iputils/iputils.git#commit=${_rev}"
         tftp.xinetd)
@@ -27,7 +27,12 @@ build() {
     mkdir -p build
     cd build
 
-    meson-helper ../$pkgname -DBUILD_RARPD=true
+    meson setup \
+          --prefix /usr/local \
+          --libdir /usr/local/lib \
+          --sysconfdir /usr/local/etc \
+          --localstatedir /var \
+          ../$pkgname -DBUILD_RARPD=true
     ninja
 }
 
@@ -37,9 +42,9 @@ package() {
     DESTDIR="$pkgdir" ninja install
 
     # FS#24768
-    install -dm755 "${pkgdir}"/etc/xinetd.d/
-    install -m644 "${srcdir}"/tftp.xinetd "${pkgdir}"/etc/xinetd.d/tftp
+    install -dm755 "${pkgdir}"/etc/local/xinetd.d/
+    install -m644 "${srcdir}"/tftp.xinetd "${pkgdir}"/etc/local/xinetd.d/tftp
 }
 
 sha1sums=('SKIP'
-          'fc2ae26f5609725e3f4aeaf4ab82dfa6d2e378fd')
+          '40da8a6f7c71d7466f65a435caa2ae3e7fdb3c14')

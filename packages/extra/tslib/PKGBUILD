@@ -18,7 +18,7 @@ groups=("extra")
 
 prepare(){
     cd $pkgname-$pkgver
-    ./configure --prefix=/usr --sysconfdir=/etc
+    ./configure --prefix=/usr/local --sysconfdir=/usr/local/etc
 }
 
 build() {
@@ -29,4 +29,7 @@ build() {
 package() {
     cd $pkgname-$pkgver
     make DESTDIR="$pkgdir" install
+    install -vdm755 ${pkgdir}/etc/local
+    mv -v ${pkgdir}/usr/local/etc/* ${pkgdir}/etc/local
+    rm -rfv ${pkgdir}/usr/local/etc
 }

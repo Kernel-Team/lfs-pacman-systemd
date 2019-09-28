@@ -25,8 +25,8 @@ prepare() {
 
     autoreconf -i -f
     ./configure \
-        --prefix=/usr \
-        --mandir=/usr/share/man \
+        --prefix=/usr/local \
+        --mandir=/usr/local/share/man \
         --program-transform-name 's,2x-,2,'
 }
 
@@ -39,6 +39,6 @@ package() {
     cd "$srcdir"/docbook2X-$pkgver
     make DESTDIR="$pkgdir" install
     install -D -m0644 COPYING "$pkgdir"/usr/share/licenses/$pkgname/license
-    sed -i 's|http://docbook2x.sf.net/latest|/usr/share/docbook2X|g' \
-        "$pkgdir"/usr/bin/db2x_xsltproc
+    sed -i 's|http://docbook2x.sf.net/latest|/usr/local/share/docbook2X|g' \
+        "$pkgdir"/usr/local/bin/db2x_xsltproc
 }

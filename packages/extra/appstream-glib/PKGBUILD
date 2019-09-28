@@ -24,10 +24,13 @@ pkgver() {
 }
 
 prepare() {
-    meson-helper $pkgname build \
-               -D alpm=true \
-               -D gtk-doc=true \
-               -D rpm=false
+    meson setup \
+          --prefix /usr/local \
+          --sysconfdir /usr/local/etc \
+          $pkgname build \
+          -D alpm=true \
+          -D gtk-doc=true \
+          -D rpm=false
 }
 
 build() {

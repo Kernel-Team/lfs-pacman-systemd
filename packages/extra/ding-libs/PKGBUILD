@@ -23,7 +23,7 @@ prepare() {
     cd $pkgname-$pkgver
     # fix a test; FS#60089
     patch -Np1 -i ../ding-libs-0.6.1-ini_validators_ut_check-glibc-2.28.patch
-    ./configure --prefix=/usr --disable-static
+    ./configure --prefix=/usr/local --disable-static
 }
 
 build() {

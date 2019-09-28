@@ -9,25 +9,29 @@ url="http://sourceforge.net/projects/linuxquota/"
 license=('GPL' 'BSD')
 depends=(libnl dbus libtirpc)
 makedepends=(rpcsvc-proto)
-backup=('etc/warnquota.conf' 'etc/quotatab' 'etc/quotagrpadmins')
+backup=('etc/local/warnquota.conf' 'etc/local/quotatab' 'etc/local/quotagrpadmins')
 options=('!emptydirs')
 source=(http://downloads.sourceforge.net/sourceforge/linuxquota/quota-${pkgver}.tar.gz)
 groups=('extra')
 
 build() {
     cd quota-$pkgver
-    CFLAGS+=" -I/usr/include/tirpc/" ./configure --prefix=/usr --sysconfdir=/etc
+    CFLAGS+=" -I/usr/include/tirpc/" ./configure --prefix=/usr/local --sysconfdir=/usr/local/etc
     make
 }
 
 package() {
     cd quota-$pkgver
-    make DESTDIR="${pkgdir}" sbindir=/usr/bin root_sbindir=/usr/bin STRIP="" install
+    make DESTDIR="${pkgdir}" STRIP="" install
     install -d "${pkgdir}/usr/share/licenses/${pkgname}"
     head -33 quota.c > "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
 
     # remove conflicts with glibc
-    rm "${pkgdir}"/usr/include/rpcsvc/rquota.{h,x}
+    rm "${pkgdir}"/usr/local/include/rpcsvc/rquota.{h,x}
+
+    install -vdm755 ${pkgdir}/etc/local
+    mv -v ${pkgdir}/usr/local/etc/* ${pkgdir}/etc/local
+    rm -rv ${pkgdir}/usr/local/etc
 }
 
 sha1sums=('d23711f3b204e0a86b8378c32545c95fb149168d')

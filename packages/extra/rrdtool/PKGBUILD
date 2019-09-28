@@ -37,7 +37,7 @@ for _m in "${_makedeps[@]}";do
         optdepends+=( "${_m}")
     fi
 done
-_confargs=("--prefix=/usr" "--localstatedir=/var" "--disable-rpath" "--enable-perl" "--enable-perl-site-install"
+_confargs=("--prefix=/usr/local" "--localstatedir=/var" "--disable-rpath" "--enable-perl" "--enable-perl-site-install"
            "--with-perl-options='INSTALLDIRS=vendor'" "--enable-python" "--enable-lua" "--enable-lua-site-install"
            "--enable-tcl" "--disable-libwrap")
 if [[ -n "$(pacman -Qq "ruby" 2>/dev/null)" ]];then
@@ -52,8 +52,8 @@ prepare() {
     aclocal
     automake
 
-    PYTHON=python2 LUA=/usr/bin/lua5.1 \
-          LUA_CFLAGS="-I/usr/include/lua5.1 -llua5.1" LUA_INSTALL_CMOD="/usr/lib/lua/5.1" \
+    PYTHON=python2 LUA=/usr/local/bin/lua5.1 \
+          LUA_CFLAGS="-I/usr/local/include/lua5.1 -llua5.1" LUA_INSTALL_CMOD="/usr/local/lib/lua/5.1" \
           ./configure ${_confargs[@]}
 }
 
@@ -64,8 +64,11 @@ build() {
 
 package() {
     cd ${pkgname}-${pkgver}
-    make DESTDIR="${pkgdir}" includedir=/usr/include install
+    make DESTDIR="${pkgdir}" includedir=/usr/local/include install
     install -D -m644 COPYRIGHT "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+
+    install -vdm755 ${pkgdir}/usr/lib
+    mv -v ${pkgdir}/usr/local/lib/python2.7 ${pkgdir}/usr/lib
 }
 
 sha1sums=('f0e54258b0f871099623e3a866751928abbb47af')

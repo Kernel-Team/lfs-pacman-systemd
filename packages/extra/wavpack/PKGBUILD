@@ -24,7 +24,7 @@ prepare() {
     patch -p1 -i ../CVE-2018-6767.patch
     patch -p1 -i ../CVE-2018-7253.patch
     patch -p1 -i ../CVE-2018-7254.patch
-    ./configure --prefix=/usr --disable-asm
+    ./configure --prefix=/usr/local --disable-asm
 }
 
 build() {

@@ -16,10 +16,10 @@ groups=('extra')
 
 prepare(){
     cd "$pkgname-$pkgver"
-    ./configure --prefix=/usr \
+    ./configure --prefix=/usr/local \
                 --disable-static \
                 --enable-shared \
-                --mandir=/usr/share/man
+                --mandir=/usr/local/share/man
 }
 
 build() {
@@ -31,5 +31,5 @@ package() {
     cd "$pkgname-$pkgver"
     make DESTDIR="$pkgdir/" install
     # install doc
-    install -Dm644 ijs_spec.pdf "${pkgdir}"/usr/share/doc/$pkgname/ijs_spec.pdf
+    install -Dm644 ijs_spec.pdf "${pkgdir}"/usr/local/share/doc/$pkgname/ijs_spec.pdf
 }

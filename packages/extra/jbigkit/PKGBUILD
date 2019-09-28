@@ -23,22 +23,23 @@ build() {
 package() {
     cd "$srcdir"/$pkgname-$pkgver
 
-    install -D -m644 libjbig/libjbig.a "$pkgdir"/usr/lib/libjbig.a
-    install -D -m644 libjbig/libjbig85.a "$pkgdir"/usr/lib/libjbig85.a
-    install -D -m644 libjbig/jbig.h "$pkgdir"/usr/include/jbig.h
-    install -D -m644 libjbig/jbig_ar.h "$pkgdir"/usr/include/jbig_ar.h
-    install -D -m644 libjbig/jbig85.h "$pkgdir"/usr/include/jbig85.h
+    install -D -m644 libjbig/libjbig.a "$pkgdir"/usr/local/lib/libjbig.a
+    install -D -m644 libjbig/libjbig85.a "$pkgdir"/usr/local/lib/libjbig85.a
+    install -D -m644 libjbig/jbig.h "$pkgdir"/usr/local/include/jbig.h
+    install -D -m644 libjbig/jbig_ar.h "$pkgdir"/usr/local/include/jbig_ar.h
+    install -D -m644 libjbig/jbig85.h "$pkgdir"/usr/local/include/jbig85.h
 
-    install -d -m755 "$pkgdir"/usr/share/man/man1
-    #  install -d -m755 "$pkgdir"/usr/share/man/man5
-    install -m644 pbmtools/*.1* "$pkgdir"/usr/share/man/man1
-    #  install -m644 pbmtools/*.5* "$pkgdir"/usr/share/man/man5
+    install -d -m755 "$pkgdir"/usr/local/share/man/man1
+    #  install -d -m755 "$pkgdir"/usr/local/share/man/man5
+    install -m644 pbmtools/*.1* "$pkgdir"/usr/local/share/man/man1
+    #  install -m644 pbmtools/*.5* "$pkgdir"/usr/local/share/man/man5
 
-    install -D -m755 pbmtools/jbgtopbm "$pkgdir"/usr/bin/jbgtopbm
-    install -D -m755 pbmtools/pbmtojbg "$pkgdir"/usr/bin/pbmtojbg
-    install -D -m755 pbmtools/jbgtopbm85 "$pkgdir"/usr/bin/jbgtopbm85
-    install -D -m755 pbmtools/pbmtojbg85 "$pkgdir"/usr/bin/pbmtojbg85
+    install -D -m755 pbmtools/jbgtopbm "$pkgdir"/usr/local/bin/jbgtopbm
+    install -D -m755 pbmtools/pbmtojbg "$pkgdir"/usr/local/bin/pbmtojbg
+    install -D -m755 pbmtools/jbgtopbm85 "$pkgdir"/usr/local/bin/jbgtopbm85
+    install -D -m755 pbmtools/pbmtojbg85 "$pkgdir"/usr/local/bin/pbmtojbg85
 
-    rm -f "$pkgdir"/usr/share/man/man5/p{b,g}m.5*
+    rm -f "$pkgdir"/usr/local/share/man/man5/p{b,g}m.5*
 }
+
 sha256sums=('de7106b6bfaf495d6865c7dd7ac6ca1381bd12e0d81405ea81e7f2167263d932')

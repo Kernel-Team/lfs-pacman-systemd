@@ -19,7 +19,7 @@ prepare() {
     mkdir -p build
     cd build
     cmake ../$pkgname-$pkgver \
-          -DCMAKE_INSTALL_PREFIX=/usr \
+          -DCMAKE_INSTALL_PREFIX=/usr/local \
           -DCMAKE_INSTALL_LIBDIR=lib \
           -DBUILD_SHARED_LIBS=ON
 }
@@ -32,6 +32,9 @@ build() {
 package () {
     cd build
     make DESTDIR="$pkgdir" install
+
+    install -vdm755 "$pkgdir"/usr/lib
+    mv -v "$pkgdir"/usr/local/lib/cmake "$pkgdir"/usr/lib
 
     install -Dm644 "$srcdir"/$pkgname-$pkgver/LICENSE -t "$pkgdir"/usr/share/licenses/double-conversion
 }

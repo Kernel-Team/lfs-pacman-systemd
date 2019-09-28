@@ -42,7 +42,7 @@ build() {
     cd build
 
     cmake -G Ninja ../${_srcname} \
-          -DCMAKE_INSTALL_PREFIX=/usr \
+          -DCMAKE_INSTALL_PREFIX=/usr/local \
           -DCMAKE_INSTALL_LIBDIR=lib \
           -DBUILD_SHARED_LIBS=ON \
           -DPython_ADDITIONAL_VERSIONS=2.7 \
@@ -52,10 +52,10 @@ build() {
     # Only for g{test,mock}-config
     cd ../${_srcname}/googletest
     autoreconf -fvi
-    ./configure --prefix=/usr
+    ./configure --prefix=/usr/local
     cd ../googlemock
     autoreconf -fvi
-    ./configure --prefix=/usr
+    ./configure --prefix=/usr/local
 }
 
 check() {
@@ -73,18 +73,21 @@ package_gtest() {
 
     # Split gmock
     mkdir -p gmock/{include,lib/pkgconfig}
-    mv "${pkgdir}"/usr/include/gmock gmock/include/
-    mv "${pkgdir}"/usr/lib/libgmock* gmock/lib/
-    mv "${pkgdir}"/usr/lib/pkgconfig/gmock* gmock/lib/pkgconfig/
+    mv "${pkgdir}"/usr/local/include/gmock gmock/include/
+    mv "${pkgdir}"/usr/local/lib/libgmock* gmock/lib/
+    mv "${pkgdir}"/usr/local/lib/pkgconfig/gmock* gmock/lib/pkgconfig/
 
     cd ${_srcname}/googletest
     install -Dm 644 LICENSE -t "${pkgdir}/usr/share/licenses/${pkgname}"
-    install -Dm 644 README.md CHANGES CONTRIBUTORS -t "${pkgdir}/usr/share/doc/${pkgname}"
-    install -Dm 755 scripts/gtest-config -t "${pkgdir}/usr/bin"
-    install -Dm 644 m4/gtest.m4 -t "${pkgdir}/usr/share/aclocal"
-    install -Dm 644 cmake/* -t "${pkgdir}/usr/src/gtest/cmake"
-    install -Dm 644 src/* -t "${pkgdir}/usr/src/gtest/src"
-    install -Dm 644 CMakeLists.txt -t "${pkgdir}/usr/src/gtest"
+    install -Dm 644 README.md CHANGES CONTRIBUTORS -t "${pkgdir}/usr/local/share/doc/${pkgname}"
+    install -Dm 755 scripts/gtest-config -t "${pkgdir}/usr/local/bin"
+    install -Dm 644 m4/gtest.m4 -t "${pkgdir}/usr/local/share/aclocal"
+    install -Dm 644 cmake/* -t "${pkgdir}/usr/local/src/gtest/cmake"
+    install -Dm 644 src/* -t "${pkgdir}/usr/local/src/gtest/src"
+    install -Dm 644 CMakeLists.txt -t "${pkgdir}/usr/local/src/gtest"
+
+    install -vdm755 ${pkgdir}/usr/lib
+    mv -v ${pkgdir}/usr/local/lib/cmake ${pkgdir}/usr/lib
 }
 
 package_gmock() {
@@ -95,17 +98,18 @@ package_gmock() {
 
     cd ${_srcname}/googlemock
     install -Dm 644 LICENSE -t "${pkgdir}/usr/share/licenses/${pkgname}"
-    install -Dm 644 README.md CHANGES CONTRIBUTORS -t "${pkgdir}/usr/share/doc/${pkgname}"
-    install -Dm 755 scripts/gmock-config -t "${pkgdir}/usr/bin"
-    install -Dm 644 src/* -t "${pkgdir}/usr/src/gmock"
-    install -Dm 644 scripts/generator/{*.py,LICENSE,README*} -t "${pkgdir}/usr/share/gmock/generator"
-    install -Dm 644 scripts/generator/cpp/* -t "${pkgdir}/usr/share/gmock/generator/cpp"
+    install -Dm 644 README.md CHANGES CONTRIBUTORS -t "${pkgdir}/usr/local/share/doc/${pkgname}"
+    install -Dm 755 scripts/gmock-config -t "${pkgdir}/usr/local/bin"
+    install -Dm 644 src/* -t "${pkgdir}/usr/local/src/gmock"
+    install -Dm 644 scripts/generator/{*.py,LICENSE,README*} -t "${pkgdir}/usr/local/share/gmock/generator"
+    install -Dm 644 scripts/generator/cpp/* -t "${pkgdir}/usr/local/share/gmock/generator/cpp"
 
-    sed -i 's|src/||' "${pkgdir}/usr/src/gmock/gmock-all.cc"
+    sed -i 's|src/||' "${pkgdir}/usr/local/src/gmock/gmock-all.cc"
 
-    python2 -m compileall -d /usr/share/gmock "${pkgdir}/usr/share/gmock"
-    python2 -O -m compileall -d /usr/share/gmock "${pkgdir}/usr/share/gmock"
+    python2 -m compileall -d /usr/local/share/gmock "${pkgdir}/usr/local/share/gmock"
+    python2 -O -m compileall -d /usr/local/share/gmock "${pkgdir}/usr/local/share/gmock"
 }
+
 sha512sums=('e6283c667558e1fd6e49fa96e52af0e415a3c8037afe1d28b7ff1ec4c2ef8f49beb70a9327b7fc77eb4052a58c4ccad8b5260ec90e4bceeac7a46ff59c4369d7'
             'e9bd9d65f6e54f71be0026b84c6543a71f9e3d5c0da92eb7f01df3f5937871eff2b8177e3680fec8d733888327eda5f5f3caaf88a3263ada542cdd2b42475ac5'
             'afa75f975d8aed453c901245dae753939958d8b72e3e5c52995efe7980f44de4fd1ea08f1b0a4cc927443d858de0a1fe34a919512ce05ae443bfb9600b08f029')

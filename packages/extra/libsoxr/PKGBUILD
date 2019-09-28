@@ -27,7 +27,7 @@ prepare() {
 
     cmake ../soxr-${pkgver}-Source \
           -DCMAKE_BUILD_TYPE='Release' \
-          -DCMAKE_INSTALL_PREFIX='/usr' \
+          -DCMAKE_INSTALL_PREFIX='/usr/local' \
           -DBUILD_EXAMPLES='OFF' \
           -DBUILD_SHARED_LIBS='ON' \
           -DWITH_AVFFT='ON' \
@@ -51,7 +51,7 @@ package() {
     cd build
 
     make DESTDIR="${pkgdir}" install
-    rm -rf "${pkgdir}"/usr/share/doc
+    rm -rf "${pkgdir}"/usr/local/share/doc
     install -Dm644 ../soxr-${pkgver}-Source/LICENCE -t "${pkgdir}"/usr/share/licenses/libsoxr/
 }
 

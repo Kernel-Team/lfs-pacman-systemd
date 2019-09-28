@@ -16,21 +16,21 @@ sha1sums=('4f42144d05df7797afdb4c4de5d2d5fbb44b3534'
 groups=('extra')
 
 prepare(){
-  cd $pkgname-$pkgver
-  ./configure --prefix=/usr
+    cd $pkgname-$pkgver
+    ./configure --prefix=/usr/local
 }
 
 build() {
-  cd $pkgname-$pkgver
-  make
+    cd $pkgname-$pkgver
+    make
 }
 
 check() {
-  cd $pkgname-$pkgver
-  make check
+    cd $pkgname-$pkgver
+    make check
 }
 
 package() {
-  cd $pkgname-$pkgver
-  make DESTDIR="$pkgdir" install
+    cd $pkgname-$pkgver
+    make DESTDIR="$pkgdir" install
 }

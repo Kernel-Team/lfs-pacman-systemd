@@ -15,7 +15,7 @@ groups=('extra')
 
 build() {
     cd cldr-emoji-annotation-$_tag
-    ./autogen.sh --prefix=/usr
+    ./autogen.sh --prefix=/usr/local
     make
 }
 
@@ -23,5 +23,8 @@ package() {
     cd cldr-emoji-annotation-$_tag
     make DESTDIR="$pkgdir" install
 
+    install -vdm755 ${pkgdir}/usr/local/lib/pkgconfig
+    mv -v ${pkgdir}/usr/local/share/pkgconfig/* ${pkgdir}/usr/local/lib/pkgconfig
+    rm -rv ${pkgdir}/usr/local/share/pkgconfig/
     install -Dm644 unicode-license.txt "$pkgdir"/usr/share/licenses/$pkgname/unicode-license.txt
 }

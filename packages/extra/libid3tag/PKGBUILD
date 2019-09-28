@@ -28,17 +28,16 @@ prepare() {
     patch -p1 -i ../libid3tag-gperf.patch # Fedora patch
 
     rm compat.c frametype.c # regenerate them from gperf sources
+    ./configure --prefix=/usr/local
 }
 
 build() {
     cd ${pkgname}-${pkgver}
-
-    ./configure --prefix=/usr
     make
 }
 
 package() {
     cd ${pkgname}-${pkgver}
     make DESTDIR="${pkgdir}" install
-    install -D -m644 "${srcdir}/id3tag.pc" "${pkgdir}/usr/lib/pkgconfig/id3tag.pc"
+    install -D -m644 "${srcdir}/id3tag.pc" "${pkgdir}/usr/local/lib/pkgconfig/id3tag.pc"
 }

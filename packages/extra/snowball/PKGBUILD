@@ -41,17 +41,17 @@ check() {
 
 package_snowball() {
     cd $pkgbase
-    install -d "$pkgdir/usr/bin"
-    install -t "$pkgdir/usr/bin" snowball stemwords
+    install -d "$pkgdir/usr/local/bin"
+    install -t "$pkgdir/usr/local/bin" snowball stemwords
     install -Dm644 COPYING "$pkgdir/usr/share/licenses/snowball/LICENSE"
 }
 
 package_libstemmer() {
     pkgdesc="Stemming library supporting several languages"
     cd $pkgbase
-    install -Dm644 {.,"$pkgdir"/usr}/include/libstemmer.h
-    install -D {.,"$pkgdir"/usr/lib}/libstemmer.so.0.0.0
-    ln -s libstemmer.so.0.0.0 "$pkgdir/usr/lib/libstemmer.so.0"
-    ln -s libstemmer.so.0 "$pkgdir/usr/lib/libstemmer.so"
+    install -Dm644 {.,"$pkgdir"/usr/local}/include/libstemmer.h
+    install -D {.,"$pkgdir"/usr/local/lib}/libstemmer.so.0.0.0
+    ln -s libstemmer.so.0.0.0 "$pkgdir/usr/local/lib/libstemmer.so.0"
+    ln -s libstemmer.so.0 "$pkgdir/usr/local/lib/libstemmer.so"
     install -Dm644 COPYING "$pkgdir/usr/share/licenses/libstemmer/LICENSE"
 }

@@ -49,7 +49,7 @@ prepare() {
     autoreconf -fiv
 
     ./configure \
-        --prefix='/usr' ${_confargs[@]}
+        --prefix='/usr/local' ${_confargs[@]}
 }
 
 build() {

@@ -18,7 +18,7 @@ groups=('extra')
 
 prepare(){
     cd "${srcdir}/${pkgname}-${pkgver}"
-    ./configure --prefix=/usr
+    ./configure --prefix=/usr/local
 }
 
 build() {

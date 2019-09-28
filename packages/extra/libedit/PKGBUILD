@@ -17,16 +17,16 @@ groups=('extra')
 
 build() {
     cd "${srcdir}/${pkgname}-${_pkgver}"
-    ./configure --prefix=/usr --enable-widec
+    ./configure --prefix=/usr/local --enable-widec
     make
 }
 
 package() {
     cd "${srcdir}/${pkgname}-${_pkgver}"
-    make prefix="${pkgdir}"/usr install
+    make prefix="${pkgdir}"/usr/local install
 
-    rm "${pkgdir}"/usr/share/man/man3/history.3 # conflicts with readline
-    cp "${pkgdir}"/usr/share/man/man3/editline.3 "${pkgdir}"/usr/share/man/man3/el.3
+    rm "${pkgdir}"/usr/local/share/man/man3/history.3 # conflicts with readline
+    cp "${pkgdir}"/usr/local/share/man/man3/editline.3 "${pkgdir}"/usr/local/share/man/man3/el.3
     install -Dm644 COPYING "${pkgdir}"/usr/share/licenses/libedit/LICENSE
 }
 

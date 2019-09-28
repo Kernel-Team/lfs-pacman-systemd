@@ -21,7 +21,7 @@ prepare() {
     cd ${pkgname}-${pkgver}
     mkdir build && cd $_
     cmake .. \
-          -DCMAKE_INSTALL_PREFIX=/usr \
+          -DCMAKE_INSTALL_PREFIX=/usr/local \
           -DCMAKE_INSTALL_LIBDIR=lib \
           -DCMAKE_BUILD_TYPE=Release \
           -DUNIT_TESTING=ON
@@ -40,4 +40,7 @@ check() {
 package() {
     cd ${pkgname}-${pkgver}/build
     make install DESTDIR="${pkgdir}"
+
+    install -vdm755 ${pkgdir}/usr/lib
+    mv -v ${pkgdir}/usr/local/lib/cmake ${pkgdir}/usr/lib
 }

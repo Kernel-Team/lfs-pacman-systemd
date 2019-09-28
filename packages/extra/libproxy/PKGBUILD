@@ -29,8 +29,8 @@ prepare() {
 build() {
     cd build
     cmake ../${pkgname}-${pkgver} \
-          -DCMAKE_INSTALL_PREFIX=/usr \
-          -DLIBEXEC_INSTALL_DIR=/usr/lib/libproxy \
+          -DCMAKE_INSTALL_PREFIX=/usr/local \
+          -DLIBEXEC_INSTALL_DIR=/usr/local/lib/libproxy \
           -DCMAKE_SKIP_RPATH=ON \
           -DPERL_VENDORINSTALL=yes \
           -DCMAKE_BUILD_TYPE=Release \

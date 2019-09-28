@@ -1,5 +1,4 @@
 #-*-mode:sh-*-
-# Contributor: alexforsale@yahoo.com
 # Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
 # Maintainer : Christian Rebischke <Chris.Rebischke@archlinux.org>
 # Contributor: Daniel Micay <danielmicay@gmail.com>
@@ -7,6 +6,7 @@
 # Contributor: Massimiliano Torromeo <massimiliano.torromeo@gmail.com>
 # Contributor: Connor Behan <connor.behan@gmail.com>
 # Contributor: henning mueller <henning@orgizm.net>
+# Contributor: alexforsale@yahoo.com
 pkgbase=audit
 pkgname=('audit')
 pkgver=2.8.5
@@ -30,10 +30,9 @@ prepare() {
     cd ${pkgbase}-${pkgver}
     sed 's|/var/run/auditd.pid|/run/auditd.pid|' -i init.d/auditd.service
     ./configure \
-        --prefix=/usr \
-        --sbindir=/usr/bin \
-        --sysconfdir=/etc \
-        --libexecdir=/usr/lib/audit \
+        --prefix=/usr/local \
+        --sysconfdir=/usr/local/etc \
+        --libexecdir=/usr/local/lib/audit \
         --enable-gssapi-krb5=yes \
         --enable-systemd=yes \
         --with-libcap-ng=yes
@@ -49,16 +48,16 @@ package_audit() {
     depends=('krb5' 'libcap-ng')
     provides=('libaudit.so' 'libauparse.so')
     backup=(
-        etc/libaudit.conf
-        etc/audit/audit-stop.rules
-        etc/audit/auditd.conf
-        etc/audisp/audispd.conf
-        etc/audisp/audisp-remote.conf
-        etc/audisp/zos-remote.conf
-        etc/audisp/plugins.d/af_unix.conf
-        etc/audisp/plugins.d/audispd-zos-remote.conf
-        etc/audisp/plugins.d/au-remote.conf
-        etc/audisp/plugins.d/syslog.conf
+        etc/local/libaudit.conf
+        etc/local/audit/audit-stop.rules
+        etc/local/audit/auditd.conf
+        etc/local/audisp/audispd.conf
+        etc/local/audisp/audisp-remote.conf
+        etc/local/audisp/zos-remote.conf
+        etc/local/audisp/plugins.d/af_unix.conf
+        etc/local/audisp/plugins.d/audispd-zos-remote.conf
+        etc/local/audisp/plugins.d/au-remote.conf
+        etc/local/audisp/plugins.d/syslog.conf
     )
 
     cd ${pkgbase}-${pkgver}
@@ -66,21 +65,20 @@ package_audit() {
 
     cd "${pkgdir}"
     install -d -m 0700 var/log/audit
-    rm -rf etc/rc.d \
-       etc/sysconfig \
-       usr/lib/audit \
-       usr/lib/python*
-
-    sed -ri 's|/sbin|/usr/bin|' \
-        etc/audit/*.conf \
-        etc/audisp/plugins.d/*.conf \
-        usr/lib/systemd/system/auditd.service
+    rm -rf etc/local/rc.d \
+       etc/local/sysconfig \
+       usr/local/lib/audit \
+       usr/local/lib/python*
 
     chmod 644 usr/lib/systemd/system/auditd.service
     install -vdm755 ${pkgdir}/lib
     mv -v ${pkgdir}/usr/lib/systemd/ ${pkgdir}/lib/
     rm -rfv ${pkgdir}/usr/lib/systemd
-    rm -rf ${pkgdir}/usr/lib/golang/src/pkg/redhat.com/audit/audit.go
+    rm -rf ${pkgdir}/usr/local/lib/golang/src/pkg/redhat.com/audit/audit.go
+
+    install -vdm755 ${pkgdir}/etc/local
+    mv -v ${pkgdir}/usr/local/etc/* ${pkgdir}/etc/local
+    rm -rfv ${pkgdir}/usr/local/etc/
 }
 
 package_python-audit() {
@@ -88,4 +86,7 @@ package_python-audit() {
     pkgdesc+=' (python bindings)'
     cd ${pkgbase}-${pkgver}
     make -C bindings DESTDIR="${pkgdir}" INSTALL='install -p' install
+
+    mv -v ${pkgdir}/usr/local/* ${pkgdir}/usr
+    rm -rfv ${pkgdir}/usr/local
 }

@@ -20,13 +20,14 @@ groups=('extra')
 
 prepare(){
     cd ${srcdir}/${pkgname}-${pkgver}
-    ./configure --prefix=/usr \
+    ./configure --prefix=/usr/local \
 		--disable-rpath \
 		--disable-rpath-install \
 		--bundled-libraries=NONE \
 		--builtin-libraries=replace \
-                --with-modulesdir=/usr/lib/ldb/modules \
-                --with-privatelibdir=/usr/lib/ldb
+                --with-modulesdir=/usr/local/lib/ldb/modules \
+                --with-privatelibdir=/usr/local/lib/ldb \
+                --pythondir=/usr/lib/python3.7
 }
 
 build() {
@@ -38,6 +39,9 @@ package() {
     cd ${srcdir}/${pkgname}-${pkgver}
 
     make DESTDIR=${pkgdir}/ install
+
+    install -vdm755 ${pkgdir}/usr/lib
+    mv -v ${pkgdir}/usr/local/lib/python3.7 ${pkgdir}/usr/lib
 }
 
 md5sums=('339a41ac9efaec680e6d1469dd9aa35b'

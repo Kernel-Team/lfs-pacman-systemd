@@ -17,12 +17,15 @@ groups=('extra')
 
 prepare(){
     cd ${pkgbase}-${pkgver}
-    meson-helper build \
-               -D tests=true \
-               -D vulkan=enabled \
-               -D glslang=enabled \
-               -D shaderc=enabled \
-               -D lcms=enabled
+    meson setup \
+          --prefix /usr/local \
+          --libdir /usr/local/lib \
+          build \
+          -D tests=true \
+          -D vulkan=enabled \
+          -D glslang=enabled \
+          -D shaderc=enabled \
+          -D lcms=enabled
 }
 
 build() {

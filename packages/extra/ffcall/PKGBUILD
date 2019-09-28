@@ -14,7 +14,7 @@ groups=('extra')
 prepare(){
     cd "${srcdir}/lib${pkgname}-${pkgver}"
     [ "$CARCH" = "x86_64" ] && CONFIGFLAG="--with-pic"
-    ./configure --prefix=/usr --mandir=/usr/share/man $CONFIGFLAG
+    ./configure --prefix=/usr/local --mandir=/usr/local/share/man $CONFIGFLAG
 }
 
 build() {
@@ -29,8 +29,8 @@ check() {
 
 package() {
     cd "${srcdir}/lib${pkgname}-${pkgver}"
-    install -d "${pkgdir}"/usr/share/{man,doc/ffcall}
-    make DESTDIR="${pkgdir}" htmldir=/usr/share/doc/ffcall install
+    install -d "${pkgdir}"/usr/local/share/{man,doc/ffcall}
+    make DESTDIR="${pkgdir}" htmldir=/usr/local/share/doc/ffcall install
 }
 
 md5sums=('0bc45ab055d40ba617f47e117084499f')

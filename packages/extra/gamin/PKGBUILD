@@ -35,8 +35,8 @@ prepare() {
 
     # python 2
     sed -i 's_#!/usr/bin/env python_#!/usr/bin/env python2_' python/gamin.py
-    ./configure --prefix=/usr --disable-static --with-threads \
-                --disable-debug-api --disable-debug --libexecdir=/usr/lib/gamin \
+    ./configure --prefix=/usr/local --disable-static --with-threads \
+                --disable-debug-api --disable-debug --libexecdir=/usr/local/lib/gamin \
                 --with-python=/usr/bin/python2
 }
 

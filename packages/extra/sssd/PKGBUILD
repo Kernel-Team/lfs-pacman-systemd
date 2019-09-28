@@ -48,11 +48,11 @@ prepare() {
     sed -i -e 's/^dbuspolicydir = $(sysconfdir)/dbuspolicydir = $(datadir)/' Makefile.in
 
     ./configure \
-        --prefix=/usr \
-        --sysconfdir=/etc \
+        --prefix=/usr/local \
+        --sysconfdir=/usr/local/etc \
         --localstatedir=/var \
-        --libexecdir=/usr/lib/sssd \
-        --datadir=/usr/share \
+        --libexecdir=/usr/local/lib/sssd \
+        --datadir=/usr/local/share \
         --enable-pammoddir=/lib/security \
         --with-initscript=systemd \
         --with-os=fedora \
@@ -85,6 +85,16 @@ package() {
     cd "$srcdir"
     rm -rf "$pkgdir/etc/systemd" # remove the drop-in
 
-    sed '1 s/python$/python2/' -i "$pkgdir"/usr/sbin/sss_obfuscate
-}
+    sed '1 s/python$/python2/' -i "$pkgdir"/usr/local/sbin/sss_obfuscate
 
+    install -vdm755 ${pkgdir}/etc/local
+    mv -v ${pkgdir}/usr/local/etc/pam.d ${pkgdir}/etc
+    rm -rfv ${pkgdir}/usr/local/etc
+
+    install -vdm755 ${pkgdir}/usr/lib
+    mv -v ${pkgdir}/usr/local/lib/python2.7 ${pkgdir}/usr/lib
+    mv -v ${pkgdir}/usr/local/lib/python3.7 ${pkgdir}/usr/lib
+
+    install -vdm755 ${pkgdir}/usr/share
+    mv -v ${pkgdir}/usr/local/share/dbus-1 ${pkgdir}/usr/share
+}

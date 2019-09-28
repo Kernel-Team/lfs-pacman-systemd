@@ -27,7 +27,7 @@ prepare() {
     mkdir -p build
     cd build
     cmake ../utf8proc \
-          -DCMAKE_INSTALL_PREFIX=/usr \
+          -DCMAKE_INSTALL_PREFIX=/usr/local \
           -DBUILD_SHARED_LIBS=ON \
           -G Ninja
 }
@@ -39,14 +39,14 @@ build() {
 
 package() {
     cd utf8proc
-    install -Dm644 utf8proc.h "$pkgdir/usr/include/utf8proc.h"
+    install -Dm644 utf8proc.h "$pkgdir/usr/local/include/utf8proc.h"
     install -Dm644 LICENSE.md "$pkgdir/usr/share/licenses/$pkgname/LICENSE.md"
     install -Dm644 "$srcdir/libutf8proc.pc" \
-            "$pkgdir/usr/lib/pkgconfig/libutf8proc.pc"
+            "$pkgdir/usr/local/lib/pkgconfig/libutf8proc.pc"
     install -Dm644 ../build/libutf8proc.so.$_sover \
-            "$pkgdir/usr/lib/libutf8proc.so.$_sover"
-    ln -s /usr/lib/libutf8proc.so.$_sover "$pkgdir/usr/lib/libutf8proc.so"
-    /sbin/ldconfig -n "$pkgdir/usr/lib"
+            "$pkgdir/usr/local/lib/libutf8proc.so.$_sover"
+    ln -s /usr/lib/libutf8proc.so.$_sover "$pkgdir/usr/local/lib/libutf8proc.so"
+    /sbin/ldconfig -n "$pkgdir/usr/local/lib"
 }
 
 md5sums=('SKIP'

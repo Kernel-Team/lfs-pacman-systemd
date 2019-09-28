@@ -19,7 +19,7 @@ groups=('extra')
 prepare() {
     cd ${pkgname}-${pkgver}
     sed -e 's/SSLeay_add_all_algorithms/OpenSSL_add_all_algorithms/g' -i src/tls.c
-    ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var
+    ./configure --prefix=/usr/local --sysconfdir=/usr/local/etc --localstatedir=/var
 }
 
 build() {

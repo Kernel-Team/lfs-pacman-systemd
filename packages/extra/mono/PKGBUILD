@@ -36,6 +36,7 @@ source=(${pkgname}::"git+https://github.com/mono/mono#commit=${_gitcommit}"
         git+https://github.com/mono/xunit-binaries
         git+https://github.com/mono/api-doc-tools
         git+https://github.com/mono/api-snapshot
+        git+https://github.com/mono/llvm
         mono.binfmt.d)
 sha256sums=('SKIP'
             'SKIP'
@@ -85,11 +86,12 @@ prepare() {
     git config submodule."external/xunit-binaries".url "${srcdir}/xunit-binaries"
     git config submodule."external/api-doc-tools".url "${srcdir}/api-doc-tools"
     git config submodule."external/api-snapshot".url "${srcdir}/api-snapshot"
+    git config submodule."external/llvm".url "${srcdir}/llvm"
     git submodule update --recursive
 
     ./autogen.sh \
-        --prefix=/usr \
-        --sysconfdir=/etc \
+        --prefix=/usr/local \
+        --sysconfdir=/usr/local/etc \
         --with-mcs-docs=no
 }
 
@@ -102,8 +104,12 @@ build() {
 package() {
     cd ${pkgname}
     make DESTDIR="${pkgdir}" install
-    make -C mcs/jay DESTDIR="${pkgdir}" prefix=/usr INSTALL=../../install-sh install
+    make -C mcs/jay DESTDIR="${pkgdir}" prefix=/usr/local INSTALL=../../install-sh install
     install -Dm 644 "${srcdir}/mono.binfmt.d" "${pkgdir}/usr/lib/binfmt.d/mono.conf"
+
+    install -vdm755 ${pkgdir}/etc/local
+    mv -v ${pkgdir}/usr/local/etc/* ${pkgdir}/etc/local
+    rm -rv ${pkgdir}/usr/local/etc/
 }
 
 # vim: ts=2 sw=2 et:

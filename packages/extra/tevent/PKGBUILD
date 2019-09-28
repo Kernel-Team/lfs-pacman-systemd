@@ -20,7 +20,7 @@ groups=('extra')
 
 build() {
     cd ${srcdir}/${pkgname}-${pkgver}
-    ./configure --prefix=/usr \
+    ./configure --prefix=/usr/local \
                 --bundled-libraries=NONE \
                 --builtin-libraries=replace
 }
@@ -30,5 +30,8 @@ package() {
     
     make
     make DESTDIR=${pkgdir}/ install
+
+    install -vdm755 ${pkgdir}/usr/lib
+    mv -v ${pkgdir}/usr/local/lib/python3.7 ${pkgdir}/usr/lib
 }
 md5sums=('b937d5e980fa9704f20b57df688845c0')

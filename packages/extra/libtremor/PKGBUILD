@@ -4,7 +4,7 @@
 # Contributor: rabyte <rabyteNOSPAM_at_moonblade.dot.org>
 # Contributor: alexforsale@yahoo.com
 _pkgname=libtremor
-pkgname=$_pkgname-git
+pkgname=$_pkgname-svn
 pkgver=r19674
 pkgrel=1
 pkgdesc="Integer-only, fully Ogg Vorbis compliant software decoder library"
@@ -12,29 +12,29 @@ arch=('x86_64')
 url="http://www.xiph.org/vorbis/"
 license=('BSD')
 depends=('libogg')
-makedepends=('git')
+makedepends=('subversion')
 provides=($_pkgname)
 conflicts=($_pkgname)
 options=('!libtool')
-source=($pkgname::git+https://git.xiph.org/tremor.git)
+source=($pkgname::svn+http://svn.xiph.org/trunk/Tremor)
 md5sums=('SKIP')
 groups=('extra')
 
 pkgver() {
     cd $pkgname
-    git describe --long | sed 's/^foo-//;s/\([^-]*-g\)/r\1/;s/-/./g'
+    local ver="$(svnversion)"
+    printf "r%s" "${ver//[[:alpha:]]}"
 }
 
 prepare() {
     cd $pkgname
     # Fix for automake 1.13
     sed -i "s/AM_CONFIG_HEADER/AC_CONFIG_HEADERS/" configure.in
-    autoreconf -fvi
-    ./configure --prefix=/usr
 }
 
 build() {
     cd $pkgname
+    ./autogen.sh --prefix=/usr/local
     make
 }
 

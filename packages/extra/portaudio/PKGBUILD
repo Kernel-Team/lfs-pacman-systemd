@@ -24,7 +24,7 @@ groups=('extra')
 prepare() {
     mv -v "${pkgname}" "${pkgname}-${pkgver}"
     cd "${pkgname}-${pkgver}"
-    ./configure --prefix=/usr \
+    ./configure --prefix=/usr/local \
                 --enable-cxx
 }
 
@@ -37,5 +37,5 @@ package() {
     cd "${pkgname}-${pkgver}"
     make DESTDIR="${pkgdir}" install
     install -vDm 644 LICENSE.txt -t "${pkgdir}/usr/share/licenses/${pkgname}"
-    install -vDm 644 README.txt -t "${pkgdir}/usr/share/doc/${pkgname}"
+    install -vDm 644 README.txt -t "${pkgdir}/usr/local/share/doc/${pkgname}"
 }

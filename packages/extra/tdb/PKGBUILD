@@ -19,7 +19,7 @@ groups=('extra')
 
 prepare(){
     cd ${srcdir}/${pkgname}-${pkgver}
-    ./configure --prefix=/usr \
+    ./configure --prefix=/usr/local \
                 --localstatedir=/var \
                 --sysconfdir=/etc/samba
 }
@@ -32,6 +32,9 @@ build() {
 package() {
     cd ${srcdir}/${pkgname}-${pkgver}
     make DESTDIR=$pkgdir/ install
+
+    install -vdm755 ${pkgdir}/usr/lib
+    mv -v ${pkgdir}/usr/local/lib/python3.7 ${pkgdir}/usr/lib
 }
 
 md5sums=('fdb34ed48478a084e9e0c310cc178e87'

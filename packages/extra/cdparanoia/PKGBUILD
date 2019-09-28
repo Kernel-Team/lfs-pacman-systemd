@@ -20,7 +20,7 @@ groups=('extra')
 prepare() {
     cd cdparanoia-III-$pkgver
     patch -p0 -i "$srcdir"/gcc.patch
-    ./configure --prefix=/usr --mandir=/usr/share/man
+    ./configure --prefix=/usr/local --mandir=/usr/local/share/man
 }
 
 build() {
@@ -30,5 +30,5 @@ build() {
 
 package() {
     cd cdparanoia-III-$pkgver
-    make prefix="$pkgdir"/usr MANDIR="$pkgdir"/usr/share/man install
+    make prefix="$pkgdir"/usr/local MANDIR="$pkgdir"/usr/local/share/man install
 }

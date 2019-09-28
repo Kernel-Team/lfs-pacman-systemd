@@ -31,7 +31,7 @@ build() {
     python2 setup.py build
 
     cd "$srcdir"/build
-    cmake ../brotli-$pkgver -DCMAKE_INSTALL_PREFIX="/usr" -DCMAKE_INSTALL_LIBDIR="/usr/lib"
+    cmake ../brotli-$pkgver -DCMAKE_INSTALL_PREFIX="/usr/local" -DCMAKE_INSTALL_LIBDIR="/usr/local/lib"
     make
 }
 

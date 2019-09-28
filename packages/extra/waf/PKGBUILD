@@ -35,7 +35,7 @@ prepare() {
 build() {
     cd "$pkgname-$pkgver"
     ./waf-light \
-        configure --prefix=/usr \
+        configure --prefix=/usr/local \
         build --make-waf
 
     # removing compiled in vendored library from executable
@@ -45,8 +45,8 @@ build() {
 package() {
     local _py_ver=$(python3 -c "import sys; print(str(sys.version_info.major)+'.'+str(sys.version_info.minor))")
     cd "$pkgname-$pkgver"
-    install -vDm 755 waf -t "$pkgdir/usr/bin"
-    install -vDm 644 wscript -t "$pkgdir/usr/share/$pkgname"
+    install -vDm 755 waf -t "$pkgdir/usr/local/bin"
+    install -vDm 644 wscript -t "$pkgdir/usr/local/share/$pkgname"
 
     # installing, byte-compiling waflib and stripping pkgdir from it
     install -vDm 644 waflib/*.py \
@@ -60,6 +60,6 @@ package() {
     python -O -m compileall -d "/usr/lib/python${_py_ver}" \
            "${pkgdir}/usr/lib/python${_py_ver}"
     install -vDm 644 LICENSE -t "${pkgdir}/usr/share/licenses/${pkgname}"
-    install -vDm 644 {README,../building-waf}.md -t "${pkgdir}/usr/share/doc/${pkgname}"
+    install -vDm 644 {README,../building-waf}.md -t "${pkgdir}/usr/local/share/doc/${pkgname}"
 }
 # vim:set ts=2 sw=2 et:

@@ -30,7 +30,7 @@ check() {
 package() {
     cd "$srcdir/phc-winner-$pkgname-$pkgver"
 
-    make OPTTARGET=none LIBRARY_REL='lib' DESTDIR="$pkgdir" install
+    make PREFIX=/usr/local OPTTARGET=none LIBRARY_REL='lib' DESTDIR="$pkgdir" install
 
     install -D -m0644 LICENSE "${pkgdir}/usr/share/licenses/argon2/LICENSE"
 }

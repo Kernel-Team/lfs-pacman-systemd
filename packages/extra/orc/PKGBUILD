@@ -23,7 +23,10 @@ pkgver() {
 }
 
 prepare() {
-    meson-helper $pkgname build
+    meson setup \
+          --prefix /usr/local \
+          --libdir /usr/local/lib \
+          $pkgname build
 }
 
 build() {

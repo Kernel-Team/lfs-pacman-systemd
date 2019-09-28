@@ -16,7 +16,7 @@ groups=('extra')
 
 prepare(){
     cd "${srcdir}/${pkgname}-${pkgver}"
-    ./configure --prefix=/usr --disable-static
+    ./configure --prefix=/usr/local --disable-static
 }
 
 build() {

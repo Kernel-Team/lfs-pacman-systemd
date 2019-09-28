@@ -14,20 +14,25 @@ sha1sums=('55ac9d6be510883c5442c8aca967722cdf58fb29'
           '2491a151a37f0162b25fc4e4e9a8ac444b574a76')
 groups=('extra')
 
-build() {
+prepare(){
     install -d build
     cd build
+    
     cmake ../${pkgname}-${pkgver} \
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_SKIP_RPATH=ON \
           -DBUILD_SHARED_LIBS=ON \
           -DBUILD_TESTING=OFF \
-          -DCMAKE_INSTALL_PREFIX=/usr \
+          -DCMAKE_INSTALL_PREFIX=/usr/local \
           -DCMAKE_INSTALL_LIBDIR=lib \
           -DCMAKE_Fortran_COMPILER=gfortran \
           -DLAPACKE_WITH_TMG=ON \
           -DCBLAS=ON \
           -DBUILD_DEPRECATED=ON
+}
+
+build() {
+    cd build
     make
 
     # Build man pages
@@ -41,10 +46,13 @@ package_lapack() {
     cd build
     make DESTDIR="$pkgdir" install
 
-    rm -r "$pkgdir"/usr/lib/{libblas.*,libcblas.*,liblapacke.*}
-    rm -r "$pkgdir"/usr/lib/pkgconfig/{blas.*,cblas.*,lapacke.*}
-    rm -r "$pkgdir"/usr/lib/cmake/{cblas*,lapacke*}
-    rm -r "$pkgdir"/usr/include
+    rm -r "$pkgdir"/usr/local/lib/{libblas.*,libcblas.*,liblapacke.*}
+    rm -r "$pkgdir"/usr/local/lib/pkgconfig/{blas.*,cblas.*,lapacke.*}
+    rm -r "$pkgdir"/usr/local/lib/cmake/{cblas*,lapacke*}
+    rm -r "$pkgdir"/usr/local/include
+
+    install -vdm755 ${pkgdir}/usr/lib
+    mv -v ${pkgdir}/usr/local/lib/cmake ${pkgdir}/usr/lib
 }
 
 package_blas() {
@@ -65,6 +73,9 @@ package_cblas() {
 
     cd build/CBLAS
     make DESTDIR="$pkgdir" install
+
+    install -vdm755 ${pkgdir}/usr/lib
+    mv -v ${pkgdir}/usr/local/lib/cmake ${pkgdir}/usr/lib
 }
 
 package_lapacke() {
@@ -73,13 +84,16 @@ package_lapacke() {
 
     cd build/LAPACKE
     make DESTDIR="$pkgdir" install
+
+    install -vdm755 ${pkgdir}/usr/lib
+    mv -v ${pkgdir}/usr/local/lib/cmake ${pkgdir}/usr/lib
 }
 
 package_lapack-doc() {
     pkgdesc="Man pages for BLAS/LAPACK"
 
-    mkdir -p "$pkgdir"/usr/share
-    cp -r lapack-$pkgver/DOCS/man "$pkgdir"/usr/share
+    mkdir -p "$pkgdir"/usr/local/share
+    cp -r lapack-$pkgver/DOCS/man "$pkgdir"/usr/local/share
 }
 
 sha1sums=('55ac9d6be510883c5442c8aca967722cdf58fb29'

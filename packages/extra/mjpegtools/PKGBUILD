@@ -28,7 +28,7 @@ done
 prepare() {
     cd ${pkgname}-${pkgver}
     sed -i -e '/ARCHFLAGS=/s:=.*:=:' -e 's/-fno-PIC//' configure
-    ./configure --prefix=/usr --enable-largefile
+    ./configure --prefix=/usr/local --enable-largefile
 }
 
 build() {
@@ -39,5 +39,5 @@ build() {
 package() {
     cd ${pkgname}-${pkgver}
     make DESTDIR="${pkgdir}" install
-    install -m644 mpeg2enc/mpeg2syntaxcodes.h "${pkgdir}/usr/include/mjpegtools/mpeg2enc/"
+    install -m644 mpeg2enc/mpeg2syntaxcodes.h "${pkgdir}/usr/local/include/mjpegtools/mpeg2enc/"
 }

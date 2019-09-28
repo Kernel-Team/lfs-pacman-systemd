@@ -30,18 +30,18 @@ prepare() {
 build() {
     cd ${_pkgname}_${_pkgver}
     CCOPTFLAG="$CFLAGS"
-    jam -q -fJambase ${MAKEFLAGS} -sPREFIX=/usr -sDESTDIR="${pkgdir}" -sREFSUBDIR=share/argyllcms/ref all
+    jam -q -fJambase ${MAKEFLAGS} -sPREFIX=/usr/local -sDESTDIR="${pkgdir}" -sREFSUBDIR=share/argyllcms/ref all
 }
 
 package() {
     cd ${_pkgname}_${_pkgver}
-    jam -q -fJambase ${MAKEFLAGS} -sPREFIX=/usr -sDESTDIR="${pkgdir}" -sREFSUBDIR=share/argyllcms/ref install
+    jam -q -fJambase ${MAKEFLAGS} -sPREFIX=/usr/local -sDESTDIR="${pkgdir}" -sREFSUBDIR=share/argyllcms/ref install
 
-    rm "${pkgdir}"/usr/bin/License.txt
+    rm "${pkgdir}"/usr/local/bin/License.txt
 
     rm {doc,ref}/afiles
-    install -Dm644 doc/*.* -t "${pkgdir}"/usr/share/${pkgname}/doc/
-    install -Dm644 doc/ccmxs/*.ccmx -t "${pkgdir}"/usr/share/${pkgname}/doc/ccmxs/
+    install -Dm644 doc/*.* -t "${pkgdir}"/usr/local/share/${pkgname}/doc/
+    install -Dm644 doc/ccmxs/*.ccmx -t "${pkgdir}"/usr/local/share/${pkgname}/doc/ccmxs/
 
-    install -Dm644 usb/55-Argyll.rules -t "${pkgdir}"/usr/lib/udev/rules.d/
+    install -Dm644 usb/55-Argyll.rules -t "${pkgdir}"/lib/udev/rules.d/
 }

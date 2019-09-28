@@ -46,11 +46,12 @@ prepare() {
 
 build() {
     cd "${pkgname}-${pkgver}"
-    waf configure --prefix=/usr \
-        --htmldir="/usr/share/doc/${pkgbase}/" \
+    waf configure --prefix=/usr/local \
+        --htmldir="/usr/local/share/doc/${pkgbase}/" \
         --freebob=no \
         --classic \
-        --dbus
+        --dbus \
+        --enable-pkg-config-dbus-service-dir
     waf build
 }
 

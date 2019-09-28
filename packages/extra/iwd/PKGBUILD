@@ -19,9 +19,9 @@ groups=('extra')
 
 prepare(){
     cd "${srcdir}/${pkgname}-${pkgver}"
-    ./configure --prefix=/usr \
-	        --sysconfdir=/etc \
-	        --libexecdir=/usr/lib/iwd \
+    ./configure --prefix=/usr/local \
+	        --sysconfdir=/usr/local/etc \
+	        --libexecdir=/usr/local/lib/iwd \
 	        --enable-wired \
 	        --localstatedir=/var
 }
@@ -35,8 +35,8 @@ package() {
     cd "${srcdir}/${pkgname}-${pkgver}"
     make install DESTDIR="${pkgdir}"
     # This fixes #62874: include docs and autotests file for easier configuration
-    install -Dm644 "doc/iwmon.txt" "${pkgdir}/usr/share/iwd/doc/iwmon.txt"
-    install -Dm644 "doc/main.conf" "${pkgdir}/usr/share/iwd/doc/main.conf"
+    install -Dm644 "doc/iwmon.txt" "${pkgdir}/usr/local/share/iwd/doc/iwmon.txt"
+    install -Dm644 "doc/main.conf" "${pkgdir}/usr/local/share/iwd/doc/main.conf"
 }
 
 # vim: set ts=2 sw=2 ft=sh noet:

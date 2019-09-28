@@ -14,9 +14,10 @@ makedepends=('ncurses>=5.6-7')
 optdepends=('ncurses: advanced ncurses features' 'tk: advanced tk features')
 source=(http://caml.inria.fr/distrib/ocaml-${pkgver%.*}/${pkgname}-${pkgver}.tar.xz
         ocaml-4.08.0.patch)
-options=('!makeflags' '!emptydirs' 'staticlibs')
-_confargs=('-prefix /usr')
 groups=('extra')
+options=('!makeflags' '!emptydirs' 'staticlibs')
+
+_confargs=('-prefix /usr')
 
 for _m in "${_makedeps[@]}";do
     if [[ "$(pacman -Qq "${_m}" 2>/dev/null)" ]];then

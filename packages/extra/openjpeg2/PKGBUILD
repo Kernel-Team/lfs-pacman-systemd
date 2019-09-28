@@ -22,9 +22,7 @@ prepare() {
     
     # Install doxygen docs to the right directory
     sed -i -e "s:DESTINATION\ share/doc:DESTINATION\ share/doc/${pkgname}:" openjpeg-${pkgver}/doc/CMakeLists.txt
-}
 
-build() {
     cd "${srcdir}/build"
 
     # CMAKE flags
@@ -35,7 +33,7 @@ build() {
 
     cmake "../openjpeg-${pkgver}" \
           -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_INSTALL_PREFIX=/usr \
+          -DCMAKE_INSTALL_PREFIX=/usr/local \
           -DBUILD_SHARED_LIBS=ON \
           -DBUILD_STATIC_LIBS=OFF \
           -DBUILD_DOC=on
@@ -45,7 +43,10 @@ build() {
         #    -DBUILD_JPIP=ON \
         #    -DBUILD_JPIP_SERVER=ON \
         #    -DBUILD_JP3D=ON # --help -LAH
+}
 
+build() {
+    cd "${srcdir}/build"
     make
 }
 
@@ -54,8 +55,8 @@ package() {
     make DESTDIR="${pkgdir}" install
     
     install -m755 -d "${pkgdir}/usr/share/licenses/openjpeg2"
-    mv ${pkgdir}/usr/share/doc/openjpeg-*/LICENSE ${pkgdir}/usr/share/licenses/openjpeg2
-    rmdir ${pkgdir}/usr/share/doc/openjpeg-*
+    mv ${pkgdir}/usr/local/share/doc/openjpeg-*/LICENSE ${pkgdir}/usr/share/licenses/openjpeg2
+    rmdir ${pkgdir}/usr/local/share/doc/openjpeg-*
 }
 
 sha256sums=('63f5a4713ecafc86de51bfad89cc07bb788e9bba24ebbf0c4ca637621aadb6a9')

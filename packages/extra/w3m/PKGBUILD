@@ -19,7 +19,7 @@ groups=('extra')
 # There's also the maintainer's github repo, usually in sync with Debian's:
 # https://github.com/tats/w3m
 
-_confargs=('--prefix=/usr' '--sysconfdir=/etc' '--with-termlib=ncurses')
+_confargs=('--prefix=/usr/local' '--sysconfdir=/usr/local/etc' '--with-termlib=ncurses')
 if [[ "$(pacman -Qq imlib2 2>/dev/null)" ]];then
     _confargs+=( '--with-imagelib=imlib2' '--enable-image=x11,fb')
 else
@@ -40,7 +40,8 @@ package() {
     cd "${srcdir}/${pkgname}"
     make DESTDIR="${pkgdir}" install
 
-    install -d "${pkgdir}"/usr/share/{doc,licenses}/w3m
-    install -m644 doc/* "${pkgdir}/usr/share/doc/w3m"
-    ln -s ../../doc/w3m/README "${pkgdir}/usr/share/licenses/w3m"
+    install -d "${pkgdir}"/usr/share/licenses/w3m
+    install -d "${pkgdir}"/usr/local/share/doc/w3m
+    install -m644 doc/* "${pkgdir}/usr/local/share/doc/w3m"
+    ln -s ../../../doc/w3m/README "${pkgdir}/usr/share/licenses/w3m"
 }

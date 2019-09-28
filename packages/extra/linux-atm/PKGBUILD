@@ -11,6 +11,8 @@ license=(GPL)
 source=(http://downloads.sourceforge.net/sourceforge/${pkgname}/${pkgname}-${pkgver}.tar.gz
         man-pages.patch remove-define-hacks.patch)
 options=(!makeflags)
+backups=('etc/local/atmsigd.conf'
+         'etc/local/hosts.atm')
 groups=('extra')
 
 prepare(){
@@ -18,7 +20,7 @@ prepare(){
     patch -Np1 -i ../man-pages.patch
     patch -Np1 -i ../remove-define-hacks.patch
 
-    ./configure --prefix=/usr --sysconfdir=/etc
+    ./configure --prefix=/usr/local --sysconfdir=/usr/local/etc
 }
 
 build() {
@@ -29,6 +31,10 @@ build() {
 package() {
     cd "${srcdir}/${pkgname}-${pkgver}"
     make DESTDIR="${pkgdir}" install
+
+    install -vdm755 ${pkgdir}/etc/local
+    mv -v ${pkgdir}/usr/local/etc/* ${pkgdir}/etc/local
+    rm -rfv ${pkgdir}/usr/local/etc
 }
 
 md5sums=('d49499368c3cf15f73a05d9bce8824a8'

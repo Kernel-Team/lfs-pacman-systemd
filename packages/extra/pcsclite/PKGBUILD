@@ -23,12 +23,12 @@ groups=('extra')
 prepare(){
     cd "pcsc-lite-$pkgver"
     ./configure \
-        --prefix=/usr \
-        --sysconfdir=/etc \
+        --prefix=/usr/local \
+        --sysconfdir=/usr/local/etc \
         --enable-filter \
         --enable-ipcdir=/run/pcscd \
         --enable-libudev \
-        --enable-usbdropdir=/usr/lib/pcsc/drivers \
+        --enable-usbdropdir=/usr/local/lib/pcsc/drivers \
         --with-systemdsystemunitdir=/lib/systemd/system
 }
 
@@ -42,5 +42,5 @@ package() {
     make DESTDIR="$pkgdir" install
 
     install -D -m644 "$srcdir/pcsc-lite-$pkgver/COPYING" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
-    install -d "$pkgdir/usr/lib/pcsc/drivers"
+    install -d "$pkgdir/usr/local/lib/pcsc/drivers"
 }

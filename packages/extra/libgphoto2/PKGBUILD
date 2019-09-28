@@ -29,7 +29,7 @@ prepare() {
     cd $pkgname
     git cherry-pick -n 236cd97b617972c38ac8e6780590b3049c0afa2f
     autoreconf -fvi
-    ./configure --prefix=/usr --disable-rpath
+    ./configure --prefix=/usr/local --disable-rpath
     sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0 /g' -e 's/    if test "$export_dynamic" = yes && test -n "$export_dynamic_flag_spec"; then/      func_append compile_command " -Wl,-O1,--as-needed"\n      func_append finalize_command " -Wl,-O1,--as-needed"\n\0/' libtool
 }
 
@@ -43,24 +43,25 @@ package() {
     make DESTDIR="$pkgdir" install
 
     # Remove unused udev helper
-    rm -r "$pkgdir/usr/lib/udev"
+    rm -r "$pkgdir/usr/local/lib/udev"
 
     # Remove recursive symlink
-    rm "$pkgdir/usr/include/gphoto2/gphoto2"
+    rm "$pkgdir/usr/local/include/gphoto2/gphoto2"
 
     _genudev
 }
 
 _genudev() (
-    cd "$pkgdir/usr/lib/libgphoto2"
+    cd "$pkgdir/usr/local/lib/libgphoto2"
 
-    export LD_LIBRARY_PATH="$pkgdir/usr/lib${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH"
+    export LD_LIBRARY_PATH="$pkgdir/usr/local/lib${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH"
     export CAMLIBS="$PWD/$pkgver"
 
+    install -vdm755 ${pkgdir}/lib/udev/{hwdb.d,rules.d}
     ./print-camera-list hwdb \
-        | install -Dm644 /dev/stdin "$pkgdir/usr/lib/udev/hwdb.d/20-gphoto.hwdb"
+        | install -Dm644 /dev/stdin "$pkgdir/lib/udev/hwdb.d/20-gphoto.hwdb"
     ./print-camera-list udev-rules version 201 \
-        | install -Dm644 /dev/stdin "$pkgdir/usr/lib/udev/rules.d/40-gphoto.rules"
+        | install -Dm644 /dev/stdin "$pkgdir/lib/udev/rules.d/40-gphoto.rules"
 )
 
 # vim:set sw=2 et:

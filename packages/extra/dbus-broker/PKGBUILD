@@ -42,7 +42,12 @@ prepare() {
     git submodule update
 
     cd $srcdir
-    meson-helper $pkgname build -D docs=true -D audit=true
+    meson setup \
+          --prefix /usr/local \
+          --libdir /usr/local/lib \
+          --sysconfdir /usr/local/etc \
+          --buildtype release \
+          $pkgname build -D docs=true -D audit=true
 }
 
 build() {
@@ -58,5 +63,5 @@ package() {
 
     install -vdm755 ${pkgdir}/lib/systemd
     mv -v ${pkgdir}/usr/lib/systemd/* ${pkgdir}/lib/systemd
-    rm -rfv ${pkgdir}/usr/lib/systemd
+    rm -rfv ${pkgdir}/usr/lib
 }

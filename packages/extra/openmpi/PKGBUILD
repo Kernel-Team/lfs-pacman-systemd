@@ -16,10 +16,10 @@ groups=('extra')
 
 prepare(){
   cd ${pkgname}-${pkgver}
-  ./configure --prefix=/usr \
-              --sysconfdir=/etc/${pkgname} \
+  ./configure --prefix=/usr/local \
+              --sysconfdir=/usr/local/etc/${pkgname} \
               --enable-mpi-fortran=all \
-              --libdir=/usr/lib/${pkgname} \
+              --libdir=/usr/local/lib/${pkgname} \
               --with-threads=posix \
               --enable-mpi-thread-multiple \
               --enable-smp-locks \
@@ -29,7 +29,7 @@ prepare(){
               --enable-memchecker \
               --enable-pretty-print-stacktrace \
               --without-slurm \
-              --with-hwloc=/usr \
+              --with-hwloc=/usr/local \
               --with-libltdl=/usr  \
               FC=/usr/bin/gfortran \
               LDFLAGS="${LDFLAGS} -Wl,-z,noexecstack"
@@ -50,13 +50,17 @@ package() {
   make DESTDIR="${pkgdir}" install
 
   # FS#28583
-  install -dm 755 "${pkgdir}/usr/lib/pkgconfig"
+  install -dm 755 "${pkgdir}/usr/local/lib/pkgconfig"
   for i in ompi-c.pc ompi-cxx.pc ompi-f77.pc ompi-f90.pc ompi.pc; do
-    ln -sf "/usr/lib/openmpi/pkgconfig/${i}" "${pkgdir}/usr/lib/pkgconfig/"
+    ln -sf "/usr/local/lib/openmpi/pkgconfig/${i}" "${pkgdir}/usr/local/lib/pkgconfig/"
   done
 
+  install -vdm755 ${pkgdir}/etc/local
+  mv -v ${pkgdir}/usr/local/etc/* ${pkgdir}/etc/local
+  rm -rfv ${pkgdir}/usr/local/etc
+
   install -dm 755 "${pkgdir}/etc/ld.so.conf.d"
-  echo "/usr/lib/${pkgname}" > "${pkgdir}"/etc/ld.so.conf.d/${pkgname}.conf
+  echo "/usr/local/lib/${pkgname}" > "${pkgdir}"/etc/ld.so.conf.d/${pkgname}.conf
   install -Dm 644 LICENSE -t "${pkgdir}/usr/share/licenses/${pkgname}"
 }
 

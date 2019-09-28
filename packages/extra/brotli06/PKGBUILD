@@ -20,7 +20,7 @@ groups=('extra')
 
 prepare() {
     mkdir -p build && cd $_
-    cmake ../brotli-$pkgver -DCMAKE_INSTALL_PREFIX="/usr" -DCMAKE_INSTALL_LIBDIR="/usr/lib/brotli06"
+    cmake ../brotli-$pkgver -DCMAKE_INSTALL_PREFIX="/usr/local" -DCMAKE_INSTALL_LIBDIR="/usr/local/lib/brotli06"
 }
 
 build() {
@@ -39,23 +39,24 @@ package_brotli06() {
     install -D -m644 "$srcdir"/brotli-$pkgver/LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
 
     install -dm755 "$pkgdir"/usr/include/brotli06
-    mv "$pkgdir"/usr/include/brotli "$pkgdir"/usr/include/brotli06/
+    mv "$pkgdir"/usr/local/include/brotli "$pkgdir"/usr/local/include/brotli06/
 
     for _so in libbrotlicommon libbrotlidec libbrotlienc; do
-        mv "$pkgdir"/usr/lib/brotli06/$_so.so.$pkgver "$pkgdir"/usr/lib/
-        ln -sf ../$_so.so.$pkgver "$pkgdir"/usr/lib/brotli06/$_so.so
+        mv "$pkgdir"/usr/local/lib/brotli06/$_so.so.$pkgver "$pkgdir"/usr/local/lib/
+        ln -sf ../$_so.so.$pkgver "$pkgdir"/usr/local/lib/brotli06/$_so.so
     done
 
-    mv "$pkgdir"/usr/bin/bro{,-0.6}
+    mv "$pkgdir"/usr/local/bin/bro{,-0.6}
 
-    sed -e 's|/include$|/include/brotli06|' -i "$pkgdir"/usr/lib/brotli06/pkgconfig/*.pc
+    sed -e 's|/include$|/include/brotli06|' -i "$pkgdir"/usr/local/lib/brotli06/pkgconfig/*.pc
 }
 
 package_brotli06-testdata() {
     depends=()
 
     cd brotli-$pkgver
-    install -dm755 "$pkgdir"/usr/share/brotli06
-    cp -a tests/testdata "$pkgdir"/usr/share/brotli06/
+    install -dm755 "$pkgdir"/usr/local/share/brotli06
+    cp -a tests/testdata "$pkgdir"/usr/local/share/brotli06/
+    install -vdm755 "$pkgdir"/usr/share/licenses/$pkgname
     install -D -m644 "$srcdir"/brotli-$pkgver/LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
 }

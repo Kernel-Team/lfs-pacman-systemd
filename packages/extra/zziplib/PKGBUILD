@@ -17,7 +17,7 @@ groups=('extra')
 prepare(){
     cd ${pkgname}-${pkgver}
     export PYTHON=/usr/bin/python2
-    ./configure --prefix=/usr
+    ./configure --prefix=/usr/local
 }
 
 build() {
@@ -30,7 +30,7 @@ package() {
     make DESTDIR="${pkgdir}" install
 
     # fix permissions
-    chmod -s "${pkgdir}/usr/share/man/man3"
-    # chmod 644 "${pkgdir}"/usr/share/man/man3/*
-    chown -R root:root "${pkgdir}/usr/share/man/man3"
+    chmod -s "${pkgdir}/usr/local/share/man/man3"
+    # chmod 644 "${pkgdir}"/usr/local/share/man/man3/*
+    chown -R root:root "${pkgdir}/usr/local/share/man/man3"
 }

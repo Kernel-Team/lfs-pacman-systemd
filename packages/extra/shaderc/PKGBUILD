@@ -39,7 +39,7 @@ build() {
     cd ${pkgname}-${pkgver}/build
     cmake .. \
           -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_INSTALL_PREFIX=/usr \
+          -DCMAKE_INSTALL_PREFIX=/usr/local \
           -DCMAKE_INSTALL_LIBDIR=lib \
           -DSHADERC_SKIP_TESTS=ON \
           -GNinja \
@@ -53,5 +53,5 @@ build() {
 package() {
     cd ${pkgname}-${pkgver}
     DESTDIR="${pkgdir}" ninja -C build install
-    install -Dm 644 glslc/glslc.1 -t "${pkgdir}/usr/share/man/man1"
+    install -Dm 644 glslc/glslc.1 -t "${pkgdir}/usr/local/share/man/man1"
 }

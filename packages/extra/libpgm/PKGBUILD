@@ -13,14 +13,15 @@ depends=('glibc')
 makedepends=('python2')
 options=(!strip)
 #source=("http://openpgm.googlecode.com/files/$pkgname-$pkgver.tar.gz")
-source=("https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/openpgm/libpgm-$pkgver.tar.gz")
-sha256sums=('6b895f550b95284dcde7189b01e04a9a1c1f94579af31b1eebd32c2207a1ba2c')
+source=("https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/openpgm/libpgm-$pkgver.tar.gz"
+        "https://github.com/fd00/yacp/raw/master/libpgm/libpgm-5.2.122-1bl1.src.patch")
 groups=('extra')
 
 prepare() {
+    patch -Np1 -i ${srcdir}/libpgm-5.2.122-1bl1.src.patch
     cd "$srcdir/$pkgname-$pkgver/openpgm/pgm"
     find . -type f -exec sed -i 's/python/python2/g' {} \+
-    ./configure --prefix=/usr
+    ./configure --prefix=/usr/local
 }
 
 build() {
@@ -30,5 +31,8 @@ build() {
 
 package() {
     cd "$srcdir/$pkgname-$pkgver/openpgm/pgm"
-    make prefix="$pkgdir/usr" install
+    make prefix="$pkgdir/usr/local" install
 }
+
+sha256sums=('6b895f550b95284dcde7189b01e04a9a1c1f94579af31b1eebd32c2207a1ba2c'
+            '8cfe775d605d78afa8f2f09dde4c3faff84dd1879e54a01628627357cf6510d9')

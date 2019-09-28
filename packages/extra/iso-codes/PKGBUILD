@@ -22,7 +22,7 @@ pkgver() {
 prepare() {
     cd $pkgname
     autoreconf -fi
-    ./configure --prefix=/usr
+    ./configure --prefix=/usr/local
 }
 
 build() {
@@ -32,5 +32,5 @@ build() {
 
 package() {
     cd "$srcdir/$pkgname"
-    make DESTDIR="$pkgdir" pkgconfigdir=/usr/lib/pkgconfig install
+    make DESTDIR="$pkgdir" pkgconfigdir=/usr/local/lib/pkgconfig install
 }

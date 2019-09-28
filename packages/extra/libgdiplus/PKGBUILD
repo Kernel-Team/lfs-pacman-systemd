@@ -19,7 +19,7 @@ prepare() {
     cd ${pkgname}-${pkgver}
     autoreconf -fiv
     ./configure \
-        --prefix=/usr \
+        --prefix=/usr/local \
         --with-cairo=system
 }
 

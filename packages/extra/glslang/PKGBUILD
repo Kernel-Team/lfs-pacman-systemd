@@ -22,7 +22,7 @@ build() {
     (cd build-shared
      cmake .. \
            -GNinja \
-           -DCMAKE_INSTALL_PREFIX=/usr \
+           -DCMAKE_INSTALL_PREFIX=/usr/local \
            -DCMAKE_BUILD_TYPE=Release \
            -DBUILD_SHARED_LIBS=ON
      ninja
@@ -30,7 +30,7 @@ build() {
     (cd build-static
      cmake .. \
            -GNinja \
-           -DCMAKE_INSTALL_PREFIX=/usr \
+           -DCMAKE_INSTALL_PREFIX=/usr/local \
            -DCMAKE_BUILD_TYPE=Release \
            -DBUILD_SHARED_LIBS=OFF
      ninja
@@ -41,7 +41,7 @@ package() {
     cd ${pkgname}-${pkgver}
     DESTDIR="${pkgdir}" ninja -C build-shared install
     DESTDIR="${pkgdir}" ninja -C build-static install
-    cd "${pkgdir}"/usr/lib
+    cd "${pkgdir}"/usr/local/lib
     for lib in *.so; do
         ln -sf "${lib}" "${lib}.0"
     done

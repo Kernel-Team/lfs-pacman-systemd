@@ -32,7 +32,7 @@ prepare() {
     # Needed for new libsodium
     sed -i 's/libzmq_werror="yes"/libzmq_werror="no"/' $pkgname-$pkgver/configure
     cd "$srcdir/$pkgname-$pkgver"
-    ./configure prefix=/usr --with-libsodium \
+    ./configure prefix=/usr/local --with-libsodium \
                 --with-documentation --enable-static ${_confargs[@]}
 }
 
@@ -59,6 +59,6 @@ package() {
     cd "$srcdir/$pkgname-$pkgver"
     make DESTDIR="$pkgdir" install
     cd "$srcdir/cppzmq-$_cppver"
-    install -Dm644 zmq.hpp "$pkgdir/usr/include/zmq.hpp"
-    install -Dm644 zmq_addon.hpp "$pkgdir/usr/include/zmq_addon.hpp"
+    install -Dm644 zmq.hpp "$pkgdir/usr/local/include/zmq.hpp"
+    install -Dm644 zmq_addon.hpp "$pkgdir/usr/local/include/zmq_addon.hpp"
 }

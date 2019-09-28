@@ -10,7 +10,7 @@ url='https://netfilter.org/projects/nftables/'
 license=('GPL2')
 depends=('libmnl' 'libnftnl' 'gmp' 'readline' 'ncurses' 'jansson')
 makedepends=('asciidoc')
-backup=('etc/nftables.conf')
+backup=('etc/local/nftables.conf')
 validpgpkeys=('C09DB2063F1D7034BA6152ADAB4655A126D292E4') # Netfilter Core Team
 source=("https://netfilter.org/projects/nftables/files/nftables-$pkgver.tar.bz2"{,.sig}
         'nftables.conf'
@@ -36,9 +36,8 @@ prepare() {
 prepare(){
     cd $pkgname-$pkgver
     ./configure \
-        --prefix=/usr \
-        --sbindir=/usr/bin \
-        --sysconfdir=/usr/share \
+        --prefix=/usr/local \
+        --sysconfdir=/usr/local/etc \
         --with-json \
         --with-python-bin='' # --enable-python=no does not works
 }
@@ -53,7 +52,11 @@ package() {
     make DESTDIR="$pkgdir" install
     popd
     # basic safe firewall config
-    install -Dm644 nftables.conf "$pkgdir/etc/nftables.conf"
+    install -Dm644 nftables.conf "$pkgdir/etc/local/nftables.conf"
     # systemd
     install -Dm644 nftables.service "$pkgdir/lib/systemd/system/nftables.service"
+
+    install -vdm755 ${pkgdir}/etc/local
+    mv -v ${pkgdir}/usr/local/etc/* ${pkgdir}/etc/local
+    rm -rfv ${pkgdir}/usr/local/etc
 }

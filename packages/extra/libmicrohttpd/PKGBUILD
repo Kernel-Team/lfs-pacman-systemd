@@ -15,31 +15,31 @@ source=("https://ftp.gnu.org/gnu/libmicrohttpd/$pkgname-$pkgver.tar.gz"{,.sig})
 groups=('extra')
 
 prepare(){
-  cd ${pkgname}-${pkgver}
-  ./configure \
-    --prefix=/usr \
-    --disable-dependency-tracking \
-    --disable-examples \
-    --enable-curl \
-    --enable-https \
-    --enable-largefile \
-    --enable-messages \
-    --with-pic
+    cd ${pkgname}-${pkgver}
+    ./configure \
+        --prefix=/usr/local \
+        --disable-dependency-tracking \
+        --disable-examples \
+        --enable-curl \
+        --enable-https \
+        --enable-largefile \
+        --enable-messages \
+        --with-pic
 }
 
 build() {
-  cd ${pkgname}-${pkgver}
-  make
+    cd ${pkgname}-${pkgver}
+    make
 }
 
 check() {
-  cd ${pkgname}-${pkgver}
-  make check
+    cd ${pkgname}-${pkgver}
+    make check
 }
 
 package() {
-  cd ${pkgname}-${pkgver}
-  make DESTDIR="$pkgdir" install
+    cd ${pkgname}-${pkgver}
+    make DESTDIR="$pkgdir" install
 }
 
 sha256sums=('4e66d4db1574f4912fbd2690d10d227cc9cc56df6a10aa8f4fc2da75cea7ab1b'

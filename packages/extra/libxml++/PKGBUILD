@@ -23,7 +23,7 @@ pkgver() {
 prepare() {
     cd $pkgbase
     NOCONFIGURE=1 ./autogen.sh
-    ./configure --prefix=/usr
+    ./configure --prefix=/usr/local
     sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
 }
 
@@ -43,6 +43,7 @@ package_libxml++() {
 
     cd "${srcdir}/$pkgbase"
     make DESTDIR="${pkgdir}" install doc_subdirs=
+
 }
 
 package_libxml++-docs() {

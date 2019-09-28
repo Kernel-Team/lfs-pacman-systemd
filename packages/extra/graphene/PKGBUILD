@@ -30,7 +30,11 @@ prepare() {
     git submodule update
 
     cd ..
-    meson-helper $pkgname build \
+    meson setup \
+          --prefix /usr/local \
+          --libdir /usr/local/lib \
+          --sysconfdir /usr/local/etc \
+          $pkgname build \
                  -D installed_tests=false #-D gobject_types=false #-D gtk_doc=true
 }
 

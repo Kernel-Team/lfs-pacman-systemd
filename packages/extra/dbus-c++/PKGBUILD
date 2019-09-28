@@ -8,7 +8,7 @@ pkgname=dbus-c++
 _pkgname="lib${pkgname}"
 _upstream="dbus-cplusplus"
 pkgver=0.9.0
-pkgrel=8
+pkgrel=1
 pkgdesc="A C++ API for D-BUS"
 url="http://dbus-cplusplus.sourceforge.net/"
 arch=('x86_64')
@@ -33,7 +33,7 @@ build() {
 
     export LDFLAGS+=" -lexpat -lpthread" # -lpthread needed for i686
 
-    ./configure --prefix=/usr \
+    ./configure --prefix=/usr/local \
                 --disable-static \
                 --disable-ecore \
                 --enable-glib
@@ -44,11 +44,11 @@ package() {
     cd "${_pkgname}-${pkgver}"
 
     make DESTDIR="${pkgdir}" install
-    install -Dm644 AUTHORS "${pkgdir}/usr/share/doc/${pkgname}/AUTHORS"
-    install -Dm644 ChangeLog "${pkgdir}/usr/share/doc/${pkgname}/ChangeLog"
-    install -Dm644 NEWS "${pkgdir}/usr/share/doc/${pkgname}/NEWS"
-    install -Dm644 README "${pkgdir}/usr/share/doc/${pkgname}/README"
-    install -Dm644 TODO "${pkgdir}/usr/share/doc/${pkgname}/TODO"
+    install -Dm644 AUTHORS "${pkgdir}/usr/local/share/doc/${pkgname}/AUTHORS"
+    install -Dm644 ChangeLog "${pkgdir}/usr/local/share/doc/${pkgname}/ChangeLog"
+    install -Dm644 NEWS "${pkgdir}/usr/local/share/doc/${pkgname}/NEWS"
+    install -Dm644 README "${pkgdir}/usr/local/share/doc/${pkgname}/README"
+    install -Dm644 TODO "${pkgdir}/usr/local/share/doc/${pkgname}/TODO"
 
 }
 

@@ -3,7 +3,7 @@
 # Contributor: alexforsale@yahoo.com
 pkgname=sysfsutils
 pkgver=2.1.0
-pkgrel=10
+pkgrel=1
 pkgdesc="System Utilities Based on Sysfs"
 arch=(x86_64)
 license=('GPL' 'LGPL')
@@ -15,7 +15,7 @@ sha512sums=('485902d98b41a69343cb037883d0c0a1de8a1a4aed657cd4528fe10bc845ac51629
 
 prepare(){
     cd "$pkgname-$pkgver"
-    ./configure --prefix=/usr --mandir=/usr/share/man
+    ./configure --prefix=/usr/local --mandir=/usr/local/share/man
 }
 
 build() {
@@ -31,5 +31,5 @@ check() {
 package() {
     cd "$pkgname-$pkgver"
     make DESTDIR="$pkgdir" install
-    rm "$pkgdir/usr/lib/libsysfs.a"
+    rm "$pkgdir/usr/local/lib/libsysfs.a"
 }

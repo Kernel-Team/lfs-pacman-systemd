@@ -20,7 +20,7 @@ prepare(){
     cd $pkgname-$pkgver
     ./configure \
         --enable-autogen \
-        --prefix=/usr
+        --prefix=/usr/local
 }
 
 build() {
@@ -34,5 +34,5 @@ package() {
     make DESTDIR="$pkgdir" install
 
     install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
-    chmod 644 "$pkgdir/usr/lib/libjemalloc_pic.a"
+    chmod 644 "$pkgdir/usr/local/lib/libjemalloc_pic.a"
 }

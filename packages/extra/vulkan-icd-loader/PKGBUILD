@@ -26,9 +26,9 @@ build() {
     cd "${srcdir}"/Vulkan-Loader*
 
     rm -rf build ; mkdir build ; cd build
-    cmake -DCMAKE_INSTALL_PREFIX=/usr \
+    cmake -DCMAKE_INSTALL_PREFIX=/usr/local \
           -DCMAKE_INSTALL_LIBDIR=lib \
-          -DCMAKE_INSTALL_SYSCONFDIR=/etc \
+          -DCMAKE_INSTALL_SYSCONFDIR=/usr/local/etc \
           -DCMAKE_INSTALL_DATADIR=/share \
           -DCMAKE_SKIP_RPATH=True \
           -DBUILD_TESTS=Off \

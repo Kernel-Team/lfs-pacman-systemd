@@ -14,7 +14,7 @@ groups=('extra')
 
 prepare() {
     cd "${srcdir}"/$pkgname-$pkgver
-    ./configure --prefix=/usr --mandir=/usr/share/man
+    ./configure --prefix=/usr/local --mandir=/usr/local/share/man
 }
 
 build() {
@@ -24,5 +24,5 @@ build() {
 
 package() {
     cd "${srcdir}"/$pkgname-$pkgver
-    make DESTDIR="${pkgdir}" docdir=/usr/share/doc/chrpath install
+    make DESTDIR="${pkgdir}" docdir=/usr/local/share/doc/chrpath install
 }

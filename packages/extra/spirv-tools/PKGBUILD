@@ -8,7 +8,6 @@ pkgdesc="API and commands for processing SPIR-V modules"
 arch=('x86_64')
 url="https://www.khronos.org/vulkan/"
 license=('custom')
-groups=(vulkan-devel)
 depends=(gcc-libs)
 makedepends=(cmake python git ninja)
 source=("git+https://github.com/KhronosGroup/SPIRV-Tools.git#tag=v${pkgver}"
@@ -23,7 +22,7 @@ build() {
     rm -rf build && mkdir build && cd build
     cmake .. \
           -GNinja \
-          -DCMAKE_INSTALL_PREFIX=/usr \
+          -DCMAKE_INSTALL_PREFIX=/usr/local \
           -DCMAKE_INSTALL_LIBDIR=lib \
           -DCMAKE_BUILD_TYPE=Release \
           -DSPIRV_WERROR=Off \

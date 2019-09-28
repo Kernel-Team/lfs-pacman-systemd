@@ -23,11 +23,11 @@ build() {
 
 package() {
     cd $srcdir/$pkgname-$pkgver
-    install -Dm644 src/iniparser.h $pkgdir/usr/include/iniparser.h
-    install -Dm644 src/dictionary.h $pkgdir/usr/include/dictionary.h
-    install -Dm644 libiniparser.a $pkgdir/usr/lib/libiniparser.a
-    install -Dm644 libiniparser.so.1 $pkgdir/usr/lib/libiniparser.so.1
+    install -Dm644 src/iniparser.h $pkgdir/usr/local/include/iniparser.h
+    install -Dm644 src/dictionary.h $pkgdir/usr/local/include/dictionary.h
+    install -Dm644 libiniparser.a $pkgdir/usr/local/lib/libiniparser.a
+    install -Dm644 libiniparser.so.1 $pkgdir/usr/local/lib/libiniparser.so.1
     install -Dm644 LICENSE $pkgdir/usr/share/licenses/iniparser/LICENSE
-    ln -sf libiniparser.so.1 $pkgdir/usr/lib/libiniparser.so
-    chrpath -d $pkgdir/usr/lib/libiniparser.so
+    ln -sf libiniparser.so.1 $pkgdir/usr/local/lib/libiniparser.so
+    chrpath -d $pkgdir/usr/local/lib/libiniparser.so
 }

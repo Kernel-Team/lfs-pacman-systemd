@@ -20,7 +20,7 @@ groups=('extra')
 
 prepare(){
     cd "$pkgname-$pkgver"
-    ./configure --prefix=/usr
+    ./configure --prefix=/usr/local
 }
 
 build() {
@@ -37,9 +37,9 @@ package() {
     cd "$pkgname-$pkgver"
 
     make DESTDIR="$pkgdir" install
-    rm "${pkgdir}"/usr/lib/libbsd.a
+    rm "${pkgdir}"/usr/local/lib/libbsd.a
     install -D -m644 COPYING "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 
     # included now in man-pages, FS#53351
-    rm -f "${pkgdir}"/usr/share/man/man3/explicit_bzero.3
+    rm -f "${pkgdir}"/usr/local/share/man/man3/explicit_bzero.3
 }

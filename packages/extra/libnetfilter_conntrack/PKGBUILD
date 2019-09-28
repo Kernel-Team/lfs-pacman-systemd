@@ -19,16 +19,16 @@ md5sums=('013d182c2df716fcb5eb2a1fb7febd1f'
 groups=('extra')
 
 prepare(){
-  cd $pkgname-$pkgver
-  ./configure --prefix=/usr
+    cd $pkgname-$pkgver
+    ./configure --prefix=/usr/local
 }
 
 build() {
-  cd $pkgname-$pkgver
-  make
+    cd $pkgname-$pkgver
+    make
 }
 
 package() {
-  cd $pkgname-$pkgver
-  make DESTDIR="$pkgdir" install
+    cd $pkgname-$pkgver
+    make DESTDIR="$pkgdir" install
 }

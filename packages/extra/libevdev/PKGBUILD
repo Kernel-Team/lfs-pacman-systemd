@@ -16,16 +16,15 @@ groups=('extra' 'xorg')
 
 prepare(){
     cd $pkgname-$pkgver
-    ./configure --prefix=/usr \
+    ./configure --prefix=/usr/local \
                 --disable-static
 }
 
 build() {
     cd $pkgname-$pkgver
-    ./configure --prefix=/usr \
-                --disable-static
     make
 }
+
 check() {
     cd $pkgname-$pkgver
     # test suite requires root access and needs to load uinput module

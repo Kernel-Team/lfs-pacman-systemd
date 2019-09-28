@@ -25,7 +25,7 @@ done
 
 build() {
     cd $pkgname-$pkgver
-    ./configure --prefix=/usr
+    ./configure --prefix=/usr/local
     make
 }
 

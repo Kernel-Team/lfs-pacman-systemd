@@ -29,7 +29,7 @@ prepare() {
            HAVE_DOT=yes DOT_IMAGE_FORMAT=svg INTERACTIVE_SVG=yes
     cd ../build
     cmake -G Ninja ../$pkgname \
-          -DCMAKE_INSTALL_PREFIX=/usr \
+          -DCMAKE_INSTALL_PREFIX=/usr/local \
           -DBUILD_SHARED_LIBS=1 \
           -DENABLE_TESTS=0
 }
@@ -42,8 +42,8 @@ build() {
 package() {
     DESTDIR="$pkgdir" cmake --build build --target install
 
-    mkdir -p "$pkgdir/usr/share/doc"
-    cp -r build/docs/html "$pkgdir/usr/share/doc/$pkgname"
+    mkdir -p "$pkgdir/usr/local/share/doc"
+    cp -r build/docs/html "$pkgdir/usr/local/share/doc/$pkgname"
 
     install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 $pkgname/{LICENSE,PATENTS}
 }

@@ -34,13 +34,15 @@ prepare() {
     git config submodule.t/libtap.url "$srcdir/libtap"
     git config submodule.t/maxmind-db.url "$srcdir/MaxMind-DB"
     git submodule update
+
+    rm -f ltmain.sh
+    autoreconf -fiv
+    ./configure --prefix=/usr/local
 }
 
 build() {
     cd "$srcdir/$_gitname"
-    rm -f ltmain.sh
-    autoreconf -fiv
-    ./configure --prefix=/usr
+    make
 }
 
 check() {
@@ -50,6 +52,6 @@ check() {
 
 package() {
     cd "$srcdir/$_gitname"
-    make PREFIX=/usr DESTDIR="$pkgdir" install
+    make DESTDIR="$pkgdir" install
 }
 

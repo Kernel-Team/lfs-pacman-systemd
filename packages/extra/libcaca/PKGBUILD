@@ -16,7 +16,7 @@ groups=('extra')
 
 prepare(){
     cd $pkgname-$pkgver
-    ./configure --prefix=/usr --mandir=/usr/share/man \
+    ./configure --prefix=/usr/local --mandir=/usr/local/share/man \
                 --enable-shared --disable-doc \
                 --disable-cxx --disable-gl --disable-csharp --disable-static
 }

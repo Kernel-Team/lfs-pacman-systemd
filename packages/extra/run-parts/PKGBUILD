@@ -15,7 +15,7 @@ groups=('extra')
 
 prepare(){
 	cd $srcdir/debianutils
-	./configure --prefix=/usr
+	./configure --prefix=/usr/local
 }
 
 build() {
@@ -25,9 +25,9 @@ build() {
 
 package() {
 	cd $srcdir/debianutils
-	install -D -m755 run-parts $pkgdir/usr/bin/run-parts
-	install -D -m644 run-parts.8 $pkgdir/usr/share/man/man8/run-parts.8
+	install -D -m755 run-parts $pkgdir/usr/local/bin/run-parts
+	install -D -m644 run-parts.8 $pkgdir/usr/local/share/man/man8/run-parts.8
 	for l in po4a/*/run-parts.8; do
-		install -D -m644  ${l} $pkgdir/usr/share/man/${l:5:2}/man8/run-parts.8
+		install -D -m644  ${l} $pkgdir/usr/local/share/man/${l:5:2}/man8/run-parts.8
 	done
 }
